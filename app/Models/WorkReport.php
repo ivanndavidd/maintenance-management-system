@@ -10,66 +10,160 @@ class WorkReport extends Model
     use HasFactory;
 
     protected $fillable = [
-        'report_code', 'job_id', 'user_id', 'validated_by', 'work_start',
-        'work_end', 'downtime_minutes', 'work_performed', 'issues_found',
-        'recommendations', 'machine_condition', 'status', 'admin_comments',
-        'validated_at', 'attachments'
+        'report_code',
+        'job_id',
+        'user_id',
+        'validated_by',
+        'work_start',
+        'work_end',
+        'downtime_minutes',
+        'work_performed',
+        'issues_found',
+        'recommendations',
+        'machine_condition',
+        'status',
+        'admin_comments',
+        'validated_at',
+        'attachments',
     ];
 
     protected $casts = [
         'work_start' => 'datetime',
         'work_end' => 'datetime',
         'validated_at' => 'datetime',
+        'downtime_minutes' => 'integer',
         'attachments' => 'array',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
+    /**
+     * RELATIONSHIPS
+     */
 
-        static::creating(function ($report) {
-            // Auto generate report code
-            $count = static::whereYear('created_at', date('Y'))->count() + 1;
-            $report->report_code = 'RPT' . date('Y') . str_pad($count, 5, '0', STR_PAD_LEFT);
-        });
-    }
-
-    // Relationships
+    /**
+     * Report belongs to a maintenance job
+     */
     public function job()
     {
         return $this->belongsTo(MaintenanceJob::class, 'job_id');
     }
 
+    /**
+     * Report submitted by a user (technician)
+     */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Report validated by admin
+     */
     public function validator()
     {
         return $this->belongsTo(User::class, 'validated_by');
     }
 
-    public function parts()
+    /**
+     * ACCESSORS
+     */
+
+    /**
+     * Get status badge color
+     */
+    public function getStatusBadgeAttribute()
     {
-        return $this->belongsToMany(Part::class, 'report_parts')
-                    ->withPivot('quantity', 'cost')
-                    ->withTimestamps();
+        return match ($this->status) {
+            'pending' => 'warning',
+            'approved' => 'success',
+            'rejected' => 'danger',
+            'draft' => 'secondary',
+            default => 'secondary',
+        };
     }
 
-    // Calculated attributes
-    public function getTotalPartsCostAttribute()
+    /**
+     * Get machine condition badge color
+     */
+    public function getConditionBadgeAttribute()
     {
-        return $this->parts->sum(function ($part) {
-            return $part->pivot->quantity * $part->pivot->cost;
-        });
+        return match ($this->machine_condition) {
+            'excellent' => 'success',
+            'good' => 'info',
+            'fair' => 'warning',
+            'poor' => 'danger',
+            'critical' => 'danger',
+            default => 'secondary',
+        };
     }
 
+    /**
+     * Calculate work duration in hours
+     */
     public function getWorkDurationAttribute()
     {
-        if ($this->work_start && $this->work_end) {
-            return $this->work_start->diffInMinutes($this->work_end);
+        if (!$this->work_start || !$this->work_end) {
+            return 0;
         }
-        return 0;
+
+        return $this->work_start->diffInHours($this->work_end);
+    }
+
+    /**
+     * Get work duration formatted
+     */
+    public function getWorkDurationFormattedAttribute()
+    {
+        if (!$this->work_start || !$this->work_end) {
+            return 'N/A';
+        }
+
+        $hours = $this->work_start->diffInHours($this->work_end);
+        $minutes = $this->work_start->diffInMinutes($this->work_end) % 60;
+
+        return sprintf('%dh %dm', $hours, $minutes);
+    }
+
+    /**
+     * SCOPES
+     */
+
+    /**
+     * Scope to get pending reports
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    /**
+     * Scope to get approved reports
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    /**
+     * Scope to get rejected reports
+     */
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
+    }
+
+    /**
+     * Scope to get reports by user
+     */
+    public function scopeByUser($query, $userId)
+    {
+        return $query->where('user_id', $userId);
+    }
+
+    /**
+     * Scope to get reports by job
+     */
+    public function scopeByJob($query, $jobId)
+    {
+        return $query->where('job_id', $jobId);
     }
 }

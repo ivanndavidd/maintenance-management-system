@@ -53,9 +53,56 @@ Route::middleware(['auth'])->group(function () {
 
             // Maintenance Jobs
             Route::resource('jobs', App\Http\Controllers\Admin\MaintenanceJobController::class);
+            Route::patch('jobs/{job}/update-status', [
+                App\Http\Controllers\Admin\MaintenanceJobController::class,
+                'updateStatus',
+            ])->name('jobs.update-status');
 
             // Work Reports
-            Route::resource('reports', App\Http\Controllers\Admin\WorkReportController::class);
+            Route::prefix('work-reports')
+                ->name('work-reports.')
+                ->group(function () {
+                    Route::get('/', [
+                        App\Http\Controllers\Admin\WorkReportController::class,
+                        'index',
+                    ])->name('index');
+                    Route::get('/my-reports', [
+                        App\Http\Controllers\Admin\WorkReportController::class,
+                        'myReports',
+                    ])->name('my-reports');
+                    Route::get('/create', [
+                        App\Http\Controllers\Admin\WorkReportController::class,
+                        'create',
+                    ])->name('create');
+                    Route::post('/', [
+                        App\Http\Controllers\Admin\WorkReportController::class,
+                        'store',
+                    ])->name('store');
+                    Route::get('/{workReport}', [
+                        App\Http\Controllers\Admin\WorkReportController::class,
+                        'show',
+                    ])->name('show');
+                    Route::get('/{workReport}/edit', [
+                        App\Http\Controllers\Admin\WorkReportController::class,
+                        'edit',
+                    ])->name('edit');
+                    Route::put('/{workReport}', [
+                        App\Http\Controllers\Admin\WorkReportController::class,
+                        'update',
+                    ])->name('update');
+                    Route::delete('/{workReport}', [
+                        App\Http\Controllers\Admin\WorkReportController::class,
+                        'destroy',
+                    ])->name('destroy');
+                    Route::patch('/{workReport}/validate', [
+                        App\Http\Controllers\Admin\WorkReportController::class,
+                        'validateReport', // ✅ FIXED
+                    ])->name('validate');
+                    Route::delete('/{workReport}/attachment/{index}', [
+                        App\Http\Controllers\Admin\WorkReportController::class,
+                        'deleteAttachment',
+                    ])->name('delete-attachment');
+                });
 
             // Machines/Equipment
             Route::resource('machines', App\Http\Controllers\Admin\MachineController::class);
@@ -100,12 +147,12 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [App\Http\Controllers\ProfileController::class, 'index'])->name(
                 'index',
             );
-            Route::put('/update', [App\Http\Controllers\ProfileController::class, 'update'])->name(
+            Route::put('/', [App\Http\Controllers\ProfileController::class, 'update'])->name(
                 'update',
             );
-            Route::post('/change-password', [
+            Route::put('/password', [
                 App\Http\Controllers\ProfileController::class,
-                'changePassword',
-            ])->name('change-password');
+                'updatePassword', // ✅ FIXED
+            ])->name('password');
         });
 });

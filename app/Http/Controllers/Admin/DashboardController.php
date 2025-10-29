@@ -238,7 +238,8 @@ class DashboardController extends Controller
         // Quality: Based on successful completions
         $totalJobs = MaintenanceJob::where('status', 'completed')->count();
         $successfulJobs = MaintenanceJob::where('status', 'completed')
-            ->whereDoesntHave('workReport', function ($query) {
+            ->whereDoesntHave('workReports', function ($query) {
+                // ✅ FIXED - plural
                 $query->where('status', 'rejected');
             })
             ->count();

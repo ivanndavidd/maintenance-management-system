@@ -10,29 +10,35 @@ class MaintenanceJob extends Model
     use HasFactory;
 
     protected $fillable = [
-        'job_code', 'title', 'description', 'machine_id', 'assigned_to',
-        'created_by', 'type', 'priority', 'status', 'scheduled_date',
-        'started_at', 'completed_at', 'estimated_duration', 'actual_duration', 'notes'
+        'job_code',
+        'title',
+        'description',
+        'machine_id',
+        'assigned_to',
+        'created_by',
+        'type',
+        'priority',
+        'status',
+        'scheduled_date',
+        'started_at',
+        'completed_at',
+        'estimated_duration',
+        'actual_duration',
+        'notes',
     ];
 
     protected $casts = [
-        'scheduled_date' => 'datetime',
+        'scheduled_date' => 'date',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'estimated_duration' => 'integer',
+        'actual_duration' => 'integer',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
+    /**
+     * RELATIONSHIPS
+     */
 
-        static::creating(function ($job) {
-            // Auto generate job code
-            $count = static::whereYear('created_at', date('Y'))->count() + 1;
-            $job->job_code = 'JOB' . date('Y') . str_pad($count, 5, '0', STR_PAD_LEFT);
-        });
-    }
-
-    // Relationships
     public function machine()
     {
         return $this->belongsTo(Machine::class);
@@ -48,25 +54,89 @@ class MaintenanceJob extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function workReport()
+    // ✅ ONLY ONE workReports() method
+    public function workReports()
     {
-        return $this->hasOne(WorkReport::class, 'job_id');
+        return $this->hasMany(WorkReport::class, 'job_id');
     }
 
-    // Scopes
+    /**
+     * ACCESSORS
+     */
+
+    public function getStatusBadgeAttribute()
+    {
+        return match ($this->status) {
+            'pending' => 'warning',
+            'in_progress' => 'primary',
+            'completed' => 'success',
+            'cancelled' => 'secondary',
+            default => 'secondary',
+        };
+    }
+
+    public function getPriorityBadgeAttribute()
+    {
+        return match ($this->priority) {
+            'low' => 'secondary',
+            'medium' => 'info',
+            'high' => 'warning',
+            'critical' => 'danger',
+            default => 'secondary',
+        };
+    }
+
+    public function getTypeBadgeAttribute()
+    {
+        return match ($this->type) {
+            'preventive' => 'success',
+            'breakdown' => 'danger',
+            'corrective' => 'warning',
+            'inspection' => 'info',
+            default => 'secondary',
+        };
+    }
+
+    public function isOverdue()
+    {
+        if (!$this->scheduled_date || $this->status === 'completed') {
+            return false;
+        }
+
+        return now()->gt($this->scheduled_date);
+    }
+
+    /**
+     * SCOPES
+     */
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    public function scopeOverdue($query)
+    public function scopeInProgress($query)
     {
-        return $query->where('status', '!=', 'completed')
-                     ->where('scheduled_date', '<', now());
+        return $query->where('status', 'in_progress');
     }
 
-    public function scopeMyTasks($query, $userId)
+    public function scopeCompleted($query)
     {
-        return $query->where('assigned_to', $userId);
+        return $query->where('status', 'completed');
+    }
+
+    public function scopeOverdue($query)
+    {
+        return $query->where('status', '!=', 'completed')->where('scheduled_date', '<', now());
+    }
+
+    public function scopeByPriority($query, $priority)
+    {
+        return $query->where('priority', $priority);
+    }
+
+    public function scopeByType($query, $type)
+    {
+        return $query->where('type', $type);
     }
 }
