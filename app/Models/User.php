@@ -1,0 +1,164 @@
+<?php
+
+namespace App\Models;
+
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
+
+class User extends Authenticatable
+{
+    use HasFactory, Notifiable, HasRoles;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'employee_id',
+        'phone',
+        'department_id',
+        'is_active',
+        'last_login_at',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = ['password', 'remember_token'];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * RELATIONSHIPS
+     */
+
+    /**
+     * User belongs to a department
+     */
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * Jobs assigned to this user (as technician/operator)
+     */
+    public function assignedJobs()
+    {
+        return $this->hasMany(MaintenanceJob::class, 'assigned_to');
+    }
+
+    /**
+     * Work reports submitted by this user
+     */
+    public function workReports()
+    {
+        return $this->hasMany(WorkReport::class, 'user_id');
+    }
+
+    /**
+     * Jobs created by this user (as admin/creator)
+     */
+    public function createdJobs()
+    {
+        return $this->hasMany(MaintenanceJob::class, 'created_by');
+    }
+
+    /**
+     * ACCESSORS & MUTATORS
+     */
+
+    /**
+     * Get user's full name with employee ID
+     */
+    public function getFullNameAttribute()
+    {
+        return "{$this->name} ({$this->employee_id})";
+    }
+
+    /**
+     * Check if user is active
+     */
+    public function isActive()
+    {
+        return $this->is_active == true;
+    }
+
+    /**
+     * Get user's avatar initials
+     */
+    public function getInitialsAttribute()
+    {
+        $words = explode(' ', $this->name);
+        if (count($words) >= 2) {
+            return strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+        }
+        return strtoupper(substr($this->name, 0, 2));
+    }
+
+    /**
+     * SCOPES
+     */
+
+    /**
+     * Scope to get only active users
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope to get users by department
+     */
+    public function scopeByDepartment($query, $departmentId)
+    {
+        return $query->where('department_id', $departmentId);
+    }
+
+    /**
+     * Scope to get users by role
+     */
+    public function scopeByRole($query, $roleName)
+    {
+        return $query->role($roleName);
+    }
+
+    /**
+     * Scope to get operators only
+     */
+    public function scopeOperators($query)
+    {
+        return $query->role('user');
+    }
+
+    /**
+     * Scope to get admins only
+     */
+    public function scopeAdmins($query)
+    {
+        return $query->role(['admin', 'super-admin']);
+    }
+}

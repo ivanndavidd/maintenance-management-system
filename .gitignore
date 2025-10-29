@@ -1,0 +1,150 @@
+# Laravel specific
+/vendor/
+/node_modules/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/app/*
+!/storage/app/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# Environment & Sensitive Files
+.env
+.env.backup
+.env.production
+.env.*.php
+.env.php
+
+# PHP Storm / IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# NetBeans
+nbproject/
+
+# Eclipse
+.project
+.buildpath
+.settings/
+
+# Mac OS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Laravel Mix / Vite
+/public/css/
+/public/js/
+/public/mix-manifest.json
+/public/build/
+mix-manifest.json
+
+# NPM / Yarn
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Composer
+composer.phar
+composer.lock
+auth.json
+
+# Laravel specific logs
+*.log
+
+# PHPUnit / Testing
+.phpunit.result.cache
+.phpunit.cache
+coverage/
+phpunit.xml
+
+# Backup files
+*.sql
+*.sqlite
+*.sqlite-journal
+database/*.sqlite
+database/*.sqlite-journal
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+# IDE helper files
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+
+# Laravel Telescope (if installed)
+/public/vendor/telescope/
+
+# Laravel Debugbar (if installed)
+.php_cs.cache
+
+# Rocketeer deployment tool
+.rocketeer/
+
+# Homestead
+Homestead.yaml
+Homestead.json
+/.vagrant
+
+# Deployment tools
+Envoy.blade.php
+
+# Documentation
+/docs/_build/
+
+# Cache
+*.cache
+.php-cs-fixer.cache
+
+# Build artifacts
+/build/
+/dist/
+
+# Uploaded files (optional - tergantung kebutuhan)
+# /public/uploads/
+# /storage/app/public/
+
+# Laravel Sail
+docker-compose.override.yml
+
+# Laragon specific (optional)
+# laragon.conf

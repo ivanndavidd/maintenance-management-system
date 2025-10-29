@@ -1,0 +1,296 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Machine;
+use App\Models\MachineCategory;
+use App\Models\Department;
+use Illuminate\Database\Seeder;
+use Carbon\Carbon;
+
+class MachineSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $machines = [
+            // Forklifts
+            [
+                'code' => 'FLT-001',
+                'name' => 'Toyota Electric Forklift #1',
+                'category' => 'FLT',
+                'department' => 'RCV',
+                'brand' => 'Toyota',
+                'model' => '8FBCU25',
+                'serial_number' => 'TY2023001',
+                'purchase_date' => '2023-01-15',
+                'purchase_cost' => 45000,
+                'status' => 'operational',
+                'location' => 'Receiving Area - Bay 1',
+                'specifications' => 'Capacity: 2.5 ton, Lift Height: 6m, Battery: 48V',
+                'maintenance_interval_days' => 30,
+                'last_maintenance_date' => Carbon::now()->subDays(15),
+                'next_maintenance_date' => Carbon::now()->addDays(15),
+            ],
+            [
+                'code' => 'FLT-002',
+                'name' => 'Toyota Electric Forklift #2',
+                'category' => 'FLT',
+                'department' => 'STG',
+                'brand' => 'Toyota',
+                'model' => '8FBCU25',
+                'serial_number' => 'TY2023002',
+                'purchase_date' => '2023-01-15',
+                'purchase_cost' => 45000,
+                'status' => 'operational',
+                'location' => 'Storage Area - Zone A',
+                'specifications' => 'Capacity: 2.5 ton, Lift Height: 6m, Battery: 48V',
+                'maintenance_interval_days' => 30,
+                'last_maintenance_date' => Carbon::now()->subDays(20),
+                'next_maintenance_date' => Carbon::now()->addDays(10),
+            ],
+            [
+                'code' => 'FLT-003',
+                'name' => 'Komatsu Diesel Forklift',
+                'category' => 'FLT',
+                'department' => 'SHP',
+                'brand' => 'Komatsu',
+                'model' => 'FD30T-17',
+                'serial_number' => 'KM2023001',
+                'purchase_date' => '2023-03-10',
+                'purchase_cost' => 38000,
+                'status' => 'maintenance',
+                'location' => 'Shipping Area - Loading Dock 2',
+                'specifications' => 'Capacity: 3 ton, Lift Height: 4.5m, Engine: Diesel',
+                'maintenance_interval_days' => 45,
+                'last_maintenance_date' => Carbon::now()->subDays(5),
+                'next_maintenance_date' => Carbon::now()->addDays(40),
+            ],
+
+            // Pallet Jacks
+            [
+                'code' => 'PLJ-001',
+                'name' => 'Electric Pallet Jack #1',
+                'category' => 'PLJ',
+                'department' => 'RCV',
+                'brand' => 'Crown',
+                'model' => 'PC 4500',
+                'serial_number' => 'CR2023001',
+                'purchase_date' => '2023-02-20',
+                'purchase_cost' => 8500,
+                'status' => 'operational',
+                'location' => 'Receiving Area - Unloading Zone',
+                'specifications' => 'Capacity: 2 ton, Battery: 24V',
+                'maintenance_interval_days' => 60,
+                'last_maintenance_date' => Carbon::now()->subDays(30),
+                'next_maintenance_date' => Carbon::now()->addDays(30),
+            ],
+            [
+                'code' => 'PLJ-002',
+                'name' => 'Manual Pallet Jack #1',
+                'category' => 'PLJ',
+                'department' => 'PKG',
+                'brand' => 'Mighty Lift',
+                'model' => 'ML55',
+                'serial_number' => 'ML2023001',
+                'purchase_date' => '2023-04-05',
+                'purchase_cost' => 650,
+                'status' => 'operational',
+                'location' => 'Packaging Area - Section C',
+                'specifications' => 'Capacity: 2.5 ton, Fork Length: 1150mm',
+                'maintenance_interval_days' => 90,
+                'last_maintenance_date' => Carbon::now()->subDays(45),
+                'next_maintenance_date' => Carbon::now()->addDays(45),
+            ],
+
+            // Conveyor Systems
+            [
+                'code' => 'CNV-001',
+                'name' => 'Main Belt Conveyor Line A',
+                'category' => 'CNV',
+                'department' => 'STG',
+                'brand' => 'Hytrol',
+                'model' => 'Model TA',
+                'serial_number' => 'HY2022001',
+                'purchase_date' => '2022-06-15',
+                'purchase_cost' => 125000,
+                'status' => 'operational',
+                'location' => 'Storage Area - Main Sorting Line',
+                'specifications' => 'Length: 50m, Width: 800mm, Speed: Variable 0-60m/min',
+                'maintenance_interval_days' => 30,
+                'last_maintenance_date' => Carbon::now()->subDays(10),
+                'next_maintenance_date' => Carbon::now()->addDays(20),
+            ],
+            [
+                'code' => 'CNV-002',
+                'name' => 'Roller Conveyor Section B',
+                'category' => 'CNV',
+                'department' => 'SHP',
+                'brand' => 'Hytrol',
+                'model' => '190-LR',
+                'serial_number' => 'HY2022002',
+                'purchase_date' => '2022-06-15',
+                'purchase_cost' => 85000,
+                'status' => 'operational',
+                'location' => 'Shipping Area - Packing Line',
+                'specifications' => 'Length: 30m, Width: 600mm, Load: 50kg/m',
+                'maintenance_interval_days' => 45,
+                'last_maintenance_date' => Carbon::now()->subDays(20),
+                'next_maintenance_date' => Carbon::now()->addDays(25),
+            ],
+
+            // HVAC Systems
+            [
+                'code' => 'HVC-001',
+                'name' => 'Central Air Conditioning Unit #1',
+                'category' => 'HVC',
+                'department' => 'STG',
+                'brand' => 'Carrier',
+                'model' => '30RB-160',
+                'serial_number' => 'CA2022001',
+                'purchase_date' => '2022-01-10',
+                'purchase_cost' => 85000,
+                'status' => 'operational',
+                'location' => 'Storage Area - Rooftop Unit 1',
+                'specifications' => 'Cooling Capacity: 160kW, Type: Chiller',
+                'maintenance_interval_days' => 90,
+                'last_maintenance_date' => Carbon::now()->subDays(60),
+                'next_maintenance_date' => Carbon::now()->addDays(30),
+            ],
+            [
+                'code' => 'HVC-002',
+                'name' => 'Cold Storage Refrigeration Unit',
+                'category' => 'HVC',
+                'department' => 'CLD',
+                'brand' => 'Daikin',
+                'model' => 'ZEAS80',
+                'serial_number' => 'DK2022001',
+                'purchase_date' => '2022-03-15',
+                'purchase_cost' => 120000,
+                'status' => 'operational',
+                'location' => 'Cold Storage - Freezer Room 1',
+                'specifications' => 'Temperature Range: -5°C to 5°C, Capacity: 80kW',
+                'maintenance_interval_days' => 30,
+                'last_maintenance_date' => Carbon::now()->subDays(15),
+                'next_maintenance_date' => Carbon::now()->addDays(15),
+            ],
+
+            // Loading Dock Equipment
+            [
+                'code' => 'LDE-001',
+                'name' => 'Hydraulic Dock Leveler #1',
+                'category' => 'LDE',
+                'department' => 'SHP',
+                'brand' => 'Rite-Hite',
+                'model' => 'RHH-5000',
+                'serial_number' => 'RH2023001',
+                'purchase_date' => '2023-01-20',
+                'purchase_cost' => 12000,
+                'status' => 'operational',
+                'location' => 'Shipping Area - Loading Dock 1',
+                'specifications' => 'Capacity: 30,000 lbs, Platform: 6x8 ft',
+                'maintenance_interval_days' => 60,
+                'last_maintenance_date' => Carbon::now()->subDays(30),
+                'next_maintenance_date' => Carbon::now()->addDays(30),
+            ],
+
+            // Scissor Lifts
+            [
+                'code' => 'SCL-001',
+                'name' => 'Electric Scissor Lift #1',
+                'category' => 'SCL',
+                'department' => 'STG',
+                'brand' => 'JLG',
+                'model' => '1930ES',
+                'serial_number' => 'JL2023001',
+                'purchase_date' => '2023-02-15',
+                'purchase_cost' => 22000,
+                'status' => 'operational',
+                'location' => 'Storage Area - High Rack Section',
+                'specifications' => 'Platform Height: 19ft, Capacity: 500 lbs',
+                'maintenance_interval_days' => 45,
+                'last_maintenance_date' => Carbon::now()->subDays(20),
+                'next_maintenance_date' => Carbon::now()->addDays(25),
+            ],
+
+            // Security Systems
+            [
+                'code' => 'SEC-001',
+                'name' => 'CCTV System - Main',
+                'category' => 'SEC',
+                'department' => 'STG',
+                'brand' => 'Hikvision',
+                'model' => 'DS-9632NI-I8',
+                'serial_number' => 'HK2022001',
+                'purchase_date' => '2022-05-10',
+                'purchase_cost' => 35000,
+                'status' => 'operational',
+                'location' => 'Security Office - Control Room',
+                'specifications' => '32 Channels, 4K Resolution, 10TB Storage',
+                'maintenance_interval_days' => 180,
+                'last_maintenance_date' => Carbon::now()->subDays(90),
+                'next_maintenance_date' => Carbon::now()->addDays(90),
+            ],
+
+            // Fire Safety Systems
+            [
+                'code' => 'FIR-001',
+                'name' => 'Fire Alarm Control Panel',
+                'category' => 'FIR',
+                'department' => 'STG',
+                'brand' => 'Honeywell',
+                'model' => 'XLS3000',
+                'serial_number' => 'HW2022001',
+                'purchase_date' => '2022-01-05',
+                'purchase_cost' => 45000,
+                'status' => 'operational',
+                'location' => 'Main Building - Fire Control Room',
+                'specifications' => 'Addressable System, 3000 Points, Voice Evacuation',
+                'maintenance_interval_days' => 90,
+                'last_maintenance_date' => Carbon::now()->subDays(45),
+                'next_maintenance_date' => Carbon::now()->addDays(45),
+            ],
+
+            // Packaging Machines
+            [
+                'code' => 'PKM-001',
+                'name' => 'Stretch Wrapping Machine',
+                'category' => 'PKM',
+                'department' => 'PKG',
+                'brand' => 'Lantech',
+                'model' => 'Q300XT',
+                'serial_number' => 'LT2023001',
+                'purchase_date' => '2023-03-01',
+                'purchase_cost' => 28000,
+                'status' => 'operational',
+                'location' => 'Packaging Area - Wrapping Station 1',
+                'specifications' => 'Semi-automatic, Max Load: 2000kg, Turntable',
+                'maintenance_interval_days' => 60,
+                'last_maintenance_date' => Carbon::now()->subDays(30),
+                'next_maintenance_date' => Carbon::now()->addDays(30),
+            ],
+        ];
+
+        foreach ($machines as $machineData) {
+            $category = MachineCategory::where('code', $machineData['category'])->first();
+            $department = Department::where('code', $machineData['department'])->first();
+
+            Machine::create([
+                'code' => $machineData['code'],
+                'name' => $machineData['name'],
+                'category_id' => $category->id,
+                'department_id' => $department->id,
+                'brand' => $machineData['brand'],
+                'model' => $machineData['model'],
+                'serial_number' => $machineData['serial_number'],
+                'purchase_date' => $machineData['purchase_date'],
+                'purchase_cost' => $machineData['purchase_cost'],
+                'status' => $machineData['status'],
+                'location' => $machineData['location'], // ✅ ADDED
+                'specifications' => $machineData['specifications'],
+                'maintenance_interval_days' => $machineData['maintenance_interval_days'],
+                'last_maintenance_date' => $machineData['last_maintenance_date'],
+                'next_maintenance_date' => $machineData['next_maintenance_date'],
+            ]);
+        }
+    }
+}
