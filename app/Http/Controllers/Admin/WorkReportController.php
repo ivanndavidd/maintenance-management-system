@@ -304,4 +304,53 @@ class WorkReportController extends Controller
 
         return redirect()->back()->with('success', 'Attachment deleted successfully!');
     }
+    /**
+     * Approve/Validate work report
+     */
+    public function approve(Request $request, WorkReport $workReport)
+    {
+        $validated = $request->validate([
+            'admin_comments' => 'nullable|string|max:1000',
+        ]);
+
+        $workReport->update([
+            'status' => 'approved',
+            'validated_by' => auth()->id(),
+            'validated_at' => now(),
+            'admin_comments' => $validated['admin_comments'] ?? null,
+        ]);
+
+        // Update job status to completed if not already
+        if ($workReport->job && $workReport->job->status !== 'completed') {
+            $workReport->job->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.work-reports.show', $workReport)
+            ->with('success', 'Work report approved successfully!');
+    }
+
+    /**
+     * Reject work report / Request revision
+     */
+    public function reject(Request $request, WorkReport $workReport)
+    {
+        $validated = $request->validate([
+            'admin_comments' => 'required|string|max:1000',
+        ]);
+
+        $workReport->update([
+            'status' => 'revision_needed',
+            'validated_by' => auth()->id(),
+            'validated_at' => now(),
+            'admin_comments' => $validated['admin_comments'],
+        ]);
+
+        return redirect()
+            ->route('admin.work-reports.show', $workReport)
+            ->with('success', 'Work report sent back for revision.');
+    }
 }

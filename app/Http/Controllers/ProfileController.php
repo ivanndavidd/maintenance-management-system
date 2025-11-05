@@ -3,33 +3,54 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
     /**
-     * Display user's profile
+     * Display user profile
      */
     public function index()
     {
-        $user = Auth::user()->load('roles');
+        $user = auth()->user();
 
-        return view('profile.index', compact('user'));
+        // Get user statistics
+        $stats = [
+            'total_tasks' => \App\Models\MaintenanceJob::where('assigned_to', $user->id)->count(),
+            'completed_tasks' => \App\Models\MaintenanceJob::where('assigned_to', $user->id)
+                ->where('status', 'completed')
+                ->count(),
+            'total_reports' => \App\Models\WorkReport::where('user_id', $user->id)->count(),
+            'approved_reports' => \App\Models\WorkReport::where('user_id', $user->id)
+                ->where('status', 'approved')
+                ->count(),
+        ];
+
+        // Calculate completion rate
+        $stats['completion_rate'] =
+            $stats['total_tasks'] > 0
+                ? round(($stats['completed_tasks'] / $stats['total_tasks']) * 100, 1)
+                : 0;
+
+        // Member since
+        $stats['member_since'] = $user->created_at->diffForHumans();
+
+        return view('profile.index', compact('user', 'stats'));
     }
 
     /**
-     * Update user's profile information
+     * Update user profile
      */
     public function update(Request $request)
     {
-        $user = Auth::user();
+        $user = auth()->user();
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:500',
         ]);
 
         $user->update($validated);
@@ -38,16 +59,26 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update user's password
+     * Change password
      */
-    public function updatePassword(Request $request)
+    public function changePassword(Request $request)
     {
         $validated = $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'current_password' => 'required',
+            'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
-        Auth::user()->update([
+        $user = auth()->user();
+
+        // Check current password
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return back()->withErrors([
+                'current_password' => 'Current password is incorrect',
+            ]);
+        }
+
+        // Update password
+        $user->update([
             'password' => Hash::make($validated['password']),
         ]);
 

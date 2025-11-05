@@ -220,31 +220,37 @@
             @endif
 
             <!-- Attachments -->
-            @if($workReport->attachments && count($workReport->attachments) > 0)
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-images"></i> Attachments ({{ count($workReport->attachments) }} photos)</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        @foreach($workReport->attachments as $attachment)
-                        <div class="col-md-4">
-                            <div class="card">
-                                <a href="{{ Storage::url($attachment['path']) }}" target="_blank">
-                                    <img src="{{ Storage::url($attachment['path']) }}" 
-                                         class="card-img-top" 
-                                         alt="Attachment"
-                                         style="height: 200px; object-fit: cover;">
-                                </a>
-                                <div class="card-body p-2">
-                                    <small class="text-muted">{{ $attachment['original_name'] }}</small>
-                                </div>
+            @if($workReport->attachments && is_array($workReport->attachments) && count($workReport->attachments) > 0)
+                <div class="row g-3">
+                    @foreach($workReport->attachments as $index => $attachment)
+                        @if(is_string($attachment))
+                            <div class="col-md-4">
+                                @if(str_ends_with($attachment, '.pdf'))
+                                    <div class="border rounded p-3 text-center">
+                                        <i class="fas fa-file-pdf fa-3x text-danger mb-2"></i>
+                                        <p class="small mb-2">PDF Document</p>
+                                        <a href="{{ Storage::url($attachment) }}" 
+                                        target="_blank" 
+                                        class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    </div>
+                                @else
+                                    <a href="{{ Storage::url($attachment) }}" target="_blank" data-lightbox="attachments">
+                                        <img src="{{ Storage::url($attachment) }}" 
+                                            alt="Attachment {{ $index + 1 }}" 
+                                            class="img-fluid rounded shadow-sm"
+                                            onerror="this.src='https://via.placeholder.com/300x200?text=Image+Not+Found'">
+                                    </a>
+                                @endif
                             </div>
-                        </div>
-                        @endforeach
-                    </div>
+                        @endif
+                    @endforeach
                 </div>
-            </div>
+            @else
+                <p class="text-muted text-center py-3">
+                    <i class="fas fa-paperclip"></i> No attachments available
+                </p>
             @endif
 
             <!-- Timeline -->
@@ -354,6 +360,162 @@
     </div>
 </div>
 @endif
+
+<!-- Validation Actions (Only for submitted reports) -->
+@if($workReport->status === 'submitted')
+<div class="card shadow-sm mb-4 border-warning">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="fas fa-clipboard-check"></i> Validate Report
+        </h5>
+    </div>
+    <div class="card-body">
+        <p class="mb-3">
+            <i class="fas fa-info-circle"></i>
+            This report is waiting for your validation. Please review the work performed and approve or request revision.
+        </p>
+        
+        <div class="row">
+            <!-- Approve Button -->
+            <div class="col-md-6">
+                <button type="button" 
+                        class="btn btn-success w-100" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#approveModal">
+                    <i class="fas fa-check-circle"></i> Approve Report
+                </button>
+            </div>
+            
+            <!-- Reject Button -->
+            <div class="col-md-6">
+                <button type="button" 
+                        class="btn btn-danger w-100" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#rejectModal">
+                    <i class="fas fa-times-circle"></i> Request Revision
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.work-reports.approve', $workReport) }}">
+                @csrf
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check-circle"></i> Approve Work Report
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Approve this report?</strong>
+                        <p class="mb-0 mt-2">
+                            By approving this report, you confirm that the work was performed satisfactorily 
+                            and the report is accurate.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Comments (Optional)
+                        </label>
+                        <textarea name="admin_comments" 
+                                  rows="4" 
+                                  class="form-control" 
+                                  placeholder="Add any comments or feedback for the technician..."></textarea>
+                        <small class="text-muted">Your comments will be visible to the technician</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Report Summary:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Technician: {{ $workReport->user->name }}</li>
+                            <li>Machine: {{ $workReport->job->machine->name ?? 'N/A' }}</li>
+                            <li>Duration: {{ $workReport->downtime_minutes }} minutes</li>
+                            <li>Condition: {{ ucfirst($workReport->machine_condition) }}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Approve Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject/Revision Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('admin.work-reports.reject', $workReport) }}">
+                @csrf
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-times-circle"></i> Request Revision
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Request revision?</strong>
+                        <p class="mb-0 mt-2">
+                            The report will be sent back to the technician for corrections. 
+                            Please provide clear feedback on what needs to be revised.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Revision Comments <span class="text-danger">*</span>
+                        </label>
+                        <textarea name="admin_comments" 
+                                  rows="5" 
+                                  class="form-control @error('admin_comments') is-invalid @enderror" 
+                                  placeholder="Explain what needs to be corrected or improved..."
+                                  required></textarea>
+                        @error('admin_comments')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">Be specific about what needs to be revised</small>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Common reasons for revision:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Incomplete work description</li>
+                            <li>Missing photos or documentation</li>
+                            <li>Incorrect time logs</li>
+                            <li>Unclear issues or recommendations</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-redo"></i> Request Revision
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <style>
 .report-icon-large {

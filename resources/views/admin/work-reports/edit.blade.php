@@ -45,24 +45,37 @@
                                 @enderror
                             </div>
 
-                            <!-- Status -->
-                            <div class="col-md-6 mb-3">
-                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                                <select class="form-select @error('status') is-invalid @enderror" 
-                                        id="status" 
-                                        name="status" 
-                                        required>
-                                    <option value="pending" {{ old('status', $workReport->status) == 'pending' ? 'selected' : '' }}>
-                                        Submit for Review (Pending)
-                                    </option>
-                                    <option value="draft" {{ old('status', $workReport->status) == 'draft' ? 'selected' : '' }}>
-                                        Save as Draft
-                                    </option>
-                                </select>
-                                @error('status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                           <!-- Status Alerts -->
+                            @if($workReport->status === 'submitted')
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-clock"></i>
+                                    <strong>Status: Submitted - Awaiting Validation</strong>
+                                    <p class="mb-0 mt-1">This report needs to be reviewed and validated.</p>
+                                </div>
+                            @elseif($workReport->status === 'approved')
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i>
+                                    <strong>Status: Approved</strong>
+                                    <p class="mb-0 mt-1">
+                                        Report validated by {{ $workReport->validator->name ?? 'Supervisor' }} 
+                                        on {{ $workReport->validated_at ? $workReport->validated_at->format('d M Y, H:i') : '-' }}
+                                    </p>
+                                </div>
+                            @elseif($workReport->status === 'revision_needed')
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Status: Needs Revision</strong>
+                                    <p class="mb-0 mt-1">
+                                        Sent back for revision by {{ $workReport->validator->name ?? 'Supervisor' }}
+                                    </p>
+                                </div>
+                            @elseif($workReport->status === 'draft')
+                                <div class="alert alert-secondary">
+                                    <i class="fas fa-file"></i>
+                                    <strong>Status: Draft</strong>
+                                    <p class="mb-0 mt-1">This report is still in draft status.</p>
+                                </div>
+                            @endif
 
                             <!-- Job -->
                             <div class="col-md-12 mb-3">

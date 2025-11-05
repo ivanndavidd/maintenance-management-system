@@ -54,7 +54,15 @@ class MaintenanceJob extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // ✅ ONLY ONE workReports() method
+    /**
+     * Alias for creator() - for backward compatibility
+     * ✅ ADDED THIS ALIAS
+     */
+    public function assignedBy()
+    {
+        return $this->creator();
+    }
+
     public function workReports()
     {
         return $this->hasMany(WorkReport::class, 'job_id');

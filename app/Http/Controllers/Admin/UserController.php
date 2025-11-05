@@ -25,7 +25,8 @@ class UserController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('employee_id', 'like', "%{$search}%");
+                    ->orWhere('employee_id', 'like', "%{$search}%") // ✅ ADDED
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
@@ -72,9 +73,9 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'employee_id' => ['required', 'string', 'max:50', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'employee_id' => ['required', 'string', 'max:50', 'unique:users'], // ✅ ADDED
             'phone' => ['nullable', 'string', 'max:20'],
+            'password' => ['required', 'confirmed', Password::defaults()],
             'department_id' => ['nullable', 'exists:departments,id'],
             'role' => ['required', 'exists:roles,name'],
             'is_active' => ['boolean'],
@@ -84,9 +85,9 @@ class UserController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'employee_id' => $validated['employee_id'],
-            'password' => Hash::make($validated['password']),
+            'employee_id' => $validated['employee_id'], // ✅ ADDED
             'phone' => $validated['phone'] ?? null,
+            'password' => Hash::make($validated['password']),
             'department_id' => $validated['department_id'] ?? null,
             'is_active' => $request->has('is_active') ? true : false,
         ]);
@@ -166,13 +167,14 @@ class UserController extends Controller
                 'unique:users,email,' . $user->id,
             ],
             'employee_id' => [
+                // ✅ ADDED
                 'required',
                 'string',
                 'max:50',
                 'unique:users,employee_id,' . $user->id,
             ],
-            'password' => ['nullable', 'confirmed', Password::defaults()],
             'phone' => ['nullable', 'string', 'max:20'],
+            'password' => ['nullable', 'confirmed', Password::defaults()],
             'department_id' => ['nullable', 'exists:departments,id'],
             'role' => ['required', 'exists:roles,name'],
             'is_active' => ['boolean'],
@@ -182,7 +184,7 @@ class UserController extends Controller
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'employee_id' => $validated['employee_id'],
+            'employee_id' => $validated['employee_id'], // ✅ ADDED
             'phone' => $validated['phone'] ?? null,
             'department_id' => $validated['department_id'] ?? null,
             'is_active' => $request->has('is_active') ? true : false,
