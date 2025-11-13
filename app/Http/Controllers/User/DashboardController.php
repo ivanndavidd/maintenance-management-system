@@ -89,8 +89,9 @@ class DashboardController extends Controller
             }
         }
 
-        // Recent Tasks (Last 5)
+        // Recent Tasks (Last 5) - Exclude completed tasks
         $recentTasks = MaintenanceJob::where('assigned_to', $user->id)
+            ->whereNotIn('status', ['completed'])
             ->with('machine')
             ->latest()
             ->limit(5)

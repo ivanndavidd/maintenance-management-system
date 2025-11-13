@@ -207,6 +207,13 @@ Route::middleware(['auth'])->group(function () {
 
             // Parts & Inventory
             Route::resource('parts', App\Http\Controllers\Admin\PartController::class);
+
+            // Help Articles Management
+            Route::resource('help-articles', App\Http\Controllers\Admin\HelpArticleController::class);
+            Route::patch('help-articles/{helpArticle}/toggle-publish', [
+                App\Http\Controllers\Admin\HelpArticleController::class,
+                'togglePublish',
+            ])->name('help-articles.toggle-publish');
         });
 
     // User Routes
@@ -238,6 +245,22 @@ Route::middleware(['auth'])->group(function () {
 
             // My Reports
             Route::resource('reports', App\Http\Controllers\User\MyReportController::class);
+
+            // Help & Support
+            Route::get('/help', [
+                App\Http\Controllers\User\HelpController::class,
+                'index',
+            ])->name('help.index');
+
+            Route::get('/help/search', [
+                App\Http\Controllers\User\HelpController::class,
+                'search',
+            ])->name('help.search');
+
+            Route::get('/help/{article}', [
+                App\Http\Controllers\User\HelpController::class,
+                'show',
+            ])->name('help.show');
         });
 
     // ========================================

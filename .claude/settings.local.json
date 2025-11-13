@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(storage/logs/laravel.log)",
+      "Bash(cat:*)",
+      "Bash(storage/logs/update_debug.log)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

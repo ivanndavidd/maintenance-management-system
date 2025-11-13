@@ -38,6 +38,8 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
     </style>
+
+    @stack('styles')
 </head>
 <body>
     <div class="container-fluid">
@@ -73,9 +75,15 @@
                     <a href="{{ route('admin.work-reports.index') }}" class="{{ request()->routeIs('admin.work-reports.*') ? 'active' : '' }}">
                         <i class="fas fa-file-alt"></i> Work Reports
                     </a>
-                    
+
                     <hr class="text-white">
-                    
+
+                    <a href="{{ route('admin.help-articles.index') }}" class="{{ request()->routeIs('admin.help-articles.*') ? 'active' : '' }}">
+                        <i class="fas fa-question-circle"></i> Help Articles
+                    </a>
+
+                    <hr class="text-white">
+
                     <a href="{{ route('profile.index') }}">
                         <i class="fas fa-user"></i> Profile
                     </a>
@@ -129,6 +137,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @stack('scripts')
     @yield('scripts')
 </body>
 </html>

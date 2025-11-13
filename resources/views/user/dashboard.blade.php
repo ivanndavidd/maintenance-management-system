@@ -239,14 +239,14 @@
                     @if($recentTasks->count() > 0)
                         <div class="list-group list-group-flush">
                             @foreach($recentTasks as $task)
-                            <div class="list-group-item px-0">
+                            <a href="{{ route('user.tasks.show', $task) }}" class="list-group-item list-group-item-action px-0 border-0 task-item">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1">
                                             @if($task->machine)
                                                 <i class="fas fa-cogs text-primary"></i> {{ $task->machine->name }}
                                             @else
-                                                General Task
+                                                <i class="fas fa-tasks text-primary"></i> General Task
                                             @endif
                                         </h6>
                                         <p class="mb-1 text-muted small">{{ Str::limit($task->description, 60) }}</p>
@@ -262,9 +262,12 @@
                                         @else
                                             <span class="badge bg-success">Completed</span>
                                         @endif
+                                        <div class="mt-1">
+                                            <small class="text-primary"><i class="fas fa-chevron-right"></i></small>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                             @endforeach
                         </div>
                     @else
@@ -292,14 +295,18 @@
                     @if($recentReports->count() > 0)
                         <div class="list-group list-group-flush">
                             @foreach($recentReports as $report)
-                            <div class="list-group-item px-0">
+                            <a href="{{ route('user.reports.show', $report) }}" class="list-group-item list-group-item-action px-0 border-0 report-item">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1">
-                                            Report #{{ $report->id }}
+                                            <i class="fas fa-file-alt text-success"></i> Report #{{ $report->id }}
                                         </h6>
                                         <p class="mb-1 text-muted small">
-                                            {{ $report->job->machine->name ?? 'N/A' }}
+                                            @if($report->job && $report->job->machine)
+                                                <i class="fas fa-cogs"></i> {{ $report->job->machine->name }}
+                                            @else
+                                                N/A
+                                            @endif
                                         </p>
                                         <small class="text-muted">
                                             <i class="fas fa-calendar"></i> {{ $report->created_at->format('d M Y') }}
@@ -317,9 +324,12 @@
                                         @else
                                             <span class="badge bg-secondary">{{ ucfirst($report->status) }}</span>
                                         @endif
+                                        <div class="mt-1">
+                                            <small class="text-success"><i class="fas fa-chevron-right"></i></small>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                             @endforeach
                         </div>
                     @else
@@ -366,4 +376,44 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+    /* Hover effects for clickable task and report items */
+    .task-item,
+    .report-item {
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+        border-radius: 8px;
+        padding: 12px 0 !important;
+    }
+
+    .task-item:hover,
+    .report-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding-left: 10px !important;
+    }
+
+    .task-item:hover h6,
+    .report-item:hover h6 {
+        color: #0d6efd;
+    }
+
+    .task-item:hover .fa-chevron-right,
+    .report-item:hover .fa-chevron-right {
+        transform: translateX(3px);
+        transition: transform 0.3s ease;
+    }
+
+    /* Active state */
+    .task-item:active,
+    .report-item:active {
+        transform: translateX(2px);
+    }
+</style>
+@endpush
 @endsection

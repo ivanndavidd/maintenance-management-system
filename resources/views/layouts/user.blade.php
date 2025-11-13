@@ -284,6 +284,13 @@
                 <span>My Work Reports</span>
             </a>
 
+            <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 10px 20px;">
+
+            <a href="{{ route('user.help.index') }}" class="{{ request()->routeIs('user.help.*') ? 'active' : '' }}">
+                <i class="fas fa-question-circle"></i>
+                <span>Help & Support</span>
+            </a>
+
             <a href="{{ route('profile.index') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
                 <i class="fas fa-user"></i>
                 <span>My Profile</span>
