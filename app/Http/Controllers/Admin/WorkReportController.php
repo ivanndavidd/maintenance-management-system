@@ -53,7 +53,32 @@ class WorkReportController extends Controller
             $query->whereDate('work_start', '<=', $request->date_to);
         }
 
-        $reports = $query->latest()->paginate(15);
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        // Validate sort columns
+        $allowedSortColumns = [
+            'report_code',
+            'work_start',
+            'work_end',
+            'machine_condition',
+            'status',
+            'created_at'
+        ];
+
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
+
+        // Apply sorting
+        $query->orderBy($sortBy, $sortOrder);
+
+        $reports = $query->paginate(15);
 
         // Get filter options
         $users = User::role(['user', 'admin'])

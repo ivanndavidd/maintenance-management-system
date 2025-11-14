@@ -90,8 +90,19 @@
                         </select>
                     </div>
 
+                    <!-- Overdue Filter -->
+                    <div class="col-md-1">
+                        <label class="form-label">Overdue</label>
+                        <select name="overdue" class="form-select">
+                            <option value="">All</option>
+                            <option value="1" {{ request('overdue') == '1' ? 'selected' : '' }}>
+                                Yes
+                            </option>
+                        </select>
+                    </div>
+
                     <!-- Machine Filter -->
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Machine</label>
                         <select name="machine" class="form-select">
                             <option value="">All Machines</option>
@@ -222,14 +233,86 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Job Code</th>
-                            <th>Title</th>
+                            <th>
+                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'job_code',
+                                    'sort_order' => request('sort_by') == 'job_code' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Job Code
+                                    @if(request('sort_by') == 'job_code')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'title',
+                                    'sort_order' => request('sort_by') == 'title' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Title
+                                    @if(request('sort_by') == 'title')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Machine</th>
-                            <th>Type</th>
-                            <th>Priority</th>
+                            <th>
+                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'type',
+                                    'sort_order' => request('sort_by') == 'type' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Type
+                                    @if(request('sort_by') == 'type')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'priority',
+                                    'sort_order' => request('sort_by') == 'priority' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Priority
+                                    @if(request('sort_by') == 'priority')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Assigned To</th>
-                            <th>Status</th>
-                            <th>Scheduled</th>
+                            <th>
+                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'status',
+                                    'sort_order' => request('sort_by') == 'status' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Status
+                                    @if(request('sort_by') == 'status')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'scheduled_date',
+                                    'sort_order' => request('sort_by') == 'scheduled_date' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Scheduled
+                                    @if(request('sort_by') == 'scheduled_date')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -279,7 +362,52 @@
                             </td>
                             <td>
                                 @if($job->scheduled_date)
-                                    <small>{{ $job->scheduled_date->format('d M Y') }}</small>
+                                    @php
+                                        $now = now();
+                                        $scheduledDate = $job->scheduled_date;
+                                        $diffInDays = (int) $now->diffInDays($scheduledDate, false);
+                                        $isOverdue = $job->isOverdue();
+                                        $isNearDeadline = !$isOverdue && $diffInDays >= 0 && $diffInDays <= 3;
+
+                                        if ($isOverdue) {
+                                            $daysLate = abs($diffInDays);
+                                            $tooltipText = 'Overdue by ' . $daysLate . ' day' . ($daysLate != 1 ? 's' : '') . ' (Since ' . $scheduledDate->format('d M Y') . ')';
+                                            $badgeClass = 'bg-danger';
+                                            $iconClass = 'fa-exclamation-circle';
+                                        } elseif ($isNearDeadline) {
+                                            $tooltipText = $diffInDays . ' day' . ($diffInDays != 1 ? 's' : '') . ' remaining until deadline';
+                                            $badgeClass = 'bg-warning';
+                                            $iconClass = 'fa-clock';
+                                        } else {
+                                            $tooltipText = $diffInDays . ' day' . ($diffInDays != 1 ? 's' : '') . ' remaining';
+                                            $badgeClass = '';
+                                            $iconClass = '';
+                                        }
+                                    @endphp
+                                    <div class="d-flex align-items-center">
+                                        <small>{{ $job->scheduled_date->format('d M Y') }}</small>
+                                        @if($isOverdue || $isNearDeadline)
+                                            <span class="badge {{ $badgeClass }} ms-2"
+                                                  data-bs-toggle="tooltip"
+                                                  data-bs-placement="top"
+                                                  title="{{ $tooltipText }}">
+                                                <i class="fas {{ $iconClass }}"></i>
+                                                @if($isOverdue)
+                                                    {{ abs($diffInDays) }}d late
+                                                @else
+                                                    {{ $diffInDays }}d left
+                                                @endif
+                                            </span>
+                                        @else
+                                            <span class="text-muted ms-2"
+                                                  data-bs-toggle="tooltip"
+                                                  data-bs-placement="top"
+                                                  title="{{ $tooltipText }}"
+                                                  style="cursor: help;">
+                                                <i class="fas fa-info-circle"></i>
+                                            </span>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
@@ -389,7 +517,7 @@
                     Showing {{ $jobs->firstItem() }} to {{ $jobs->lastItem() }} of {{ $jobs->total() }} jobs
                 </div>
                 <div>
-                    {{ $jobs->links() }}
+                    {{ $jobs->appends(request()->except('page'))->links() }}
                 </div>
             </div>
         </div>
@@ -401,5 +529,51 @@
 .opacity-25 {
     opacity: 0.25;
 }
+
+/* Sortable table headers */
+.table thead th a {
+    display: block;
+    width: 100%;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.table thead th a:hover {
+    color: #0d6efd !important;
+}
+
+.table thead th a i.fa-sort {
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+}
+
+.table thead th a:hover i.fa-sort {
+    opacity: 0.6;
+}
+
+.table thead th a i.fa-sort-up,
+.table thead th a i.fa-sort-down {
+    color: #0d6efd;
+}
+
+/* Deadline badges */
+.badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.badge i {
+    font-size: 0.7rem;
+}
 </style>
+
+<script>
+// Initialize Bootstrap tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
 @endsection

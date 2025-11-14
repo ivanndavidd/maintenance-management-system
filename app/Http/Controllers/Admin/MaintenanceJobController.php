@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\MaintenanceJob;
 use App\Models\Machine;
 use App\Models\User;
+use App\Models\JobCompletionLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class MaintenanceJobController extends Controller
 {
@@ -62,7 +64,30 @@ class MaintenanceJobController extends Controller
             $query->whereDate('scheduled_date', '<=', $request->date_to);
         }
 
-        $jobs = $query->latest()->paginate(15);
+        // Overdue filter
+        if ($request->has('overdue') && $request->overdue == '1') {
+            $query->where('status', '!=', 'completed')
+                  ->whereNotNull('scheduled_date')
+                  ->whereDate('scheduled_date', '<', now());
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        $allowedSortColumns = ['job_code', 'title', 'type', 'priority', 'status', 'scheduled_date', 'created_at'];
+
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
+
+        $query->orderBy($sortBy, $sortOrder);
+
+        $jobs = $query->paginate(15);
 
         // Get filter options
         $machines = Machine::orderBy('name')->get();
@@ -113,16 +138,30 @@ class MaintenanceJobController extends Controller
             'scheduled_date' => ['nullable', 'date'],
             'estimated_duration' => ['nullable', 'integer', 'min:1'],
             'notes' => ['nullable', 'string'],
+            'is_recurring' => ['nullable', 'boolean'],
+            'recurrence_type' => ['nullable', 'required_if:is_recurring,1', 'in:daily,weekly,monthly,yearly'],
+            'recurrence_interval' => ['nullable', 'required_if:is_recurring,1', 'integer', 'min:1'],
+            'recurrence_end_date' => ['nullable', 'date', 'after:scheduled_date'],
         ]);
 
         // Add created_by
         $validated['created_by'] = auth()->id();
 
+        // Handle recurring flag
+        $validated['is_recurring'] = $request->has('is_recurring') && $request->is_recurring == '1';
+
+        // Clear recurring fields if not recurring
+        if (!$validated['is_recurring']) {
+            $validated['recurrence_type'] = null;
+            $validated['recurrence_interval'] = null;
+            $validated['recurrence_end_date'] = null;
+        }
+
         $job = MaintenanceJob::create($validated);
 
         return redirect()
             ->route('admin.jobs.index')
-            ->with('success', 'Maintenance job created successfully!');
+            ->with('success', 'Maintenance job created successfully!' . ($validated['is_recurring'] ? ' Recurring jobs will be created automatically.' : ''));
     }
 
     /**
@@ -241,6 +280,9 @@ class MaintenanceJobController extends Controller
 
         if ($validated['status'] === 'completed' && !$job->completed_at) {
             $validated['completed_at'] = now();
+
+            // Log job completion for KPI tracking
+            $this->logJobCompletion($job, $validated['completed_at']);
         }
 
         $job->update($validated);
@@ -280,10 +322,50 @@ class MaintenanceJobController extends Controller
 
         if ($validated['status'] === 'completed' && !$job->completed_at) {
             $updates['completed_at'] = now();
+
+            // Log job completion for KPI tracking
+            $this->logJobCompletion($job, $updates['completed_at']);
         }
 
         $job->update($updates);
 
         return redirect()->back()->with('success', 'Job status updated successfully!');
+    }
+
+    /**
+     * Log job completion for KPI tracking
+     */
+    private function logJobCompletion(MaintenanceJob $job, $completedAt)
+    {
+        if (!$job->scheduled_date || !$job->assigned_to) {
+            return;
+        }
+
+        $scheduledDate = Carbon::parse($job->scheduled_date);
+        $completionDate = Carbon::parse($completedAt);
+        $daysLate = $scheduledDate->diffInDays($completionDate, false);
+
+        // Determine completion status
+        if ($daysLate > 0) {
+            $status = 'late';
+        } elseif ($daysLate < 0) {
+            $status = 'early';
+            $daysLate = abs($daysLate) * -1; // Keep negative for early
+        } else {
+            $status = 'on_time';
+        }
+
+        JobCompletionLog::create([
+            'job_id' => $job->id,
+            'user_id' => $job->assigned_to,
+            'scheduled_date' => $job->scheduled_date,
+            'completed_at' => $completedAt,
+            'days_late' => $daysLate,
+            'completion_status' => $status,
+            'job_code' => $job->job_code,
+            'job_title' => $job->title,
+            'job_type' => $job->type,
+            'priority' => $job->priority,
+        ]);
     }
 }

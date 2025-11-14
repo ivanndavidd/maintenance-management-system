@@ -177,14 +177,62 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Report Code</th>
+                            <th>
+                                <a href="{{ route('admin.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'report_code',
+                                    'sort_order' => request('sort_by') == 'report_code' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Report Code
+                                    @if(request('sort_by') == 'report_code')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Job</th>
                             <th>Machine</th>
                             <th>Submitted By</th>
-                            <th>Work Date</th>
+                            <th>
+                                <a href="{{ route('admin.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'work_start',
+                                    'sort_order' => request('sort_by') == 'work_start' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Work Date
+                                    @if(request('sort_by') == 'work_start')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Duration</th>
-                            <th>Condition</th>
-                            <th>Status</th>
+                            <th>
+                                <a href="{{ route('admin.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'machine_condition',
+                                    'sort_order' => request('sort_by') == 'machine_condition' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Condition
+                                    @if(request('sort_by') == 'machine_condition')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('admin.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'status',
+                                    'sort_order' => request('sort_by') == 'status' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Status
+                                    @if(request('sort_by') == 'status')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -314,7 +362,7 @@
                     Showing {{ $reports->firstItem() }} to {{ $reports->lastItem() }} of {{ $reports->total() }} reports
                 </div>
                 <div>
-                    {{ $reports->links() }}
+                    {{ $reports->appends(request()->except('page'))->links() }}
                 </div>
             </div>
         </div>
@@ -325,6 +373,32 @@
 <style>
 .opacity-25 {
     opacity: 0.25;
+}
+
+/* Sortable table headers */
+.table thead th a {
+    display: block;
+    width: 100%;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.table thead th a:hover {
+    color: #0d6efd !important;
+}
+
+.table thead th a i.fa-sort {
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+}
+
+.table thead th a:hover i.fa-sort {
+    opacity: 0.6;
+}
+
+.table thead th a i.fa-sort-up,
+.table thead th a i.fa-sort-down {
+    color: #0d6efd;
 }
 </style>
 @endsection

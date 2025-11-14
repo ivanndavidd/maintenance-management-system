@@ -87,6 +87,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Job completion logs for KPI tracking
+     */
+    public function jobCompletionLogs()
+    {
+        return $this->hasMany(JobCompletionLog::class, 'user_id');
+    }
+
+    /**
      * ACCESSORS & MUTATORS
      */
 

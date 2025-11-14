@@ -214,6 +214,21 @@ Route::middleware(['auth'])->group(function () {
                 App\Http\Controllers\Admin\HelpArticleController::class,
                 'togglePublish',
             ])->name('help-articles.toggle-publish');
+
+            // KPI Management
+            Route::prefix('kpi')
+                ->name('kpi.')
+                ->group(function () {
+                    Route::get('/', [
+                        App\Http\Controllers\Admin\KpiController::class,
+                        'index',
+                    ])->name('index');
+
+                    Route::get('/{user}', [
+                        App\Http\Controllers\Admin\KpiController::class,
+                        'show',
+                    ])->name('show');
+                });
         });
 
     // User Routes

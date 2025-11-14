@@ -233,16 +233,108 @@
                             <!-- Scheduled Date -->
                             <div class="col-md-12 mb-3">
                                 <label for="scheduled_date" class="form-label">Scheduled Date</label>
-                                <input type="date" 
-                                       class="form-control @error('scheduled_date') is-invalid @enderror" 
-                                       id="scheduled_date" 
-                                       name="scheduled_date" 
+                                <input type="date"
+                                       class="form-control @error('scheduled_date') is-invalid @enderror"
+                                       id="scheduled_date"
+                                       name="scheduled_date"
                                        value="{{ old('scheduled_date') }}"
                                        min="{{ date('Y-m-d') }}">
                                 @error('scheduled_date')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                                 <small class="text-muted">Target completion date</small>
+                            </div>
+                        </div>
+
+                        <!-- Recurring Settings (Only for Preventive & Inspection) -->
+                        <div class="row mb-4" id="recurring-section" style="display: none;">
+                            <div class="col-12">
+                                <h6 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-redo"></i> Recurring Schedule
+                                </h6>
+                            </div>
+
+                            <!-- Enable Recurring -->
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="is_recurring"
+                                           name="is_recurring"
+                                           value="1"
+                                           {{ old('is_recurring') ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_recurring">
+                                        <strong>Enable Recurring Job</strong>
+                                        <small class="d-block text-muted">Automatically create new jobs based on schedule</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Recurring Options (Hidden until enabled) -->
+                            <div id="recurring-options" style="display: none;">
+                                <!-- Recurrence Type -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="recurrence_type" class="form-label">Repeat Every <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('recurrence_type') is-invalid @enderror"
+                                            id="recurrence_type"
+                                            name="recurrence_type">
+                                        <option value="">Select Frequency</option>
+                                        <option value="daily" {{ old('recurrence_type') == 'daily' ? 'selected' : '' }}>
+                                            Daily
+                                        </option>
+                                        <option value="weekly" {{ old('recurrence_type') == 'weekly' ? 'selected' : '' }}>
+                                            Weekly
+                                        </option>
+                                        <option value="monthly" {{ old('recurrence_type') == 'monthly' ? 'selected' : '' }}>
+                                            Monthly
+                                        </option>
+                                        <option value="yearly" {{ old('recurrence_type') == 'yearly' ? 'selected' : '' }}>
+                                            Yearly
+                                        </option>
+                                    </select>
+                                    @error('recurrence_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- Recurrence Interval -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="recurrence_interval" class="form-label">Interval <span class="text-danger">*</span></label>
+                                    <input type="number"
+                                           class="form-control @error('recurrence_interval') is-invalid @enderror"
+                                           id="recurrence_interval"
+                                           name="recurrence_interval"
+                                           value="{{ old('recurrence_interval', 1) }}"
+                                           min="1"
+                                           placeholder="1">
+                                    @error('recurrence_interval')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="text-muted" id="interval-hint">e.g., 1 for every day/week/month/year</small>
+                                </div>
+
+                                <!-- Recurrence End Date (Optional) -->
+                                <div class="col-md-12 mb-3">
+                                    <label for="recurrence_end_date" class="form-label">End Date (Optional)</label>
+                                    <input type="date"
+                                           class="form-control @error('recurrence_end_date') is-invalid @enderror"
+                                           id="recurrence_end_date"
+                                           name="recurrence_end_date"
+                                           value="{{ old('recurrence_end_date') }}"
+                                           min="{{ date('Y-m-d') }}">
+                                    @error('recurrence_end_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="text-muted">Leave empty for indefinite recurrence</small>
+                                </div>
+
+                                <!-- Recurring Summary -->
+                                <div class="col-md-12">
+                                    <div class="alert alert-info" id="recurring-summary">
+                                        <i class="fas fa-info-circle"></i> <strong>Summary:</strong>
+                                        <span id="summary-text">Configure recurring settings above</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -364,7 +456,7 @@ document.getElementById('machine_id').addEventListener('change', function() {
     const machineText = selectedOption.text;
     const typeSelect = document.getElementById('type');
     const titleInput = document.getElementById('title');
-    
+
     if (this.value && typeSelect.value && !titleInput.value) {
         const type = typeSelect.options[typeSelect.selectedIndex].text;
         titleInput.value = `${type} - ${machineText}`;
@@ -376,10 +468,130 @@ document.getElementById('type').addEventListener('change', function() {
     const selectedOption = machineSelect.options[machineSelect.selectedIndex];
     const machineText = selectedOption.text;
     const titleInput = document.getElementById('title');
-    
+
     if (machineSelect.value && this.value && !titleInput.value) {
         const type = this.options[this.selectedIndex].text;
         titleInput.value = `${type} - ${machineText}`;
+    }
+
+    // Show/hide recurring section based on job type
+    toggleRecurringSection(this.value);
+});
+
+// Show/hide recurring section based on job type
+function toggleRecurringSection(jobType) {
+    const recurringSection = document.getElementById('recurring-section');
+
+    if (jobType === 'preventive' || jobType === 'inspection') {
+        recurringSection.style.display = 'block';
+    } else {
+        recurringSection.style.display = 'none';
+        // Reset recurring checkbox
+        document.getElementById('is_recurring').checked = false;
+        document.getElementById('recurring-options').style.display = 'none';
+    }
+}
+
+// Toggle recurring options visibility
+document.getElementById('is_recurring').addEventListener('change', function() {
+    const recurringOptions = document.getElementById('recurring-options');
+
+    if (this.checked) {
+        recurringOptions.style.display = 'block';
+        // Make recurrence_type required when recurring is enabled
+        document.getElementById('recurrence_type').setAttribute('required', 'required');
+        document.getElementById('recurrence_interval').setAttribute('required', 'required');
+    } else {
+        recurringOptions.style.display = 'none';
+        // Remove required when disabled
+        document.getElementById('recurrence_type').removeAttribute('required');
+        document.getElementById('recurrence_interval').removeAttribute('required');
+    }
+
+    updateRecurringSummary();
+});
+
+// Update interval hint based on recurrence type
+document.getElementById('recurrence_type').addEventListener('change', function() {
+    const intervalHint = document.getElementById('interval-hint');
+    const type = this.value;
+
+    switch(type) {
+        case 'daily':
+            intervalHint.textContent = 'e.g., 1 for every day, 2 for every 2 days';
+            break;
+        case 'weekly':
+            intervalHint.textContent = 'e.g., 1 for every week, 2 for every 2 weeks';
+            break;
+        case 'monthly':
+            intervalHint.textContent = 'e.g., 1 for every month, 3 for every 3 months';
+            break;
+        case 'yearly':
+            intervalHint.textContent = 'e.g., 1 for every year, 2 for every 2 years';
+            break;
+    }
+
+    updateRecurringSummary();
+});
+
+document.getElementById('recurrence_interval').addEventListener('input', updateRecurringSummary);
+document.getElementById('recurrence_end_date').addEventListener('change', updateRecurringSummary);
+
+// Update recurring summary
+function updateRecurringSummary() {
+    const isRecurring = document.getElementById('is_recurring').checked;
+    const type = document.getElementById('recurrence_type').value;
+    const interval = document.getElementById('recurrence_interval').value;
+    const endDate = document.getElementById('recurrence_end_date').value;
+    const summaryText = document.getElementById('summary-text');
+
+    if (!isRecurring) {
+        summaryText.textContent = 'Recurring is disabled';
+        return;
+    }
+
+    if (!type || !interval) {
+        summaryText.textContent = 'Configure recurring settings above';
+        return;
+    }
+
+    let summary = `This job will repeat every ${interval > 1 ? interval + ' ' : ''}`;
+
+    switch(type) {
+        case 'daily':
+            summary += interval > 1 ? 'days' : 'day';
+            break;
+        case 'weekly':
+            summary += interval > 1 ? 'weeks' : 'week';
+            break;
+        case 'monthly':
+            summary += interval > 1 ? 'months' : 'month';
+            break;
+        case 'yearly':
+            summary += interval > 1 ? 'years' : 'year';
+            break;
+    }
+
+    if (endDate) {
+        summary += ` until ${new Date(endDate).toLocaleDateString()}`;
+    } else {
+        summary += ' indefinitely';
+    }
+
+    summaryText.textContent = summary;
+}
+
+// Initialize on page load (for old values)
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('type');
+    if (typeSelect.value) {
+        toggleRecurringSection(typeSelect.value);
+    }
+
+    const isRecurringCheckbox = document.getElementById('is_recurring');
+    if (isRecurringCheckbox.checked) {
+        document.getElementById('recurring-options').style.display = 'block';
+        updateRecurringSummary();
     }
 });
 </script>

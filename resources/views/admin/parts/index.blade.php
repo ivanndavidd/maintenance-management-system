@@ -2,51 +2,149 @@
 
 @section('content')
 <div class="container-fluid">
+    <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>🔩 Parts & Inventory</h2>
-        <a href="{{ route('admin.parts.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Add New Part
-        </a>
+        <div>
+            <h2><i class="fas fa-cogs"></i> Parts & Inventory</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Parts</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ route('admin.parts.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Part
+            </a>
+        </div>
     </div>
 
+    <!-- Success/Error Messages -->
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <!-- Filters Card -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.parts.index') }}">
+                <div class="row g-3">
+                    <!-- Search -->
+                    <div class="col-md-4">
+                        <label class="form-label">Search</label>
+                        <input type="text" name="search" class="form-control"
+                               placeholder="Name, code, supplier..."
+                               value="{{ request('search') }}">
+                    </div>
+
+                    <!-- Stock Status Filter -->
+                    <div class="col-md-4">
+                        <label class="form-label">Stock Status</label>
+                        <select name="stock_status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="available" {{ request('stock_status') == 'available' ? 'selected' : '' }}>
+                                Available
+                            </option>
+                            <option value="low_stock" {{ request('stock_status') == 'low_stock' ? 'selected' : '' }}>
+                                Low Stock
+                            </option>
+                            <option value="out_of_stock" {{ request('stock_status') == 'out_of_stock' ? 'selected' : '' }}>
+                                Out of Stock
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Location Filter -->
+                    <div class="col-md-4">
+                        <label class="form-label">Location</label>
+                        <select name="location" class="form-select">
+                            <option value="">All Locations</option>
+                            @foreach($locations as $location)
+                                <option value="{{ $location }}" {{ request('location') == $location ? 'selected' : '' }}>
+                                    {{ $location }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                    <a href="{{ route('admin.parts.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-primary">
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary shadow-sm">
                 <div class="card-body">
-                    <h6 class="text-muted">Total Parts</h6>
-                    <h3>{{ $stats['total_parts'] }}</h3>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Parts</h6>
+                            <h3 class="mb-0 text-primary">{{ $stats['total_parts'] }}</h3>
+                        </div>
+                        <i class="fas fa-boxes fa-2x text-primary opacity-25"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-success">
+        <div class="col-md-3 mb-3">
+            <div class="card border-success shadow-sm">
                 <div class="card-body">
-                    <h6 class="text-muted">Total Value</h6>
-                    <h3>Rp {{ number_format($stats['total_value'], 0, ',', '.') }}</h3>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Value</h6>
+                            <h3 class="mb-0 text-success">Rp {{ number_format($stats['total_value'], 0, ',', '.') }}</h3>
+                        </div>
+                        <i class="fas fa-dollar-sign fa-2x text-success opacity-25"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-warning">
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning shadow-sm">
                 <div class="card-body">
-                    <h6 class="text-muted">Low Stock</h6>
-                    <h3 class="text-warning">{{ $stats['low_stock'] }}</h3>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Low Stock</h6>
+                            <h3 class="mb-0 text-warning">{{ $stats['low_stock'] }}</h3>
+                        </div>
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning opacity-25"></i>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-danger">
+        <div class="col-md-3 mb-3">
+            <div class="card border-danger shadow-sm">
                 <div class="card-body">
-                    <h6 class="text-muted">Out of Stock</h6>
-                    <h3 class="text-danger">{{ $stats['out_of_stock'] }}</h3>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Out of Stock</h6>
+                            <h3 class="mb-0 text-danger">{{ $stats['out_of_stock'] }}</h3>
+                        </div>
+                        <i class="fas fa-times-circle fa-2x text-danger opacity-25"></i>
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,23 +159,95 @@
     @endif
 
     <!-- Parts Table -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Parts List</h5>
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="fas fa-list"></i> Parts List ({{ $parts->total() }} parts)</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Unit</th>
-                            <th>Stock</th>
+                            <th>
+                                <a href="{{ route('admin.parts.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'code',
+                                    'sort_order' => request('sort_by') == 'code' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Code
+                                    @if(request('sort_by') == 'code')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('admin.parts.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'name',
+                                    'sort_order' => request('sort_by') == 'name' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Name
+                                    @if(request('sort_by') == 'name')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('admin.parts.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'unit',
+                                    'sort_order' => request('sort_by') == 'unit' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Unit
+                                    @if(request('sort_by') == 'unit')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('admin.parts.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'stock_quantity',
+                                    'sort_order' => request('sort_by') == 'stock_quantity' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Stock
+                                    @if(request('sort_by') == 'stock_quantity')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Status</th>
-                            <th>Unit Cost</th>
+                            <th>
+                                <a href="{{ route('admin.parts.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'unit_cost',
+                                    'sort_order' => request('sort_by') == 'unit_cost' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Unit Cost
+                                    @if(request('sort_by') == 'unit_cost')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Total Value</th>
-                            <th>Location</th>
+                            <th>
+                                <a href="{{ route('admin.parts.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'location',
+                                    'sort_order' => request('sort_by') == 'location' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Location
+                                    @if(request('sort_by') == 'location')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -142,12 +312,52 @@
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <!-- Pagination -->
-            <div class="mt-3">
-                {{ $parts->links() }}
+        @if($parts->hasPages())
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    Showing {{ $parts->firstItem() }} to {{ $parts->lastItem() }} of {{ $parts->total() }} parts
+                </div>
+                <div>
+                    {{ $parts->appends(request()->except('page'))->links() }}
+                </div>
             </div>
         </div>
+        @endif
     </div>
 </div>
+
+<style>
+.opacity-25 {
+    opacity: 0.25;
+}
+
+/* Sortable table headers */
+.table thead th a {
+    display: block;
+    width: 100%;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.table thead th a:hover {
+    color: #0d6efd !important;
+}
+
+.table thead th a i.fa-sort {
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+}
+
+.table thead th a:hover i.fa-sort {
+    opacity: 0.6;
+}
+
+.table thead th a i.fa-sort-up,
+.table thead th a i.fa-sort-down {
+    color: #0d6efd;
+}
+</style>
 @endsection

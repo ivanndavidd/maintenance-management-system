@@ -25,6 +25,11 @@ class MaintenanceJob extends Model
         'estimated_duration',
         'actual_duration',
         'notes',
+        'is_recurring',
+        'recurrence_type',
+        'recurrence_interval',
+        'recurrence_end_date',
+        'parent_job_id',
     ];
 
     protected $casts = [
@@ -33,6 +38,9 @@ class MaintenanceJob extends Model
         'completed_at' => 'datetime',
         'estimated_duration' => 'integer',
         'actual_duration' => 'integer',
+        'is_recurring' => 'boolean',
+        'recurrence_interval' => 'integer',
+        'recurrence_end_date' => 'date',
     ];
 
     /**
@@ -66,6 +74,16 @@ class MaintenanceJob extends Model
     public function workReports()
     {
         return $this->hasMany(WorkReport::class, 'job_id');
+    }
+
+    public function parentJob()
+    {
+        return $this->belongsTo(MaintenanceJob::class, 'parent_job_id');
+    }
+
+    public function childJobs()
+    {
+        return $this->hasMany(MaintenanceJob::class, 'parent_job_id');
     }
 
     /**

@@ -180,13 +180,73 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Code</th>
-                            <th>Name</th>
+                            <th>
+                                <a href="{{ route('admin.machines.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'code',
+                                    'sort_order' => request('sort_by') == 'code' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Code
+                                    @if(request('sort_by') == 'code')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('admin.machines.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'name',
+                                    'sort_order' => request('sort_by') == 'name' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Name
+                                    @if(request('sort_by') == 'name')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Category</th>
                             <th>Department</th>
-                            <th>Location</th>
-                            <th>Status</th>
-                            <th>Next Maintenance</th>
+                            <th>
+                                <a href="{{ route('admin.machines.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'location',
+                                    'sort_order' => request('sort_by') == 'location' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Location
+                                    @if(request('sort_by') == 'location')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('admin.machines.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'status',
+                                    'sort_order' => request('sort_by') == 'status' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Status
+                                    @if(request('sort_by') == 'status')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('admin.machines.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                    'sort_by' => 'next_maintenance_date',
+                                    'sort_order' => request('sort_by') == 'next_maintenance_date' && request('sort_order') == 'asc' ? 'desc' : 'asc'
+                                ])) }}" class="text-decoration-none text-dark">
+                                    Next Maintenance
+                                    @if(request('sort_by') == 'next_maintenance_date')
+                                        <i class="fas fa-sort-{{ request('sort_order') == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort text-muted"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -338,7 +398,7 @@
                     Showing {{ $machines->firstItem() }} to {{ $machines->lastItem() }} of {{ $machines->total() }} machines
                 </div>
                 <div>
-                    {{ $machines->links() }}
+                    {{ $machines->appends(request()->except('page'))->links() }}
                 </div>
             </div>
         </div>
@@ -349,6 +409,32 @@
 <style>
 .opacity-25 {
     opacity: 0.25;
+}
+
+/* Sortable table headers */
+.table thead th a {
+    display: block;
+    width: 100%;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.table thead th a:hover {
+    color: #0d6efd !important;
+}
+
+.table thead th a i.fa-sort {
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+}
+
+.table thead th a:hover i.fa-sort {
+    opacity: 0.6;
+}
+
+.table thead th a i.fa-sort-up,
+.table thead th a i.fa-sort-down {
+    color: #0d6efd;
 }
 </style>
 @endsection

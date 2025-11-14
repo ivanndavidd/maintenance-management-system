@@ -43,7 +43,36 @@ class MachineController extends Controller
             $query->where('category_id', $request->category);
         }
 
-        $machines = $query->latest()->paginate(15);
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        // Validate sort columns
+        $allowedSortColumns = [
+            'code',
+            'name',
+            'location',
+            'status',
+            'next_maintenance_date',
+            'created_at'
+        ];
+
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
+
+        // Apply sorting
+        if ($sortBy === 'created_at') {
+            $query->orderBy('created_at', $sortOrder);
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $machines = $query->paginate(15);
 
         // Get filter options
         $departments = Department::all();

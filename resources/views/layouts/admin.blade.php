@@ -78,6 +78,10 @@
 
                     <hr class="text-white">
 
+                    <a href="{{ route('admin.kpi.index') }}" class="{{ request()->routeIs('admin.kpi.*') ? 'active' : '' }}">
+                        <i class="fas fa-chart-line"></i> KPI Management
+                    </a>
+
                     <a href="{{ route('admin.help-articles.index') }}" class="{{ request()->routeIs('admin.help-articles.*') ? 'active' : '' }}">
                         <i class="fas fa-question-circle"></i> Help Articles
                     </a>
