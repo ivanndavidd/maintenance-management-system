@@ -220,10 +220,17 @@
             <!-- Body -->
             <div class="pending-body">
                 <!-- Success Message -->
+                @if(session('success'))
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>{{ session('success') }}</strong>
+                </div>
+                @else
                 <div class="alert alert-success">
                     <i class="fas fa-check-circle"></i>
                     <strong>Registration Successful!</strong> Your account has been created.
                 </div>
+                @endif
 
                 <!-- User Info -->
                 <div class="user-info">

@@ -8,8 +8,8 @@
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome from jsDelivr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     
     <style>
         :root {
@@ -282,6 +282,45 @@
             <a href="{{ route('user.reports.index') }}" class="{{ request()->routeIs('user.reports.*') ? 'active' : '' }}">
                 <i class="fas fa-file-alt"></i>
                 <span>My Work Reports</span>
+            </a>
+
+            <a href="{{ route('user.assigned-incidents.index') }}" class="{{ request()->routeIs('user.assigned-incidents.*') ? 'active' : '' }}">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Assigned Incidents</span>
+                @php
+                    $pendingIncidents = \App\Models\IncidentReport::whereHas('operators', function($q) {
+                        $q->where('user_id', auth()->id());
+                    })->whereNull('completed_by')->count();
+                @endphp
+                @if($pendingIncidents > 0)
+                    <span class="badge bg-danger ms-auto">{{ $pendingIncidents }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('user.corrective-maintenance.index') }}" class="{{ request()->routeIs('user.corrective-maintenance.*') ? 'active' : '' }}">
+                <i class="fas fa-tools"></i>
+                <span>Corrective Maintenance</span>
+                @php
+                    $pendingCM = \App\Models\CorrectiveMaintenanceRequest::whereHas('technicians', function($q) {
+                        $q->where('user_id', auth()->id());
+                    })->where('status', 'in_progress')->count();
+                @endphp
+                @if($pendingCM > 0)
+                    <span class="badge bg-warning ms-auto">{{ $pendingCM }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('user.stock-opname.index') }}" class="{{ request()->routeIs('user.stock-opname.*') ? 'active' : '' }}">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Stock Opname</span>
+                @php
+                    $pendingOpname = \App\Models\StockOpnameSchedule::whereHas('userAssignments', function($q) {
+                        $q->where('user_id', auth()->id());
+                    })->where('status', 'active')->count();
+                @endphp
+                @if($pendingOpname > 0)
+                    <span class="badge bg-info ms-auto">{{ $pendingOpname }}</span>
+                @endif
             </a>
 
             <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 10px 20px;">

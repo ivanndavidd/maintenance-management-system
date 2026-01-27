@@ -12,8 +12,8 @@ class MaintenanceJobSeeder extends Seeder
 {
     public function run(): void
     {
-        // Get users with 'user' role (operators)
-        $operators = User::role('user')->pluck('id')->toArray();
+        // Get users with 'staff_maintenance' role (operators)
+        $operators = User::role('staff_maintenance')->pluck('id')->toArray();
         $admin = User::role('admin')->first();
         
         if (empty($operators)) {
@@ -23,7 +23,7 @@ class MaintenanceJobSeeder extends Seeder
                 'email' => 'operator@warehouse.com',
                 'password' => bcrypt('password123'),
             ]);
-            $operator->assignRole('user');
+            $operator->assignRole('staff_maintenance');
             $operators = [$operator->id];
         }
 

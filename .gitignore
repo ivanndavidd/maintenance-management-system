@@ -1,4 +1,6 @@
+# ============================================
 # Laravel specific
+# ============================================
 /vendor/
 /node_modules/
 /public/hot
@@ -17,13 +19,20 @@
 /storage/logs/*
 !/storage/logs/.gitignore
 
+# ============================================
 # Environment & Sensitive Files
+# ============================================
 .env
 .env.backup
 .env.production
+.env.local
+.env.*.local
 .env.*.php
 .env.php
 
+# ============================================
+# IDE & Editors
+# ============================================
 # PHP Storm / IntelliJ IDEA
 .idea/
 *.iml
@@ -45,6 +54,9 @@ nbproject/
 .buildpath
 .settings/
 
+# ============================================
+# Operating System Files
+# ============================================
 # Mac OS
 .DS_Store
 .AppleDouble
@@ -59,6 +71,7 @@ ehthumbs_vista.db
 *.stackdump
 [Dd]esktop.ini
 $RECYCLE.BIN/
+nul
 
 # Linux
 *~
@@ -67,57 +80,81 @@ $RECYCLE.BIN/
 .Trash-*
 .nfs*
 
+# ============================================
 # Laravel Mix / Vite
+# ============================================
 /public/css/
 /public/js/
 /public/mix-manifest.json
 /public/build/
 mix-manifest.json
 
-# NPM / Yarn
+# ============================================
+# NPM / Yarn / Package Managers
+# ============================================
 npm-debug.log
 yarn-error.log
 package-lock.json
 yarn.lock
 
+# ============================================
 # Composer
+# ============================================
 composer.phar
 composer.lock
 auth.json
 
-# Laravel specific logs
+# ============================================
+# Logging
+# ============================================
 *.log
 
+# ============================================
 # PHPUnit / Testing
+# ============================================
 .phpunit.result.cache
 .phpunit.cache
 coverage/
 phpunit.xml
 
-# Backup files
+# ============================================
+# Database Files
+# ============================================
 *.sql
 *.sqlite
 *.sqlite-journal
 database/*.sqlite
 database/*.sqlite-journal
 
-# Temporary files
+# ============================================
+# Temporary & Backup Files
+# ============================================
 *.swp
 *.swo
 *~
+*.bak
+*.tmp
 
-# IDE helper files
+# ============================================
+# IDE Helper Files
+# ============================================
 _ide_helper.php
 _ide_helper_models.php
 .phpstorm.meta.php
 
-# Laravel Telescope (if installed)
+# ============================================
+# Laravel Packages
+# ============================================
+# Telescope
 /public/vendor/telescope/
 
-# Laravel Debugbar (if installed)
+# Debugbar
 .php_cs.cache
 
-# Rocketeer deployment tool
+# ============================================
+# Deployment & DevOps
+# ============================================
+# Rocketeer
 .rocketeer/
 
 # Homestead
@@ -125,26 +162,101 @@ Homestead.yaml
 Homestead.json
 /.vagrant
 
-# Deployment tools
+# Envoy
 Envoy.blade.php
-
-# Documentation
-/docs/_build/
-
-# Cache
-*.cache
-.php-cs-fixer.cache
-
-# Build artifacts
-/build/
-/dist/
-
-# Uploaded files (optional - tergantung kebutuhan)
-# /public/uploads/
-# /storage/app/public/
 
 # Laravel Sail
 docker-compose.override.yml
 
-# Laragon specific (optional)
+# ============================================
+# Cache
+# ============================================
+*.cache
+.php-cs-fixer.cache
+
+# ============================================
+# Build artifacts
+# ============================================
+/build/
+/dist/
+
+# ============================================
+# Claude Code Settings (local only)
+# ============================================
+.claude/
+
+# ============================================
+# Documentation Files (Internal/Development)
+# These are development notes, not needed in repo
+# ============================================
+APPSERVICEPROVIDER_FIX_SUMMARY.md
+ASSET_IMPORT_GUIDE.md
+ASSET_MANAGEMENT_SYSTEM.md
+CARA_CONVERT_DATA.md
+CARA_IMPORT_DATA_ANDA.md
+CARA_IMPORT_SPAREPART.md
+COLUMN_RENAME_SUMMARY.md
+DASHBOARD_FIX_SUMMARY.md
+DEPLOYMENT_GUIDE.md
+DOCKER_DEPLOYMENT_GUIDE.md
+EQUIPMENT_TYPE_UPDATE.md
+FLEXIBLE_SHIFT_HOURS.md
+FORMAT_DATA_FINAL.txt
+HOURLY_SHIFT_SYSTEM_GUIDE.md
+IMPORT_SETUP_GUIDE.md
+INSTALL_LARAVEL_EXCEL.md
+MAPPING_DATA_SPAREPART.md
+MENU_CLEANUP_SUMMARY.md
+MIGRATE_TOOLS_GUIDE.md
+MODAL_OVERLAY_FIX.md
+MULTI_ITEM_PO_SYSTEM.md
+OVERNIGHT_SHIFT_LOGIC.md
+POLYMORPHIC_PURCHASE_ORDER_SYSTEM.md
+PO_FLOW_TRACKING_SYSTEM.md
+REPORTS_ANALYTICS_SYSTEM.md
+SHIFT_BASED_STORAGE_UPDATE.md
+SHIFT_DETAIL_AND_CHANGES.md
+SHIFT_FIX_CONFIRMATION_MODAL.md
+SHIFT_INTEGRATION_EXAMPLE.md
+SHIFT_MANAGEMENT_GUIDE.md
+SHIFT_MANAGEMENT_SUMMARY.md
+STOCK_OPNAME_*.md
+SUNDAY_OVERNIGHT_SHIFT_LOGIC.md
+TABLES_CLEANUP_SUMMARY.md
+TOOLS_FILTER_FEATURE.md
+TOOL_ID_FIX_SUMMARY.md
+
+# ============================================
+# Debug & Test PHP Files (Root level)
+# ============================================
+check_db.php
+debug_*.php
+fix_*.php
+test_*.php
+
+# ============================================
+# Docker (Local Development Only)
+# Keep Dockerfile and docker-compose.yml if deploying
+# Uncomment below if you want to include Docker files
+# ============================================
+# Dockerfile
+# docker-compose.yml
+# docker/
+.env.docker
+
+# ============================================
+# Nginx Config (Development)
+# ============================================
+nginx-public-config.conf
+
+# ============================================
+# Uploaded Files (Optional)
+# Uncomment if you don't want to track uploads
+# ============================================
+# /public/uploads/
+# /storage/app/public/
+
+# ============================================
+# Laragon specific
+# ============================================
 # laragon.conf

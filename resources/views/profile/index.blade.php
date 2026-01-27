@@ -1,4 +1,4 @@
-@extends(auth()->user()->hasRole('admin') || auth()->user()->hasRole('super-admin') ? 'layouts.admin' : 'layouts.user')
+@extends(auth()->user()->hasRole('admin') ? 'layouts.admin' : (auth()->user()->hasRole('pic') ? 'layouts.pic' : 'layouts.user'))
 
 @section('content')
 <div class="container-fluid">

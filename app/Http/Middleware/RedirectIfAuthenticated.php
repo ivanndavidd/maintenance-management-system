@@ -17,10 +17,12 @@ class RedirectIfAuthenticated
                 $user = Auth::guard($guard)->user();
 
                 // Redirect based on role
-                if ($user->hasRole(['admin', 'super-admin'])) {
+                if ($user->hasRole('admin')) {
                     return redirect()->route('admin.dashboard');
-                } elseif ($user->hasRole('user')) {
+                } elseif ($user->hasRole('staff_maintenance')) {
                     return redirect()->route('user.dashboard');
+                } elseif ($user->hasRole('pic')) {
+                    return redirect()->route('pic.dashboard');
                 } else {
                     // No role assigned
                     Auth::logout();

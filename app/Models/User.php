@@ -26,6 +26,7 @@ class User extends Authenticatable
         'department_id',
         'is_active',
         'last_login_at',
+        'email_verified_at',
     ];
 
     /**
@@ -155,11 +156,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Scope to get operators only
+     * Scope to get operators only (staff maintenance)
      */
     public function scopeOperators($query)
     {
-        return $query->role('user');
+        return $query->role('staff_maintenance');
     }
 
     /**
@@ -167,6 +168,6 @@ class User extends Authenticatable
      */
     public function scopeAdmins($query)
     {
-        return $query->role(['admin', 'super-admin']);
+        return $query->role('admin');
     }
 }

@@ -171,63 +171,6 @@
             </div>
         </div>
 
-        <!-- Machines Card -->
-        <div class="col-md-3 mb-3">
-            <div class="card border-success h-100 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-2">Machines</h6>
-                            <h3 class="mb-0 fw-bold">{{ $stats['total_machines'] }}</h3>
-                            <small class="text-success fw-bold">
-                                ✓ {{ $stats['operational_machines'] }} Operational
-                            </small>
-                            <br>
-                            <small class="text-danger fw-bold">
-                                ✗ {{ $stats['breakdown_machines'] }} Breakdown
-                            </small>
-                        </div>
-                        <div class="text-success opacity-25">
-                            <i class="fas fa-cogs fa-3x"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-success text-white">
-                    <a href="{{ route('admin.machines.index') }}" class="text-white text-decoration-none">
-                        View All Machines <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Parts Inventory Card -->
-        <div class="col-md-3 mb-3">
-            <div class="card border-warning h-100 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-2">Parts Inventory</h6>
-                            <h3 class="mb-0 fw-bold">{{ $stats['total_parts'] }}</h3>
-                            <small class="text-warning fw-bold">
-                                ⚠ {{ $stats['low_stock_parts'] }} Low Stock
-                            </small>
-                            <br>
-                            <small class="text-muted">
-                                Value: Rp {{ number_format($stats['total_parts_value'], 0, ',', '.') }}
-                            </small>
-                        </div>
-                        <div class="text-warning opacity-25">
-                            <i class="fas fa-box fa-3x"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-warning text-dark">
-                    <a href="{{ route('admin.parts.index') }}" class="text-dark text-decoration-none">
-                        View Inventory <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
 
         <!-- Operators Card -->
         <div class="col-md-3 mb-3">
@@ -260,58 +203,23 @@
     </div>
 
     <!-- ========== URGENT ALERTS (COMPACT VERSION) ========== -->
-    @if($urgentMachines->count() > 0 || $urgentJobs->count() > 0)
+    @if($urgentJobs->count() > 0)
     <div class="row mb-4">
-        <!-- Urgent Machines -->
-        @if($urgentMachines->count() > 0)
-        <div class="col-md-4 mb-3">
-            <div class="card border-danger shadow-sm">
-                <div class="card-header bg-danger text-white py-2">
-                    <h6 class="mb-0 small"><i class="fas fa-exclamation-triangle"></i> Urgent Machines</h6>
-                </div>
-                <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;">
-                    <div class="list-group list-group-flush">
-                        @foreach($urgentMachines->take(3) as $machine)
-                        <div class="list-group-item py-2">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <strong class="small">{{ $machine->name }}</strong>
-                                    <br>
-                                    <small class="text-muted">{{ $machine->code }}</small>
-                                </div>
-                                <span class="badge bg-{{ $machine->status == 'breakdown' ? 'danger' : 'warning' }} small">
-                                    {{ ucfirst($machine->status) }}
-                                </span>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-                <div class="card-footer py-2">
-                    <a href="{{ route('admin.machines.index') }}" class="text-decoration-none small">
-                        View All <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-        @endif
-
         <!-- High Priority Jobs -->
-        @if($urgentJobs->count() > 0)
-        <div class="col-md-4 mb-3">
+        <div class="col-md-6 mb-3">
             <div class="card border-warning shadow-sm">
                 <div class="card-header bg-warning text-dark py-2">
                     <h6 class="mb-0 small"><i class="fas fa-fire"></i> High Priority Jobs</h6>
                 </div>
                 <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;">
                     <div class="list-group list-group-flush">
-                        @foreach($urgentJobs->take(3) as $job)
+                        @foreach($urgentJobs->take(5) as $job)
                         <div class="list-group-item py-2">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <strong class="small">{{ Str::limit($job->title, 30) }}</strong>
                                     <br>
-                                    <small class="text-muted">{{ $job->machine->name ?? 'N/A' }}</small>
+                                    <small class="text-muted">{{ $job->description ?? 'N/A' }}</small>
                                 </div>
                                 <span class="badge bg-danger small">HIGH</span>
                             </div>
@@ -326,10 +234,9 @@
                 </div>
             </div>
         </div>
-        @endif
 
         <!-- Jobs by Status - COMPACT -->
-        <div class="col-md-4 mb-3">
+        <div class="col-md-6 mb-3">
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-2">
                     <h6 class="mb-0 small"><i class="fas fa-chart-pie"></i> Jobs by Status</h6>
@@ -355,7 +262,7 @@
     @else
     <!-- Jika tidak ada alerts -->
     <div class="row mb-4">
-        <div class="col-md-4 mb-3 offset-md-8">
+        <div class="col-md-6 mb-3 offset-md-6">
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-2">
                     <h6 class="mb-0 small"><i class="fas fa-chart-pie"></i> Jobs by Status</h6>
@@ -378,59 +285,6 @@
     </div>
     @endif
 
-    <!-- Low Stock Parts - COMPACT TABLE -->
-    @if($lowStockParts->count() > 0)
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card border-warning shadow-sm">
-                <div class="card-header bg-warning text-dark py-2">
-                    <h6 class="mb-0 small"><i class="fas fa-box-open"></i> Low Stock Alert ({{ $lowStockParts->count() }} items)</h6>
-                </div>
-                <div class="card-body p-0" style="max-height: 200px; overflow-y: auto;">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover mb-0">
-                            <thead class="table-light sticky-top">
-                                <tr>
-                                    <th class="small">Code</th>
-                                    <th class="small">Part Name</th>
-                                    <th class="small">Stock</th>
-                                    <th class="small">Min</th>
-                                    <th class="small">Status</th>
-                                    <th class="small">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($lowStockParts->take(5) as $part)
-                                <tr>
-                                    <td class="small"><strong>{{ $part->code }}</strong></td>
-                                    <td class="small">{{ Str::limit($part->name, 30) }}</td>
-                                    <td class="small">{{ $part->stock_quantity }} {{ $part->unit }}</td>
-                                    <td class="small">{{ $part->minimum_stock }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $part->stock_quantity == 0 ? 'danger' : 'warning' }} text-dark small">
-                                            {{ $part->stock_quantity == 0 ? 'OUT' : 'LOW' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('admin.parts.edit', $part) }}" class="btn btn-sm btn-primary py-0">
-                                            <small>Restock</small>
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="card-footer py-2">
-                    <a href="{{ route('admin.parts.index') }}" class="text-decoration-none small">
-                        View All Parts <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
 
     <!-- ========== JOBS TREND CHART - FULL WIDTH ========== -->
     <div class="row mb-4">
@@ -461,7 +315,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Operator</th>
-                                    <th>Machine</th>
+                                    <th>Job</th>
                                     <th>Status</th>
                                     <th>Date</th>
                                 </tr>
@@ -470,7 +324,7 @@
                                 @foreach($recentReports as $report)
                                 <tr>
                                     <td>{{ $report->user->name ?? 'N/A' }}</td>
-                                    <td>{{ $report->job->machine->name ?? 'N/A' }}</td>
+                                    <td>{{ $report->job->title ?? 'N/A' }}</td>
                                     <td>
                                         <span class="badge bg-{{ $report->status == 'completed' ? 'success' : ($report->status == 'in_progress' ? 'primary' : 'warning') }}">
                                             {{ ucfirst($report->status) }}
@@ -557,8 +411,8 @@
                         </div>
                         <div class="col-md-3">
                             <i class="fas fa-chart-pie fa-2x text-info mb-2"></i>
-                            <h3 class="text-info fw-bold">{{ number_format(($stats['operational_machines'] / max($stats['total_machines'], 1)) * 100, 1) }}%</h3>
-                            <small class="text-muted">Machine Uptime</small>
+                            <h3 class="text-info fw-bold">{{ number_format(($stats['completed_jobs'] / max($stats['total_jobs'], 1)) * 100, 1) }}%</h3>
+                            <small class="text-muted">Job Completion Rate</small>
                         </div>
                     </div>
                 </div>

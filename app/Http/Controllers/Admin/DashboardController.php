@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\MaintenanceJob;
-use App\Models\Machine;
-use App\Models\Part;
 use App\Models\User;
 use App\Models\WorkReport;
 use App\Models\Department;
@@ -24,26 +22,9 @@ class DashboardController extends Controller
             'in_progress_jobs' => MaintenanceJob::where('status', 'in_progress')->count(),
             'completed_jobs' => MaintenanceJob::where('status', 'completed')->count(),
 
-            // Machines Statistics
-            'total_machines' => Machine::count(),
-            'operational_machines' => Machine::where('status', 'operational')->count(),
-            'maintenance_machines' => Machine::where('status', 'maintenance')->count(),
-            'breakdown_machines' => Machine::where('status', 'breakdown')->count(),
-
-            // Parts Statistics
-            'total_parts' => Part::count(),
-            'low_stock_parts' => Part::whereColumn(
-                'stock_quantity',
-                '<=',
-                'minimum_stock',
-            )->count(),
-            'out_of_stock_parts' => Part::where('stock_quantity', 0)->count(),
-            'total_parts_value' =>
-                Part::selectRaw('SUM(stock_quantity * unit_cost) as total')->first()->total ?? 0,
-
             // Users Statistics
-            'total_operators' => User::role('user')->count(),
-            'active_operators' => User::role('user')->where('is_active', true)->count(),
+            'total_operators' => User::role('staff_maintenance')->count(),
+            'active_operators' => User::role('staff_maintenance')->where('is_active', true)->count(),
 
             // Work Reports Statistics
             'total_reports_today' => WorkReport::whereDate('created_at', Carbon::today())->count(),
@@ -57,41 +38,23 @@ class DashboardController extends Controller
         $metrics = $this->calculateIndustrialMetrics();
 
         // === URGENT ITEMS ===
-        // Machines needing urgent attention
-        $urgentMachines = Machine::where('status', 'breakdown')
-            ->orWhere(function ($query) {
-                $query
-                    ->where('status', 'operational')
-                    ->whereNotNull('next_maintenance_date')
-                    ->whereDate('next_maintenance_date', '<=', Carbon::now()->addDays(7));
-            })
-            ->with('department')
-            ->limit(5)
-            ->get();
-
         // High priority pending jobs
-        $urgentJobs = MaintenanceJob::with(['machine', 'assignedUser'])
+        $urgentJobs = MaintenanceJob::with(['assignedUser'])
             ->where('status', 'pending')
             ->where('priority', 'high')
             ->latest()
             ->limit(5)
             ->get();
 
-        // Low stock parts
-        $lowStockParts = Part::whereColumn('stock_quantity', '<=', 'minimum_stock')
-            ->orderBy('stock_quantity')
-            ->limit(10)
-            ->get();
-
         // === RECENT ACTIVITIES ===
         // Recent work reports
-        $recentReports = WorkReport::with(['user', 'job.machine'])
+        $recentReports = WorkReport::with(['user', 'job'])
             ->latest()
             ->limit(5)
             ->get();
 
         // Recent completed jobs
-        $recentCompletedJobs = MaintenanceJob::with(['machine', 'assignedUser'])
+        $recentCompletedJobs = MaintenanceJob::with(['assignedUser'])
             ->where('status', 'completed')
             ->latest('updated_at')
             ->limit(5)
@@ -112,14 +75,6 @@ class DashboardController extends Controller
             ->get()
             ->mapWithKeys(function ($item) {
                 return [$item->priority => $item->count];
-            });
-
-        // Machines by Status
-        $machinesByStatus = Machine::selectRaw('status, COUNT(*) as count')
-            ->groupBy('status')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->status => $item->count];
             });
 
         // Last 7 days jobs trend
@@ -151,7 +106,7 @@ class DashboardController extends Controller
                 ->first()->avg_hours ?? 0;
 
         // Top 5 operators by completed tasks this month
-        $topOperators = User::role('user')
+        $topOperators = User::role('staff_maintenance')
             ->withCount([
                 'workReports as completed_this_month' => function ($query) {
                     $query
@@ -172,16 +127,13 @@ class DashboardController extends Controller
             compact(
                 'stats',
                 'metrics',
-                'metricsTrend', // ✅ TAMBAH INI
+                'metricsTrend',
                 'costMetrics',
-                'urgentMachines',
                 'urgentJobs',
-                'lowStockParts',
                 'recentReports',
                 'recentCompletedJobs',
                 'jobsByStatus',
                 'jobsByPriority',
-                'machinesByStatus',
                 'last7DaysJobs',
                 'jobsByDepartment',
                 'avgCompletionTime',
@@ -227,23 +179,23 @@ class DashboardController extends Controller
 
         // === OEE (Overall Equipment Effectiveness) ===
         // OEE = Availability × Performance × Quality
-        // Simplified calculation for now
-        $totalMachines = Machine::count();
-        $operationalMachines = Machine::where('status', 'operational')->count();
-        $availability = $totalMachines > 0 ? ($operationalMachines / $totalMachines) * 100 : 0;
+        // Simplified calculation based on maintenance jobs completion
 
-        // Performance: Assume 90% for operational machines
+        // Availability: Based on completed vs total jobs
+        $totalJobs = MaintenanceJob::count();
+        $completedJobs = MaintenanceJob::where('status', 'completed')->count();
+        $availability = $totalJobs > 0 ? ($completedJobs / $totalJobs) * 100 : 100;
+
+        // Performance: Assume 90% for now (can be refined later)
         $performance = 90;
 
         // Quality: Based on successful completions
-        $totalJobs = MaintenanceJob::where('status', 'completed')->count();
         $successfulJobs = MaintenanceJob::where('status', 'completed')
             ->whereDoesntHave('workReports', function ($query) {
-                // ✅ FIXED - plural
                 $query->where('status', 'rejected');
             })
             ->count();
-        $quality = $totalJobs > 0 ? ($successfulJobs / $totalJobs) * 100 : 100;
+        $quality = $completedJobs > 0 ? ($successfulJobs / $completedJobs) * 100 : 100;
 
         $oee = ($availability * $performance * $quality) / 10000;
 

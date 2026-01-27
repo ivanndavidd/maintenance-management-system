@@ -21,20 +21,6 @@
     </div>
 
     <!-- Success/Error Messages -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <!-- Filters Card -->
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-white">
@@ -149,8 +135,8 @@
                             </td>
                             <td>
                                 @foreach($user->roles as $role)
-                                    <span class="badge bg-{{ $role->name == 'super-admin' ? 'danger' : ($role->name == 'admin' ? 'warning' : 'primary') }}">
-                                        {{ ucfirst($role->name) }}
+                                    <span class="badge bg-{{ $role->name == 'admin' ? 'warning' : ($role->name == 'supervisor_maintenance' ? 'info' : 'primary') }}">
+                                        {{ ucfirst(str_replace('_', ' ', $role->name)) }}
                                     </span>
                                 @endforeach
                             </td>
@@ -181,7 +167,7 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     
-                                    @if($user->id !== auth()->id() && !$user->hasRole('super-admin'))
+                                    @if($user->id !== auth()->id())
                                         <!-- Toggle Status -->
                                         <form action="{{ route('admin.users.toggle-status', $user) }}" 
                                               method="POST" 

@@ -10,10 +10,10 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create Roles
-        $adminRole = Role::create(['name' => 'admin']);
-        $userRole = Role::create(['name' => 'user']);
-        $superAdminRole = Role::create(['name' => 'super-admin']);
+        // Create Roles (use firstOrCreate to avoid duplicates)
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $staffMaintenanceRole = Role::firstOrCreate(['name' => 'staff_maintenance']);
+        $supervisorMaintenanceRole = Role::firstOrCreate(['name' => 'supervisor_maintenance']);
 
         // Create Permissions
         $permissions = [
@@ -35,7 +35,7 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Assign permissions to roles
@@ -54,14 +54,24 @@ class RoleSeeder extends Seeder
             'analytics-view',
         ]);
 
-        $userRole->givePermissionTo([
+        // Staff Maintenance permissions (basic operator permissions)
+        $staffMaintenanceRole->givePermissionTo([
             'dashboard-view',
             'job-list',
             'report-list',
             'report-create',
         ]);
 
-        // Super Admin gets all permissions
-        $superAdminRole->givePermissionTo(Permission::all());
+        // Supervisor Maintenance permissions (can manage staff and approve reports)
+        $supervisorMaintenanceRole->givePermissionTo([
+            'dashboard-view',
+            'job-list',
+            'job-create',
+            'job-edit',
+            'report-list',
+            'report-create',
+            'report-validate',
+            'analytics-view',
+        ]);
     }
 }

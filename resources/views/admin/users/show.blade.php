@@ -25,13 +25,6 @@
     </div>
 
     <!-- Success Messages -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <div class="row">
         <!-- User Profile Card -->
         <div class="col-lg-4 mb-4">
@@ -44,8 +37,8 @@
                     <p class="text-muted mb-3">{{ $user->employee_id }}</p>
                     
                     @foreach($user->roles as $role)
-                        <span class="badge bg-{{ $role->name == 'super-admin' ? 'danger' : ($role->name == 'admin' ? 'warning' : 'primary') }} mb-3">
-                            {{ ucfirst($role->name) }}
+                        <span class="badge bg-{{ $role->name == 'admin' ? 'warning' : ($role->name == 'supervisor_maintenance' ? 'info' : 'primary') }} mb-3">
+                            {{ ucfirst(str_replace('_', ' ', $role->name)) }}
                         </span>
                     @endforeach
 
@@ -84,7 +77,7 @@
                         </p>
                     </div>
 
-                    @if($user->id !== auth()->id() && !$user->hasRole('super-admin'))
+                    @if($user->id !== auth()->id())
                     <hr>
                     <div class="d-grid gap-2">
                         <button type="button" 
@@ -182,7 +175,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Job Title</th>
-                                    <th>Machine</th>
+                                    <th>Description</th>
                                     <th>Priority</th>
                                     <th>Status</th>
                                     <th>Date</th>
@@ -192,7 +185,7 @@
                                 @foreach($recentJobs as $job)
                                 <tr>
                                     <td>{{ Str::limit($job->title, 40) }}</td>
-                                    <td>{{ $job->machine->name ?? 'N/A' }}</td>
+                                    <td>{{ $job->description ? Str::limit($job->description, 30) : 'N/A' }}</td>
                                     <td>
                                         <span class="badge bg-{{ $job->priority == 'high' ? 'danger' : ($job->priority == 'medium' ? 'warning' : 'secondary') }}">
                                             {{ ucfirst($job->priority) }}
@@ -231,7 +224,7 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Machine</th>
+                                    <th>Job Title</th>
                                     <th>Work Done</th>
                                     <th>Status</th>
                                     <th>Date</th>
@@ -240,7 +233,7 @@
                             <tbody>
                                 @foreach($recentReports as $report)
                                 <tr>
-                                    <td>{{ $report->job->machine->name ?? 'N/A' }}</td>
+                                    <td>{{ $report->job->title ?? 'N/A' }}</td>
                                     <td>{{ Str::limit($report->work_description ?? 'N/A', 50) }}</td>
                                     <td>
                                         <span class="badge bg-{{ $report->status == 'completed' ? 'success' : ($report->status == 'in_progress' ? 'primary' : 'warning') }}">

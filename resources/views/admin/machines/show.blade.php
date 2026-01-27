@@ -25,13 +25,6 @@
     </div>
 
     <!-- Success Messages -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <div class="row">
         <!-- Machine Profile Card -->
         <div class="col-lg-4 mb-4">

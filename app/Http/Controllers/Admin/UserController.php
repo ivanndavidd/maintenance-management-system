@@ -128,11 +128,11 @@ class UserController extends Controller
         ];
 
         // Recent activities
-        $recentJobs = $user->assignedJobs()->with('machine')->latest()->limit(10)->get();
+        $recentJobs = $user->assignedJobs()->latest()->limit(10)->get();
 
         $recentReports = $user
             ->workReports()
-            ->with(['job.machine'])
+            ->with(['job'])
             ->latest()
             ->limit(10)
             ->get();
@@ -217,12 +217,6 @@ class UserController extends Controller
                 ->with('error', 'You cannot delete your own account!');
         }
 
-        // Prevent deleting super-admin
-        if ($user->hasRole('super-admin')) {
-            return redirect()
-                ->route('admin.users.index')
-                ->with('error', 'Cannot delete super admin!');
-        }
 
         $user->delete();
 

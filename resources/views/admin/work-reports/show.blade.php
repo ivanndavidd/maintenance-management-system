@@ -26,13 +26,8 @@
         </div>
     </div>
 
-    <!-- Success Messages -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+    <!-- Success Messages
+    -->
 
     <div class="row">
         <!-- Report Profile Card -->
@@ -101,7 +96,7 @@
                         @endif
                     </div>
 
-                    @if($workReport->status === 'pending' && auth()->user()->hasRole(['admin', 'super-admin']))
+                    @if($workReport->status === 'pending' && auth()->user()->hasRole('admin'))
                     <hr>
                     <div class="d-grid gap-2">
                         <button type="button" 
@@ -314,7 +309,7 @@
 </div>
 
 <!-- Validate Modal -->
-@if($workReport->status === 'pending' && auth()->user()->hasRole(['admin', 'super-admin']))
+@if($workReport->status === 'pending' && auth()->user()->hasRole('admin'))
 <div class="modal fade" id="validateModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

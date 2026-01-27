@@ -14,13 +14,8 @@
         </nav>
     </div>
 
-    <!-- Success/Error Messages -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+    <!-- Success/Error Messages
+    -->
 
     <div class="row">
         <div class="col-lg-8">
@@ -127,7 +122,7 @@
                                         id="role" 
                                         name="role" 
                                         required
-                                        {{ $user->hasRole('super-admin') ? 'disabled' : '' }}>
+                                        {{ false ? 'disabled' : '' }}>
                                     @foreach($roles as $role)
                                         <option value="{{ $role->name }}" 
                                                 {{ old('role', $userRole ? $userRole->name : '') == $role->name ? 'selected' : '' }}>
@@ -135,7 +130,7 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                @if($user->hasRole('super-admin'))
+                                @if(false)
                                     <input type="hidden" name="role" value="super-admin">
                                     <small class="text-muted">Super Admin role cannot be changed</small>
                                 @endif
@@ -242,7 +237,7 @@
                         <i class="fas fa-eye"></i> View Full Profile
                     </a>
                     
-                    @if($user->id !== auth()->id() && !$user->hasRole('super-admin'))
+                    @if($user->id !== auth()->id() && !false)
                         <form action="{{ route('admin.users.toggle-status', $user) }}" method="POST" class="mb-2">
                             @csrf
                             @method('PATCH')
@@ -288,7 +283,7 @@
                         @if($user->id === auth()->id())
                             <li class="text-danger"><strong>You cannot delete your own account</strong></li>
                         @endif
-                        @if($user->hasRole('super-admin'))
+                        @if(false)
                             <li class="text-danger"><strong>Super Admin cannot be deleted</strong></li>
                         @endif
                     </ul>
