@@ -22,7 +22,7 @@ RUN composer dump-autoload --optimize --no-dev --ignore-platform-reqs
 FROM alpine:latest AS node-builder
 WORKDIR /app
 RUN mkdir -p public/build && \
-    echo '{}' > public/build/manifest.json && \
+    echo '{"resources/sass/app.scss":{"file":"","src":"resources/sass/app.scss"},"resources/css/app.css":{"file":"","src":"resources/css/app.css"},"resources/js/app.js":{"file":"","src":"resources/js/app.js"}}' > public/build/manifest.json && \
     echo "No build artifacts - using CDN" > public/build/.gitkeep
 
 # Stage 3: Production image
