@@ -21,7 +21,9 @@ RUN composer dump-autoload --optimize --no-dev --ignore-platform-reqs
 # No build step needed for production deployment
 FROM alpine:latest AS node-builder
 WORKDIR /app
-RUN mkdir -p public/build && echo "No build artifacts - using CDN" > public/build/.gitkeep
+RUN mkdir -p public/build && \
+    echo '{}' > public/build/manifest.json && \
+    echo "No build artifacts - using CDN" > public/build/.gitkeep
 
 # Stage 3: Production image
 FROM php:8.3-fpm-alpine
