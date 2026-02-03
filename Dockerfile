@@ -4,10 +4,11 @@ FROM composer:2.6 AS composer-builder
 WORKDIR /app
 
 # Copy composer files first for better caching
-COPY composer.json composer.lock ./
+COPY composer.json ./
+COPY composer.lock* ./
 
 # Install dependencies without dev packages
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --ignore-platform-reqs
 
 # Copy the rest of the application
 COPY . .
