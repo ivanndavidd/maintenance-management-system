@@ -5,37 +5,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login - {{ config('app.name', 'Warehouse Maintenance') }}</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome from jsDelivr -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('assets/Blibli_Logo_Symbol_FC_RGB.png') }}">
+
+    <!-- Vite Assets -->
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('{{ asset('assets/maxresdefault.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             display: flex;
             align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
         }
-        
+
+        /* Overlay untuk background image */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
+
         .login-container {
             width: 100%;
             max-width: 450px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 1;
         }
-        
+
         .login-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+            /* HIDDEN BY DEFAULT */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(30px) scale(0.95);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none;
+        }
+
+        /* Show card on container hover (when NOT permanently shown) */
+        .login-container:hover .login-card:not(.permanent-show) {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        /* Show card permanently when has .permanent-show class */
+        .login-card.permanent-show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        /* Add a subtle hint text */
+        .hover-hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.8);
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            z-index: 0;
+            pointer-events: none;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+        }
+
+        .login-container:hover .hover-hint {
+            opacity: 0;
+        }
+
+        .login-card.permanent-show ~ .hover-hint {
+            opacity: 0;
+            display: none;
+        }
+
+        /* Make the entire container area hoverable */
+        .login-container {
+            cursor: pointer;
+        }
+
+        .login-card * {
+            cursor: default;
         }
         
         .login-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0095DA;
             color: white;
             padding: 40px 30px;
             text-align: center;
@@ -76,25 +160,26 @@
         }
         
         .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #0095DA;
+            box-shadow: 0 0 0 0.2rem rgba(0, 149, 218, 0.25);
         }
         
         .btn-login {
             width: 100%;
             padding: 12px;
             border-radius: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0095DA;
             border: none;
             color: white;
             font-weight: 600;
             font-size: 16px;
-            transition: transform 0.2s;
+            transition: all 0.3s;
         }
-        
+
         .btn-login:hover {
+            background: #007AB8;
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 20px rgba(0, 149, 218, 0.4);
         }
         
         .register-link {
@@ -104,28 +189,30 @@
         }
         
         .register-link a {
-            color: #667eea;
+            color: #0095DA;
             text-decoration: none;
             font-weight: 600;
         }
-        
+
         .register-link a:hover {
             text-decoration: underline;
+            color: #007AB8;
         }
-        
+
         .forgot-password {
             text-align: right;
             margin-top: 10px;
         }
-        
+
         .forgot-password a {
-            color: #667eea;
+            color: #0095DA;
             text-decoration: none;
             font-size: 14px;
         }
-        
+
         .forgot-password a:hover {
             text-decoration: underline;
+            color: #007AB8;
         }
         
         .remember-me {
@@ -157,6 +244,10 @@
 </head>
 <body>
     <div class="login-container">
+        <div class="hover-hint">
+            <i class="fas fa-hand-pointer mb-3"></i><br>
+            Hover here to login
+        </div>
         <div class="login-card">
             <!-- Header -->
             <div class="login-header">
@@ -267,23 +358,63 @@
             </div>
         </div>
     </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
-        // Toggle Password Visibility
-        const togglePassword = document.getElementById('togglePassword');
-        const password = document.getElementById('password');
-        
-        if (togglePassword) {
-            togglePassword.addEventListener('click', function() {
-                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-                password.setAttribute('type', type);
-                this.classList.toggle('fa-eye');
-                this.classList.toggle('fa-eye-slash');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle Password Visibility
+            const togglePassword = document.getElementById('togglePassword');
+            const password = document.getElementById('password');
+
+            if (togglePassword) {
+                togglePassword.addEventListener('click', function() {
+                    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                    password.setAttribute('type', type);
+                    this.classList.toggle('fa-eye');
+                    this.classList.toggle('fa-eye-slash');
+                });
+            }
+
+            // Show login card on hover and keep it visible after first interaction
+            const loginCard = document.querySelector('.login-card');
+            const loginContainer = document.querySelector('.login-container');
+            let hasInteracted = false;
+
+            // Show card permanently if there are errors or messages
+            @if ($errors->any() || session('success') || session('error'))
+                loginCard.classList.add('permanent-show');
+                hasInteracted = true;
+            @endif
+
+            // Make card permanently visible on any click inside
+            loginCard.addEventListener('click', function(e) {
+                if (!hasInteracted) {
+                    hasInteracted = true;
+                    this.classList.add('permanent-show');
+                }
             });
-        }
+
+            // Make card permanently visible when any input is focused
+            const inputs = loginCard.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    if (!hasInteracted) {
+                        hasInteracted = true;
+                        loginCard.classList.add('permanent-show');
+                    }
+                });
+            });
+
+            // Make card permanently visible on mousedown on any form element
+            const formElements = loginCard.querySelectorAll('input, button, a');
+            formElements.forEach(element => {
+                element.addEventListener('mousedown', function() {
+                    if (!hasInteracted) {
+                        hasInteracted = true;
+                        loginCard.classList.add('permanent-show');
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>

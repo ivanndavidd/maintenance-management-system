@@ -135,6 +135,24 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->has_unlisted_items = false;
         $purchaseOrder->updateSummary();
 
+        // Send approval notification to designated approver
+        try {
+            $approver = User::find($validated['approver_id']);
+            if ($approver && $approver->email) {
+                \Mail::to($approver->email)->send(new \App\Mail\PurchaseOrderApprovalRequest($purchaseOrder));
+                \Log::info('PO approval request email sent', [
+                    'po_number' => $purchaseOrder->po_number,
+                    'approver' => $approver->name,
+                    'approver_email' => $approver->email,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send PO approval request email: ' . $e->getMessage(), [
+                'po_number' => $purchaseOrder->po_number,
+                'approver_id' => $validated['approver_id'],
+            ]);
+        }
+
         return redirect()
             ->route('admin.purchase-orders.index')
             ->with('success', 'Purchase Order created with ' . $purchaseOrder->total_items . ' items! Sent for approval.');

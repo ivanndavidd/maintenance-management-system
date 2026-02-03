@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('page-title', 'Edit User')
+
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->

@@ -210,7 +210,7 @@
 </div>
 
 {{-- Reject Modal --}}
-<div class="modal fade" id="rejectModal" tabindex="-1">
+<div class="modal fade" id="rejectModal" tabindex="-1" data-bs-backdrop="false">
     <div class="modal-dialog">
         <div class="modal-content">
             <form action="{{ route('admin.adjustments.reject', $adjustment) }}" method="POST">

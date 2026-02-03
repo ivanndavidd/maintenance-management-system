@@ -63,6 +63,27 @@ class CorrectiveMaintenanceController extends Controller
             \Log::error('Failed to send received email: ' . $e->getMessage());
         }
 
+        // Send notification to supervisors and admins
+        try {
+            $supervisors = User::role('supervisor_maintenance')->get();
+            $admins = User::role('admin')->get();
+
+            foreach ($supervisors as $supervisor) {
+                Mail::to($supervisor->email)->send(new MaintenanceRequestReceived($ticket));
+            }
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new MaintenanceRequestReceived($ticket));
+            }
+
+            \Log::info('New CM ticket notifications sent to supervisors and admins', [
+                'ticket' => $ticket->ticket_number,
+                'supervisors_count' => $supervisors->count(),
+                'admins_count' => $admins->count(),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send CM ticket notification to supervisors/admins: ' . $e->getMessage());
+        }
+
         // Auto-assign technicians based on current shift
         $assignedIds = $ticket->autoAssignTechnicians();
 
@@ -87,6 +108,27 @@ class CorrectiveMaintenanceController extends Controller
                         'ticket_number' => $ticket->ticket_number,
                     ]);
                 }
+            }
+
+            // Notify supervisors and admins about the assignment
+            try {
+                $supervisors = User::role('supervisor_maintenance')->get();
+                $admins = User::role('admin')->get();
+
+                foreach ($supervisors as $supervisor) {
+                    Mail::to($supervisor->email)->send(new MaintenanceTicketAssigned($ticket, $supervisor, $shiftInfo ? $shiftInfo['name'] : null));
+                }
+                foreach ($admins as $admin) {
+                    Mail::to($admin->email)->send(new MaintenanceTicketAssigned($ticket, $admin, $shiftInfo ? $shiftInfo['name'] : null));
+                }
+
+                \Log::info('CM ticket assignment notifications sent to supervisors and admins', [
+                    'ticket' => $ticket->ticket_number,
+                    'supervisors_count' => $supervisors->count(),
+                    'admins_count' => $admins->count(),
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to send assignment notification to supervisors/admins: ' . $e->getMessage());
             }
 
             // Update ticket status
@@ -136,7 +178,13 @@ class CorrectiveMaintenanceController extends Controller
         $ticketNumber = $request->query('ticket');
 
         if ($ticketNumber) {
-            $ticket = CorrectiveMaintenanceRequest::with(['assignedUser', 'technicians'])
+            $ticket = CorrectiveMaintenanceRequest::with([
+                'assignedUser',
+                'technicians',
+                'report',
+                'childTickets.technicians',
+                'childTickets.report'
+            ])
                 ->where('ticket_number', $ticketNumber)
                 ->first();
             return view('maintenance-request.track', compact('ticket', 'ticketNumber'));
@@ -157,7 +205,13 @@ class CorrectiveMaintenanceController extends Controller
                 ->with('error', 'Please enter a ticket number.');
         }
 
-        $ticket = CorrectiveMaintenanceRequest::with(['assignedUser', 'technicians'])
+        $ticket = CorrectiveMaintenanceRequest::with([
+            'assignedUser',
+            'technicians',
+            'report',
+            'childTickets.technicians',
+            'childTickets.report'
+        ])
             ->where('ticket_number', $ticketNumber)
             ->first();
 

@@ -32,16 +32,16 @@
         <div class="col-md-3">
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['completed'] }}</h3>
-                    <small>Completed</small>
+                    <h3 class="mb-0">{{ $stats['done'] }}</h3>
+                    <small>Done</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-danger text-white">
+            <div class="card bg-warning text-dark">
                 <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['failed'] }}</h3>
-                    <small>Failed</small>
+                    <h3 class="mb-0">{{ $stats['further_repair'] }}</h3>
+                    <small>Further Repair</small>
                 </div>
             </div>
         </div>
@@ -90,37 +90,30 @@
                     <thead class="table-light">
                         <tr>
                             <th>Ticket #</th>
-                            <th>Location</th>
+                            <th>Problem Category</th>
                             <th>Problem</th>
-                            <th>Priority</th>
                             <th>Status</th>
-                            <th>Assigned At</th>
+                            <th>Created</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($tickets as $ticket)
-                        @php
-                            $myAssignment = $ticket->technicians->where('id', auth()->id())->first();
-                        @endphp
                         <tr>
                             <td>
                                 <a href="{{ route('user.corrective-maintenance.show', $ticket) }}" class="fw-bold text-decoration-none">
                                     {{ $ticket->ticket_number }}
                                 </a>
-                                @if($myAssignment && $myAssignment->pivot->shift_info)
-                                    <br><small class="badge bg-info">{{ $myAssignment->pivot->shift_info }}</small>
-                                @endif
                             </td>
-                            <td>{{ $ticket->location }}</td>
                             <td>
-                                <span title="{{ $ticket->problem_description }}">
-                                    {{ Str::limit($ticket->problem_description, 50) }}
+                                <span class="badge {{ $ticket->getProblemCategoryBadgeClass() }}">
+                                    <i class="fas {{ $ticket->getProblemCategoryIcon() }} me-1"></i>
+                                    {{ $ticket->getProblemCategoryLabel() }}
                                 </span>
                             </td>
                             <td>
-                                <span class="badge {{ $ticket->getPriorityBadgeClass() }}">
-                                    {{ ucfirst($ticket->priority) }}
+                                <span title="{{ $ticket->problem_description }}">
+                                    {{ Str::limit($ticket->problem_description, 50) }}
                                 </span>
                             </td>
                             <td>
@@ -128,13 +121,7 @@
                                     {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
                                 </span>
                             </td>
-                            <td>
-                                @if($myAssignment && $myAssignment->pivot->created_at)
-                                    {{ \Carbon\Carbon::parse($myAssignment->pivot->created_at)->format('d M Y H:i') }}
-                                @else
-                                    -
-                                @endif
-                            </td>
+                            <td>{{ $ticket->created_at->format('d M Y') }}</td>
                             <td>
                                 <a href="{{ route('user.corrective-maintenance.show', $ticket) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i> View
@@ -143,7 +130,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center py-4">
+                            <td colspan="6" class="text-center py-4">
                                 <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                                 <p class="text-muted mb-0">No tickets assigned to you</p>
                             </td>

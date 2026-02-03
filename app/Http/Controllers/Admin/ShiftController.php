@@ -26,10 +26,11 @@ class ShiftController extends Controller
      */
     public function create()
     {
-        // Get all users with role 'staff_maintenance'
+        // Get all active users with role 'staff_maintenance'
         $users = User::whereHas('roles', function ($query) {
             $query->whereIn('name', ['staff_maintenance', 'supervisor_maintenance']);
         })
+            ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
@@ -116,10 +117,11 @@ class ShiftController extends Controller
      */
     public function edit(ShiftSchedule $shift)
     {
-        // Get all users with role 'staff_maintenance' or 'supervisor_maintenance'
+        // Get all active users with role 'staff_maintenance' or 'supervisor_maintenance'
         $users = User::whereHas('roles', function ($query) {
             $query->whereIn('name', ['staff_maintenance', 'supervisor_maintenance']);
         })
+            ->where('is_active', true)
             ->orderBy('name')
             ->get();
 

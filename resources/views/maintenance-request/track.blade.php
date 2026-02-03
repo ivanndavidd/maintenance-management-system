@@ -128,8 +128,22 @@
         .status-received { background: #3498db; color: white; }
         .status-in_progress { background: #9b59b6; color: white; }
         .status-completed { background: #27ae60; color: white; }
+        .status-done { background: #27ae60; color: white; }
+        .status-further_repair { background: #fd7e14; color: white; }
         .status-failed { background: #e74c3c; color: white; }
         .status-cancelled { background: #95a5a6; color: white; }
+        .child-ticket-card {
+            border-left: 3px solid #17a2b8;
+            margin-left: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 10px;
+        }
+        .timeline-dot.warning {
+            background: #fd7e14;
+            box-shadow: 0 0 0 2px #fd7e14;
+        }
     </style>
 </head>
 <body>
@@ -220,7 +234,9 @@
                                         <strong>In Progress</strong>
                                         @if($ticket->in_progress_at)
                                             <p class="text-muted mb-0 small">{{ $ticket->in_progress_at->format('d M Y, H:i') }}</p>
-                                            @if($ticket->assignedUser)
+                                            @if($ticket->technicians && $ticket->technicians->count() > 0)
+                                                <p class="text-muted mb-0 small">Technician: {{ $ticket->technicians->pluck('name')->join(', ') }}</p>
+                                            @elseif($ticket->assignedUser)
                                                 <p class="text-muted mb-0 small">Assigned to: {{ $ticket->assignedUser->name }}</p>
                                             @endif
                                         @else
@@ -234,11 +250,22 @@
                                         @elseif($ticket->status == 'cancelled')
                                             <div class="timeline-dot failed"></div>
                                             <strong class="text-secondary">Cancelled</strong>
+                                        @elseif($ticket->status == 'further_repair')
+                                            <div class="timeline-dot warning"></div>
+                                            <strong class="text-warning">Further Repair Needed</strong>
+                                        @elseif($ticket->status == 'done')
+                                            <div class="timeline-dot active"></div>
+                                            <strong class="text-success">Done</strong>
                                         @else
-                                            <div class="timeline-dot {{ $ticket->completed_at ? 'active' : ($ticket->status == 'in_progress' ? 'current' : '') }}"></div>
-                                            <strong>Completed</strong>
+                                            <div class="timeline-dot {{ $ticket->completed_at || $ticket->report_submitted_at ? 'active' : ($ticket->status == 'in_progress' ? 'current' : '') }}"></div>
+                                            <strong>{{ $ticket->completed_at ? 'Completed' : 'Report Submitted' }}</strong>
                                         @endif
-                                        @if($ticket->completed_at)
+                                        @if($ticket->report_submitted_at)
+                                            <p class="text-muted mb-0 small">{{ $ticket->report_submitted_at->format('d M Y, H:i') }}</p>
+                                            @if($ticket->work_duration)
+                                                <p class="text-muted mb-0 small"><i class="fas fa-stopwatch me-1"></i>Duration: {{ $ticket->work_duration }}</p>
+                                            @endif
+                                        @elseif($ticket->completed_at)
                                             <p class="text-muted mb-0 small">{{ $ticket->completed_at->format('d M Y, H:i') }}</p>
                                         @elseif($ticket->status == 'cancelled')
                                             <p class="text-muted mb-0 small">This ticket has been cancelled</p>
@@ -253,6 +280,63 @@
                             <div class="info-box">
                                 <h6><i class="fas fa-clipboard-check me-2"></i>Resolution</h6>
                                 <p class="mb-0">{{ $ticket->resolution }}</p>
+                            </div>
+                            @endif
+
+                            @if($ticket->report)
+                            <div class="info-box">
+                                <h6><i class="fas fa-file-alt me-2"></i>Work Report</h6>
+                                <div class="info-row">
+                                    <span class="info-label">Problem Found</span>
+                                    <span class="info-value">{{ Str::limit($ticket->report->problem_detail, 100) }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Work Done</span>
+                                    <span class="info-value">{{ Str::limit($ticket->report->work_done, 100) }}</span>
+                                </div>
+                                @if($ticket->report->notes)
+                                <div class="info-row">
+                                    <span class="info-label">Notes</span>
+                                    <span class="info-value">{{ $ticket->report->notes }}</span>
+                                </div>
+                                @endif
+                            </div>
+                            @endif
+
+                            {{-- Child Tickets (Follow-up) --}}
+                            @if($ticket->childTickets && $ticket->childTickets->count() > 0)
+                            <div class="info-box">
+                                <h6><i class="fas fa-code-branch me-2"></i>Follow-up Tickets</h6>
+                                <p class="text-muted small mb-3">This ticket requires further repair. Below are the follow-up tickets:</p>
+
+                                @foreach($ticket->childTickets as $child)
+                                <div class="child-ticket-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong>{{ $child->ticket_number }}</strong>
+                                            <p class="text-muted small mb-0">Created: {{ $child->created_at->format('d M Y, H:i') }}</p>
+                                        </div>
+                                        <span class="status-badge status-{{ $child->status }}" style="font-size: 0.7rem; padding: 4px 12px;">
+                                            {{ ucfirst(str_replace('_', ' ', $child->status)) }}
+                                        </span>
+                                    </div>
+
+                                    @if($child->technicians && $child->technicians->count() > 0)
+                                    <p class="small mb-1"><strong>Technician:</strong> {{ $child->technicians->pluck('name')->join(', ') }}</p>
+                                    @endif
+
+                                    @if($child->report)
+                                    <div class="mt-2 p-2 bg-white rounded small">
+                                        <strong>Work Done:</strong> {{ Str::limit($child->report->work_done, 80) }}
+                                        @if($child->work_duration)
+                                            <br><i class="fas fa-stopwatch me-1"></i>Duration: {{ $child->work_duration }}
+                                        @endif
+                                    </div>
+                                    @elseif($child->status == 'in_progress')
+                                    <p class="small text-info mb-0"><i class="fas fa-spinner fa-spin me-1"></i>Work in progress...</p>
+                                    @endif
+                                </div>
+                                @endforeach
                             </div>
                             @endif
 

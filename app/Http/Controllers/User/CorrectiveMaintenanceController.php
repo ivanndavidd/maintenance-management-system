@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Asset;
+use App\Models\CmReport;
 use App\Models\CorrectiveMaintenanceRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -17,9 +19,12 @@ class CorrectiveMaintenanceController extends Controller
     {
         $userId = auth()->id();
 
-        $query = CorrectiveMaintenanceRequest::whereHas('technicians', function ($q) use ($userId) {
-            $q->where('user_id', $userId);
-        })->with(['technicians']);
+        $assignedScope = fn($query) => $query->where(function ($q) use ($userId) {
+            $q->whereHas('technicians', fn($sub) => $sub->where('user_id', $userId))
+              ->orWhere('assigned_to', $userId);
+        });
+
+        $query = $assignedScope(CorrectiveMaintenanceRequest::query())->with(['technicians']);
 
         // Status filter
         if ($request->filled('status')) {
@@ -35,10 +40,10 @@ class CorrectiveMaintenanceController extends Controller
 
         // Statistics for current user
         $stats = [
-            'total' => CorrectiveMaintenanceRequest::whereHas('technicians', fn($q) => $q->where('user_id', $userId))->count(),
-            'in_progress' => CorrectiveMaintenanceRequest::whereHas('technicians', fn($q) => $q->where('user_id', $userId))->where('status', 'in_progress')->count(),
-            'completed' => CorrectiveMaintenanceRequest::whereHas('technicians', fn($q) => $q->where('user_id', $userId))->where('status', 'completed')->count(),
-            'failed' => CorrectiveMaintenanceRequest::whereHas('technicians', fn($q) => $q->where('user_id', $userId))->where('status', 'failed')->count(),
+            'total' => $assignedScope(CorrectiveMaintenanceRequest::query())->count(),
+            'in_progress' => $assignedScope(CorrectiveMaintenanceRequest::query())->where('status', 'in_progress')->count(),
+            'done' => $assignedScope(CorrectiveMaintenanceRequest::query())->whereIn('status', ['done', 'completed'])->count(),
+            'further_repair' => $assignedScope(CorrectiveMaintenanceRequest::query())->whereIn('status', ['further_repair', 'failed'])->count(),
         ];
 
         return view('user.corrective-maintenance.index', compact('tickets', 'stats'));
@@ -50,13 +55,22 @@ class CorrectiveMaintenanceController extends Controller
     public function show(CorrectiveMaintenanceRequest $ticket)
     {
         // Verify user is assigned to this ticket
-        if (!$ticket->technicians()->where('user_id', auth()->id())->exists()) {
+        if (!$ticket->technicians()->where('user_id', auth()->id())->exists() && $ticket->assigned_to !== auth()->id()) {
             abort(403, 'You are not assigned to this ticket.');
         }
 
-        $ticket->load('technicians');
+        $ticket->load([
+            'technicians',
+            'report.asset',
+            'report.submitter',
+            'childTickets.technicians',
+            'childTickets.report',
+            'parentTicket.report.asset'
+        ]);
 
-        return view('user.corrective-maintenance.show', compact('ticket'));
+        $assets = Asset::where('status', 'active')->orderBy('asset_name')->get();
+
+        return view('user.corrective-maintenance.show', compact('ticket', 'assets'));
     }
 
     /**
@@ -65,7 +79,7 @@ class CorrectiveMaintenanceController extends Controller
     public function updateNotes(Request $request, CorrectiveMaintenanceRequest $ticket)
     {
         // Verify user is assigned
-        if (!$ticket->technicians()->where('user_id', auth()->id())->exists()) {
+        if (!$ticket->technicians()->where('user_id', auth()->id())->exists() && $ticket->assigned_to !== auth()->id()) {
             abort(403, 'You are not assigned to this ticket.');
         }
 
@@ -80,36 +94,83 @@ class CorrectiveMaintenanceController extends Controller
     }
 
     /**
-     * Complete the ticket
+     * Submit report for the ticket
      */
-    public function complete(Request $request, CorrectiveMaintenanceRequest $ticket)
+    public function submitReport(Request $request, CorrectiveMaintenanceRequest $ticket)
     {
         // Verify user is assigned
-        if (!$ticket->technicians()->where('user_id', auth()->id())->exists()) {
+        if (!$ticket->technicians()->where('user_id', auth()->id())->exists() && $ticket->assigned_to !== auth()->id()) {
             abort(403, 'You are not assigned to this ticket.');
         }
 
+        if ($ticket->status !== 'in_progress') {
+            return redirect()->back()->with('error', 'Report can only be submitted for in-progress tickets.');
+        }
+
         $request->validate([
-            'resolution' => 'required|string|max:2000',
-            'status' => 'required|in:completed,failed',
+            'status' => 'required|in:done,further_repair,failed',
+            'asset_id' => 'nullable|exists:assets_master,id',
+            'problem_detail' => 'required|string|max:2000',
+            'work_done' => 'required|string|max:2000',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
-        if ($request->status === 'completed') {
-            $ticket->markAsCompleted($request->resolution, auth()->id());
-        } else {
-            $ticket->markAsFailed($request->resolution, auth()->id());
-        }
+        // Create report
+        CmReport::create([
+            'cm_request_id' => $ticket->id,
+            'asset_id' => $request->asset_id,
+            'status' => $request->status,
+            'problem_detail' => $request->problem_detail,
+            'work_done' => $request->work_done,
+            'notes' => $request->notes,
+            'submitted_by' => auth()->id(),
+            'submitted_at' => now(),
+        ]);
+
+        // Update ticket status
+        $ticket->status = $request->status;
+        $ticket->report_submitted_at = now();
+        $ticket->completed_at = now();
+        $ticket->resolution = $request->work_done;
+        $ticket->save();
 
         // Send email to requestor
         try {
             Mail::to($ticket->requestor_email)->send(new MaintenanceRequestCompleted($ticket));
         } catch (\Exception $e) {
-            \Log::error('Failed to send completion email: ' . $e->getMessage());
+            \Log::error('Failed to send report email: ' . $e->getMessage());
         }
 
-        $statusText = $request->status === 'completed' ? 'completed' : 'marked as failed';
+        // Send notification to supervisors and admins
+        try {
+            $supervisors = User::role('supervisor_maintenance')->get();
+            $admins = User::role('admin')->get();
+
+            foreach ($supervisors as $supervisor) {
+                Mail::to($supervisor->email)->send(new MaintenanceRequestCompleted($ticket));
+            }
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new MaintenanceRequestCompleted($ticket));
+            }
+
+            \Log::info('CM report completion notifications sent to supervisors and admins', [
+                'ticket' => $ticket->ticket_number,
+                'status' => $request->status,
+                'supervisors_count' => $supervisors->count(),
+                'admins_count' => $admins->count(),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send completion notification to supervisors/admins: ' . $e->getMessage());
+        }
+
+        $statusLabels = [
+            'done' => 'Done',
+            'further_repair' => 'Further Repair',
+            'failed' => 'Failed',
+        ];
+        $statusText = $statusLabels[$request->status] ?? ucfirst($request->status);
         return redirect()->route('user.corrective-maintenance.index')
-            ->with('success', "Ticket {$statusText} successfully.");
+            ->with('success', "Report submitted successfully. Status: {$statusText}.");
     }
 
     /**

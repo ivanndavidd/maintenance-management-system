@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'KPI Management')
+@section('page-title', 'KPI Management')
 
 @section('content')
     <div class="container-fluid">

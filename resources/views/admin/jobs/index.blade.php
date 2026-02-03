@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('page-title', 'Job Management')
+
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->

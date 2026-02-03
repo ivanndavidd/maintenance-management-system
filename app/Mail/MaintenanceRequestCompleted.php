@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class MaintenanceRequestCompleted extends Mailable 
+class MaintenanceRequestCompleted extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -29,7 +29,11 @@ class MaintenanceRequestCompleted extends Mailable
      */
     public function envelope(): Envelope
     {
-        $statusText = $this->ticket->status === 'completed' ? 'Completed' : 'Failed';
+        $statusText = match($this->ticket->status) {
+            'completed', 'done' => 'Done',
+            'further_repair' => 'Further Repair Needed',
+            default => 'Failed',
+        };
         return new Envelope(
             subject: "[{$statusText}] " . $this->ticket->ticket_number . ' - Maintenance Request',
         );

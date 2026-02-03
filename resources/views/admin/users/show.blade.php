@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('page-title', 'User Profile')
+
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
@@ -114,19 +116,19 @@
                     <div class="row text-center">
                         <div class="col-md-3 mb-3">
                             <div class="p-3 bg-light rounded">
-                                <h3 class="text-primary mb-0">{{ $stats['total_assigned_jobs'] }}</h3>
-                                <small class="text-muted">Total Assigned</small>
+                                <h3 class="text-primary mb-0">{{ $stats['total_assigned'] }}</h3>
+                                <small class="text-muted">Total CMR Assigned</small>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
                             <div class="p-3 bg-light rounded">
-                                <h3 class="text-success mb-0">{{ $stats['completed_jobs'] }}</h3>
+                                <h3 class="text-success mb-0">{{ $stats['completed'] }}</h3>
                                 <small class="text-muted">Completed</small>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
                             <div class="p-3 bg-light rounded">
-                                <h3 class="text-warning mb-0">{{ $stats['in_progress_jobs'] }}</h3>
+                                <h3 class="text-warning mb-0">{{ $stats['in_progress'] }}</h3>
                                 <small class="text-muted">In Progress</small>
                             </div>
                         </div>
@@ -137,68 +139,35 @@
                             </div>
                         </div>
                     </div>
-
-                    <hr>
-
-                    <div class="row text-center">
-                        <div class="col-md-4 mb-3">
-                            <div class="p-3 bg-light rounded">
-                                <h4 class="text-primary mb-0">{{ $stats['total_work_reports'] }}</h4>
-                                <small class="text-muted">Total Reports</small>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="p-3 bg-light rounded">
-                                <h4 class="text-success mb-0">{{ $stats['completed_reports'] }}</h4>
-                                <small class="text-muted">Completed Reports</small>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="p-3 bg-light rounded">
-                                <h4 class="text-warning mb-0">{{ $stats['pending_reports'] }}</h4>
-                                <small class="text-muted">Pending Reports</small>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <!-- Recent Jobs -->
-            <div class="card shadow-sm mb-4">
+            <!-- Recent CMR Tickets -->
+            <div class="card shadow-sm">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-tasks"></i> Recent Assigned Jobs</h5>
+                    <h5 class="mb-0"><i class="fas fa-wrench"></i> Recent CMR Tickets</h5>
                 </div>
                 <div class="card-body p-0">
-                    @if($recentJobs->count() > 0)
+                    @if($recentCmr->count() > 0)
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Job Title</th>
-                                    <th>Description</th>
+                                    <th>Ticket</th>
+                                    <th>Equipment</th>
                                     <th>Priority</th>
                                     <th>Status</th>
                                     <th>Date</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($recentJobs as $job)
+                                @foreach($recentCmr as $cmr)
                                 <tr>
-                                    <td>{{ Str::limit($job->title, 40) }}</td>
-                                    <td>{{ $job->description ? Str::limit($job->description, 30) : 'N/A' }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $job->priority == 'high' ? 'danger' : ($job->priority == 'medium' ? 'warning' : 'secondary') }}">
-                                            {{ ucfirst($job->priority) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ $job->status == 'completed' ? 'success' : ($job->status == 'in_progress' ? 'primary' : 'warning') }}">
-                                            {{ ucfirst(str_replace('_', ' ', $job->status)) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <small>{{ $job->created_at->format('d M Y') }}</small>
-                                    </td>
+                                    <td><strong>{{ $cmr->ticket_number }}</strong></td>
+                                    <td>{{ $cmr->equipment_name ?? '-' }}</td>
+                                    <td><span class="badge {{ $cmr->getPriorityBadgeClass() }}">{{ ucfirst($cmr->priority) }}</span></td>
+                                    <td><span class="badge {{ $cmr->getStatusBadgeClass() }}">{{ ucfirst(str_replace('_', ' ', $cmr->status)) }}</span></td>
+                                    <td><small>{{ $cmr->created_at->format('d M Y') }}</small></td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -206,52 +175,8 @@
                     </div>
                     @else
                     <div class="text-center py-4">
-                        <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-0">No assigned jobs yet</p>
-                    </div>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Recent Work Reports -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-clipboard-list"></i> Recent Work Reports</h5>
-                </div>
-                <div class="card-body p-0">
-                    @if($recentReports->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Job Title</th>
-                                    <th>Work Done</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($recentReports as $report)
-                                <tr>
-                                    <td>{{ $report->job->title ?? 'N/A' }}</td>
-                                    <td>{{ Str::limit($report->work_description ?? 'N/A', 50) }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $report->status == 'completed' ? 'success' : ($report->status == 'in_progress' ? 'primary' : 'warning') }}">
-                                            {{ ucfirst($report->status) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <small>{{ $report->created_at->format('d M Y') }}</small>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    @else
-                    <div class="text-center py-4">
-                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-0">No work reports yet</p>
+                        <i class="fas fa-wrench fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No CMR tickets assigned yet</p>
                     </div>
                     @endif
                 </div>

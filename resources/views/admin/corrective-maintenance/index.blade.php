@@ -1,6 +1,18 @@
 @extends('layouts.admin')
 
 @section('title', 'Corrective Maintenance Tickets')
+@section('page-title', 'Corrective Maintenance - Tickets')
+
+@push('styles')
+<style>
+    .parent-has-child td {
+        border-bottom: none !important;
+    }
+    .child-ticket td {
+        border-top: none !important;
+    }
+</style>
+@endpush
 
 @section('content')
 <div class="container-fluid">
@@ -15,52 +27,52 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-2">
-            <div class="card bg-secondary text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['total'] }}</h3>
-                    <small>Total Tickets</small>
+    <div class="row mb-4 g-2">
+        <div class="col">
+            <div class="card bg-secondary text-white h-100">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0">{{ $stats['total'] }}</h4>
+                    <small>Total</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
-            <div class="card bg-warning text-dark">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['pending'] }}</h3>
+        <div class="col">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0">{{ $stats['pending'] }}</h4>
                     <small>Pending</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['received'] }}</h3>
+        <div class="col">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0">{{ $stats['received'] }}</h4>
                     <small>Received</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['in_progress'] }}</h3>
+        <div class="col">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0">{{ $stats['in_progress'] }}</h4>
                     <small>In Progress</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['completed'] }}</h3>
-                    <small>Completed</small>
+        <div class="col">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0">{{ $stats['done'] }}</h4>
+                    <small>Done</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
-            <div class="card bg-danger text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['failed'] }}</h3>
-                    <small>Failed</small>
+        <div class="col">
+            <div class="card bg-orange text-white h-100" style="background-color: #fd7e14 !important;">
+                <div class="card-body text-center py-2">
+                    <h4 class="mb-0">{{ $stats['further_repair'] }}</h4>
+                    <small>Further Repair</small>
                 </div>
             </div>
         </div>
@@ -81,8 +93,10 @@
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="received" {{ request('status') == 'received' ? 'selected' : '' }}>Received</option>
                         <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Failed</option>
+                        <option value="done" {{ request('status') == 'done' ? 'selected' : '' }}>Done</option>
+                        <option value="further_repair" {{ request('status') == 'further_repair' ? 'selected' : '' }}>Further Repair</option>
+                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed (Legacy)</option>
+                        <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Failed (Legacy)</option>
                         <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
                 </div>
@@ -133,11 +147,17 @@
                     </thead>
                     <tbody>
                         @forelse($tickets as $ticket)
-                        <tr>
+                        {{-- Parent Ticket Row --}}
+                        <tr @if($ticket->childTickets->count() > 0) class="parent-has-child" @endif>
                             <td>
                                 <a href="{{ route('admin.corrective-maintenance.show', $ticket) }}" class="fw-bold text-decoration-none">
                                     {{ $ticket->ticket_number }}
                                 </a>
+                                @if($ticket->childTickets->count() > 0)
+                                    <span class="badge bg-secondary ms-1" title="Has {{ $ticket->childTickets->count() }} sub-ticket(s)">
+                                        <i class="fas fa-code-branch"></i> {{ $ticket->childTickets->count() }}
+                                    </span>
+                                @endif
                             </td>
                             <td>
                                 <div>{{ $ticket->requestor_name }}</div>
@@ -178,6 +198,55 @@
                                 </a>
                             </td>
                         </tr>
+                        {{-- Child Tickets (Sub-tickets) Rows --}}
+                        @foreach($ticket->childTickets as $childTicket)
+                        <tr class="child-ticket">
+                            <td>
+                                <span class="text-muted ms-3"><i class="fas fa-level-up-alt fa-rotate-90 me-2"></i></span>
+                                <a href="{{ route('admin.corrective-maintenance.show', $childTicket) }}" class="text-decoration-none">
+                                    {{ $childTicket->ticket_number }}
+                                </a>
+                            </td>
+                            <td>
+                                <div>{{ $childTicket->requestor_name }}</div>
+                                <small class="text-muted">{{ $childTicket->requestor_email }}</small>
+                            </td>
+                            <td>
+                                <span class="badge {{ $childTicket->getProblemCategoryBadgeClass() }}">
+                                    <i class="fas {{ $childTicket->getProblemCategoryIcon() }} me-1"></i>
+                                    {{ $childTicket->getProblemCategoryLabel() }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {{ $childTicket->getStatusBadgeClass() }}">
+                                    {{ ucfirst(str_replace('_', ' ', $childTicket->status)) }}
+                                </span>
+                            </td>
+                            <td>
+                                @if($childTicket->technicians->count() > 0)
+                                    @foreach($childTicket->technicians->take(2) as $tech)
+                                        <span class="badge bg-primary">{{ $tech->name }}</span>
+                                    @endforeach
+                                    @if($childTicket->technicians->count() > 2)
+                                        <span class="badge bg-secondary">+{{ $childTicket->technicians->count() - 2 }}</span>
+                                    @endif
+                                @elseif($childTicket->assignedUser)
+                                    <span class="badge bg-primary">{{ $childTicket->assignedUser->name }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td>
+                                {{ $childTicket->created_at->format('d M Y') }}<br>
+                                <small class="text-muted">{{ $childTicket->created_at->format('H:i') }}</small>
+                            </td>
+                            <td>
+                                <a href="{{ route('admin.corrective-maintenance.show', $childTicket) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
                         @empty
                         <tr>
                             <td colspan="7" class="text-center py-4">

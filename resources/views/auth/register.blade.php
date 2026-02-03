@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Register - {{ config('app.name', 'Warehouse Maintenance') }}</title>
-    
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('assets/Blibli_Logo_Symbol_FC_RGB.png') }}">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome from jsDelivr -->
@@ -13,30 +16,50 @@
     
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('{{ asset('assets/maxresdefault.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             display: flex;
             align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding: 20px 0;
+            position: relative;
         }
-        
+
+        /* Overlay untuk background image */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
+
         .register-container {
             width: 100%;
             max-width: 500px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 1;
         }
-        
+
         .register-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+            /* Langsung visible tanpa perlu hover */
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
         }
         
         .register-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0095DA;
             color: white;
             padding: 30px;
             text-align: center;
@@ -71,25 +94,26 @@
         }
         
         .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #0095DA;
+            box-shadow: 0 0 0 0.2rem rgba(0, 149, 218, 0.25);
         }
         
         .btn-register {
             width: 100%;
             padding: 12px;
             border-radius: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0095DA;
             border: none;
             color: white;
             font-weight: 600;
             font-size: 16px;
-            transition: transform 0.2s;
+            transition: all 0.3s;
         }
-        
+
         .btn-register:hover {
+            background: #007AB8;
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 20px rgba(0, 149, 218, 0.4);
         }
         
         .login-link {
@@ -97,15 +121,16 @@
             margin-top: 20px;
             color: #6c757d;
         }
-        
+
         .login-link a {
-            color: #667eea;
+            color: #0095DA;
             text-decoration: none;
             font-weight: 600;
         }
-        
+
         .login-link a:hover {
             text-decoration: underline;
+            color: #007AB8;
         }
         
         .invalid-feedback {

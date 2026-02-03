@@ -75,10 +75,10 @@ Route::get('/', function () {
         // If already logged in, redirect to dashboard
         if (auth()->user()->hasRole('admin')) {
             return redirect()->route('admin.dashboard');
+        } elseif (auth()->user()->hasRole('supervisor_maintenance')) {
+            return redirect()->route('supervisor.dashboard');
         } elseif (auth()->user()->hasRole('staff_maintenance')) {
             return redirect()->route('user.dashboard');
-        } elseif (auth()->user()->hasRole('pic')) {
-            return redirect()->route('pic.dashboard');
         } else {
             // User has no role assigned
             Auth::logout();
@@ -101,10 +101,10 @@ Route::get('/dashboard', function () {
     // Redirect based on role
     if (auth()->user()->hasRole('admin')) {
         return redirect()->route('admin.dashboard');
+    } elseif (auth()->user()->hasRole('supervisor_maintenance')) {
+        return redirect()->route('supervisor.dashboard');
     } elseif (auth()->user()->hasRole('staff_maintenance')) {
         return redirect()->route('user.dashboard');
-    } elseif (auth()->user()->hasRole('pic')) {
-        return redirect()->route('pic.dashboard');
     } else {
         // User has no role, logout and redirect to login
         Auth::logout();
@@ -125,7 +125,7 @@ Route::middleware(['auth'])->group(function () {
     // ========================================
     Route::prefix('admin')
         ->name('admin.')
-        ->middleware([RoleMiddleware::class . ':admin'])
+        ->middleware([RoleMiddleware::class . ':admin|supervisor_maintenance'])
         ->group(function () {
             // Dashboard
             Route::get('/dashboard', [
@@ -454,74 +454,147 @@ Route::middleware(['auth'])->group(function () {
                 });
 
 
-            // PIC Incident Reports Management
-            Route::prefix('incident-reports')
-                ->name('incident-reports.')
+            // Preventive Maintenance
+            Route::prefix('preventive-maintenance')
+                ->name('preventive-maintenance.')
                 ->group(function () {
                     Route::get('/', [
-                        App\Http\Controllers\Admin\IncidentReportController::class,
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
                         'index',
                     ])->name('index');
 
-                    Route::get('/{incidentReport}', [
-                        App\Http\Controllers\Admin\IncidentReportController::class,
+                    Route::get('/create', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'create',
+                    ])->name('create');
+
+                    Route::post('/', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'store',
+                    ])->name('store');
+
+                    Route::get('/shifts-for-date', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'getShiftsForDate',
+                    ])->name('shifts-for-date');
+
+                    // Calendar View Routes (must be before wildcard routes)
+                    Route::get('/calendar', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'calendar',
+                    ])->name('calendar');
+
+                    Route::get('/calendar/events', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'getCalendarEvents',
+                    ])->name('calendar.events');
+
+                    Route::post('/calendar/tasks', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'storeCalendarTask',
+                    ])->name('calendar.tasks.store');
+
+                    Route::put('/calendar/tasks/{task}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'updateCalendarTask',
+                    ])->name('calendar.tasks.update');
+
+                    Route::patch('/calendar/tasks/{task}/move', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'moveCalendarTask',
+                    ])->name('calendar.tasks.move');
+
+                    Route::patch('/calendar/tasks/{task}/resize', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'resizeCalendarTask',
+                    ])->name('calendar.tasks.resize');
+
+                    Route::delete('/calendar/tasks/{task}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'deleteCalendarTask',
+                    ])->name('calendar.tasks.delete');
+
+                    Route::get('/{preventive_maintenance}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
                         'show',
                     ])->name('show');
 
-                    Route::post('/{incidentReport}/assign', [
-                        App\Http\Controllers\Admin\IncidentReportController::class,
-                        'assign',
-                    ])->name('assign');
+                    Route::get('/{preventive_maintenance}/edit', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'edit',
+                    ])->name('edit');
 
-                    Route::post('/{incidentReport}/update-status', [
-                        App\Http\Controllers\Admin\IncidentReportController::class,
-                        'updateStatus',
-                    ])->name('update-status');
+                    Route::put('/{preventive_maintenance}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'update',
+                    ])->name('update');
 
-                    Route::delete('/{incidentReport}', [
-                        App\Http\Controllers\Admin\IncidentReportController::class,
+                    Route::delete('/{preventive_maintenance}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
                         'destroy',
                     ])->name('destroy');
-                });
 
-            // PIC Task Requests Management
-            Route::prefix('task-requests')
-                ->name('task-requests.')
-                ->group(function () {
-                    Route::get('/', [
-                        App\Http\Controllers\Admin\TaskRequestController::class,
-                        'index',
-                    ])->name('index');
+                    Route::patch('/{preventive_maintenance}/activate', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'activate',
+                    ])->name('activate');
 
-                    Route::get('/{taskRequest}', [
-                        App\Http\Controllers\Admin\TaskRequestController::class,
-                        'show',
-                    ])->name('show');
+                    // AJAX routes for adding/removing items
+                    Route::post('/{schedule}/date', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'addDate',
+                    ])->name('add-date');
 
-                    Route::post('/{taskRequest}/approve', [
-                        App\Http\Controllers\Admin\TaskRequestController::class,
-                        'approve',
-                    ])->name('approve');
+                    Route::delete('/date/{scheduleDate}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'deleteDate',
+                    ])->name('delete-date');
 
-                    Route::post('/{taskRequest}/reject', [
-                        App\Http\Controllers\Admin\TaskRequestController::class,
-                        'reject',
-                    ])->name('reject');
+                    Route::post('/date/{scheduleDate}/cleaning-group', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'addCleaningGroup',
+                    ])->name('add-cleaning-group');
 
-                    Route::post('/{taskRequest}/assign', [
-                        App\Http\Controllers\Admin\TaskRequestController::class,
-                        'assign',
-                    ])->name('assign');
+                    Route::post('/cleaning-group/{cleaningGroup}/spr', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'addSprGroup',
+                    ])->name('add-spr-group');
 
-                    Route::post('/{taskRequest}/convert-to-job', [
-                        App\Http\Controllers\Admin\TaskRequestController::class,
-                        'convertToJob',
-                    ])->name('convert-to-job');
+                    Route::post('/spr/{sprGroup}/task', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'addTask',
+                    ])->name('add-task');
 
-                    Route::delete('/{taskRequest}', [
-                        App\Http\Controllers\Admin\TaskRequestController::class,
-                        'destroy',
-                    ])->name('destroy');
+                    Route::post('/date/{scheduleDate}/standalone-task', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'addStandaloneTask',
+                    ])->name('add-standalone-task');
+
+                    Route::delete('/cleaning-group/{cleaningGroup}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'deleteCleaningGroup',
+                    ])->name('delete-cleaning-group');
+
+                    Route::delete('/spr/{sprGroup}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'deleteSprGroup',
+                    ])->name('delete-spr-group');
+
+                    Route::delete('/task/{task}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'deleteTask',
+                    ])->name('delete-task');
+
+                    Route::post('/task/{task}/status', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'updateTaskStatus',
+                    ])->name('update-task-status');
+
+                    Route::put('/task/{task}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'updateTask',
+                    ])->name('update-task');
+
                 });
 
             // Corrective Maintenance Tickets Management
@@ -532,6 +605,16 @@ Route::middleware(['auth'])->group(function () {
                         App\Http\Controllers\Admin\CorrectiveMaintenanceController::class,
                         'index',
                     ])->name('index');
+
+                    Route::get('/reports', [
+                        App\Http\Controllers\Admin\CorrectiveMaintenanceController::class,
+                        'reports',
+                    ])->name('reports');
+
+                    Route::post('/{ticket}/create-sub-ticket', [
+                        App\Http\Controllers\Admin\CorrectiveMaintenanceController::class,
+                        'createSubTicket',
+                    ])->name('create-sub-ticket');
 
                     Route::get('/{ticket}', [
                         App\Http\Controllers\Admin\CorrectiveMaintenanceController::class,
@@ -565,16 +648,176 @@ Route::middleware(['auth'])->group(function () {
                 });
         });
 
+    // ========================================
+    // SUPERVISOR MAINTENANCE ROUTES
+    // ========================================
+    Route::prefix('supervisor')
+        ->name('supervisor.')
+        ->middleware([RoleMiddleware::class . ':supervisor_maintenance'])
+        ->group(function () {
+            // Dashboard
+            Route::get('/dashboard', [
+                App\Http\Controllers\Admin\DashboardController::class,
+                'index',
+            ])->name('dashboard');
+
+            // Shift Management
+            Route::resource('shifts', App\Http\Controllers\Admin\ShiftController::class);
+            Route::post('shifts/{shift}/assign-user', [
+                App\Http\Controllers\Admin\ShiftController::class,
+                'assignUser',
+            ])->name('shifts.assign-user');
+            Route::post('shifts/{shift}/remove-user', [
+                App\Http\Controllers\Admin\ShiftController::class,
+                'removeUser',
+            ])->name('shifts.remove-user');
+            Route::post('shifts/{shift}/assign-user-hourly', [
+                App\Http\Controllers\Admin\ShiftController::class,
+                'assignUserHourly',
+            ])->name('shifts.assign-user-hourly');
+            Route::post('shifts/{shift}/remove-assignment', [
+                App\Http\Controllers\Admin\ShiftController::class,
+                'removeAssignment',
+            ])->name('shifts.remove-assignment');
+            Route::post('shifts/{shift}/remove-assignments', [
+                App\Http\Controllers\Admin\ShiftController::class,
+                'removeAssignments',
+            ])->name('shifts.remove-assignments');
+            Route::post('shifts/{shift}/clear-all-assignments', [
+                App\Http\Controllers\Admin\ShiftController::class,
+                'clearAllAssignments',
+            ])->name('shifts.clear-all-assignments');
+            Route::patch('shifts/{shift}/activate', [
+                App\Http\Controllers\Admin\ShiftController::class,
+                'activate',
+            ])->name('shifts.activate');
+            Route::get('shifts/get-shift-for-date', [
+                App\Http\Controllers\Admin\ShiftController::class,
+                'getShiftForDate',
+            ])->name('shifts.get-shift-for-date');
+            Route::get('shifts/{shift}/day-details', [
+                App\Http\Controllers\Admin\ShiftController::class,
+                'getDayDetails',
+            ])->name('shifts.day-details');
+            Route::post('shifts/change-assignment', [
+                App\Http\Controllers\Admin\ShiftController::class,
+                'changeAssignment',
+            ])->name('shifts.change-assignment');
+
+            // Share all admin routes untuk inventory, stock opname, PM, CM, KPI, help articles
+            // Inventory Management routes... (copy dari admin, terlalu panjang)
+
+            // Redirect ke admin routes untuk simplicity - controller sama
+            Route::redirect('/spareparts', '/admin/spareparts')->name('spareparts.index');
+            Route::redirect('/tools', '/admin/tools')->name('tools.index');
+            Route::redirect('/assets', '/admin/assets')->name('assets.index');
+            Route::redirect('/purchase-orders', '/admin/purchase-orders')->name('purchase-orders.index');
+            Route::redirect('/opname', '/admin/opname')->name('opname.dashboard');
+            Route::redirect('/adjustments', '/admin/adjustments')->name('adjustments.index');
+            Route::redirect('/preventive-maintenance', '/admin/preventive-maintenance')->name('preventive-maintenance.index');
+            Route::redirect('/corrective-maintenance', '/admin/corrective-maintenance')->name('corrective-maintenance.index');
+            Route::redirect('/kpi', '/admin/kpi')->name('kpi.index');
+            Route::redirect('/help-articles', '/admin/help-articles')->name('help-articles.index');
+
+            // My Tasks (using User controller but need to use admin layout)
+            Route::prefix('my-tasks')
+                ->name('my-tasks.')
+                ->group(function () {
+                    // Preventive Maintenance
+                    Route::get('/preventive-maintenance', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'preventiveMaintenance',
+                    ])->name('preventive-maintenance');
+
+                    Route::get('/preventive-maintenance/{schedule}', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'showPreventiveMaintenance',
+                    ])->name('preventive-maintenance.show');
+
+                    Route::post('/preventive-maintenance/task/{task}/status', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'updatePmTaskStatus',
+                    ])->name('preventive-maintenance.task.update-status');
+
+                    // Corrective Maintenance
+                    Route::get('/corrective-maintenance', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'correctiveMaintenance',
+                    ])->name('corrective-maintenance');
+
+                    Route::get('/corrective-maintenance/{ticket}', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'showCorrectiveMaintenance',
+                    ])->name('corrective-maintenance.show');
+
+                    Route::patch('/corrective-maintenance/{ticket}/update-notes', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'updateCmNotes',
+                    ])->name('corrective-maintenance.update-notes');
+
+                    Route::patch('/corrective-maintenance/{ticket}/submit-report', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'submitCmReport',
+                    ])->name('corrective-maintenance.submit-report');
+
+                    Route::patch('/corrective-maintenance/{ticket}/acknowledge', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'acknowledgeCm',
+                    ])->name('corrective-maintenance.acknowledge');
+
+                    // Stock Opname
+                    Route::get('/stock-opname', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'stockOpname',
+                    ])->name('stock-opname');
+
+                    Route::get('/stock-opname/{schedule}', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'showStockOpname',
+                    ])->name('stock-opname.show');
+
+                    Route::post('/stock-opname/execute/{item}', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'executeOpnameItem',
+                    ])->name('stock-opname.execute');
+
+                    Route::post('/stock-opname/execute-batch', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'executeOpnameBatch',
+                    ])->name('stock-opname.execute-batch');
+
+                    Route::post('/stock-opname/cancel/{item}', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'cancelOpnameItem',
+                    ])->name('stock-opname.cancel');
+
+                    Route::get('/stock-opname/{schedule}/export-template', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'exportOpnameTemplate',
+                    ])->name('stock-opname.export-template');
+
+                    Route::post('/stock-opname/{schedule}/import-excel', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'importOpnameExcel',
+                    ])->name('stock-opname.import-excel');
+                });
+        });
+
     // User Routes
     Route::prefix('user')
         ->name('user.')
-        ->middleware(['auth', RoleMiddleware::class . ':staff_maintenance'])
+        ->middleware(['auth', RoleMiddleware::class . ':staff_maintenance|supervisor_maintenance'])
         ->group(function () {
             // Dashboard
             Route::get('/dashboard', [
                 App\Http\Controllers\User\DashboardController::class,
                 'index',
             ])->name('dashboard');
+
+            Route::get('/dashboard/calendar-data', [
+                App\Http\Controllers\User\DashboardController::class,
+                'getCalendarDataAjax',
+            ])->name('dashboard.calendar-data');
 
             // My Tasks
             Route::get('/tasks', [
@@ -611,31 +854,6 @@ Route::middleware(['auth'])->group(function () {
                 'show',
             ])->name('help.show');
 
-            // Assigned Incidents
-            Route::prefix('assigned-incidents')
-                ->name('assigned-incidents.')
-                ->group(function () {
-                    Route::get('/', [
-                        App\Http\Controllers\User\AssignedIncidentController::class,
-                        'index',
-                    ])->name('index');
-
-                    Route::get('/{incidentReport}', [
-                        App\Http\Controllers\User\AssignedIncidentController::class,
-                        'show',
-                    ])->name('show');
-
-                    Route::post('/{incidentReport}/start', [
-                        App\Http\Controllers\User\AssignedIncidentController::class,
-                        'startWork',
-                    ])->name('start');
-
-                    Route::post('/{incidentReport}/complete', [
-                        App\Http\Controllers\User\AssignedIncidentController::class,
-                        'complete',
-                    ])->name('complete');
-                });
-
             // Corrective Maintenance (assigned based on shift)
             Route::prefix('corrective-maintenance')
                 ->name('corrective-maintenance.')
@@ -655,40 +873,15 @@ Route::middleware(['auth'])->group(function () {
                         'updateNotes',
                     ])->name('update-notes');
 
-                    Route::patch('/{ticket}/complete', [
+                    Route::patch('/{ticket}/submit-report', [
                         App\Http\Controllers\User\CorrectiveMaintenanceController::class,
-                        'complete',
-                    ])->name('complete');
+                        'submitReport',
+                    ])->name('submit-report');
 
                     Route::patch('/{ticket}/acknowledge', [
                         App\Http\Controllers\User\CorrectiveMaintenanceController::class,
                         'acknowledge',
                     ])->name('acknowledge');
-                });
-
-            // Assigned Task Requests
-            Route::prefix('assigned-task-requests')
-                ->name('assigned-task-requests.')
-                ->group(function () {
-                    Route::get('/', [
-                        App\Http\Controllers\User\AssignedTaskRequestController::class,
-                        'index',
-                    ])->name('index');
-
-                    Route::get('/{taskRequest}', [
-                        App\Http\Controllers\User\AssignedTaskRequestController::class,
-                        'show',
-                    ])->name('show');
-
-                    Route::post('/{taskRequest}/start', [
-                        App\Http\Controllers\User\AssignedTaskRequestController::class,
-                        'startWork',
-                    ])->name('start');
-
-                    Route::post('/{taskRequest}/complete', [
-                        App\Http\Controllers\User\AssignedTaskRequestController::class,
-                        'complete',
-                    ])->name('complete');
                 });
 
             // Stock Opname
@@ -730,30 +923,26 @@ Route::middleware(['auth'])->group(function () {
                         'importExcel',
                     ])->name('import-excel');
                 });
-        });
 
-    // ========================================
-    // PIC ROUTES
-    // ========================================
-    Route::prefix('pic')
-        ->name('pic.')
-        ->middleware(['auth', RoleMiddleware::class . ':pic'])
-        ->group(function () {
-            // Dashboard
-            Route::get('/dashboard', [
-                App\Http\Controllers\Pic\DashboardController::class,
-                'index',
-            ])->name('dashboard');
+            // Preventive Maintenance
+            Route::prefix('preventive-maintenance')
+                ->name('preventive-maintenance.')
+                ->group(function () {
+                    Route::get('/', [
+                        App\Http\Controllers\User\PreventiveMaintenanceController::class,
+                        'index',
+                    ])->name('index');
 
-            // Incident Reports
-            Route::resource('incident-reports', App\Http\Controllers\Pic\IncidentReportController::class);
-            Route::delete('incident-reports/{incidentReport}/attachment/{index}', [
-                App\Http\Controllers\Pic\IncidentReportController::class,
-                'deleteAttachment',
-            ])->name('incident-reports.delete-attachment');
+                    Route::get('/{schedule}', [
+                        App\Http\Controllers\User\PreventiveMaintenanceController::class,
+                        'show',
+                    ])->name('show');
 
-            // Task Requests
-            Route::resource('task-requests', App\Http\Controllers\Pic\TaskRequestController::class)->except(['edit', 'update']);
+                    Route::post('/task/{task}/status', [
+                        App\Http\Controllers\User\PreventiveMaintenanceController::class,
+                        'updateTaskStatus',
+                    ])->name('task.update-status');
+                });
         });
 
     // ========================================

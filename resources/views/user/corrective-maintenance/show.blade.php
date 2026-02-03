@@ -10,6 +10,12 @@
                 <i class="fas fa-arrow-left me-2"></i>Back to My Tickets
             </a>
             <h2 class="mt-2"><i class="fas fa-ticket-alt me-2"></i>{{ $ticket->ticket_number }}</h2>
+            @if($ticket->parentTicket)
+                <small class="text-muted">
+                    <i class="fas fa-link me-1"></i>Sub-ticket of
+                    <a href="{{ route('user.corrective-maintenance.show', $ticket->parentTicket) }}">{{ $ticket->parentTicket->ticket_number }}</a>
+                </small>
+            @endif
         </div>
         <span class="badge {{ $ticket->getStatusBadgeClass() }} fs-5 px-3 py-2">
             {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
@@ -71,23 +77,18 @@
                                     <td>{{ $ticket->ticket_number }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Priority</th>
-                                    <td><span class="badge {{ $ticket->getPriorityBadgeClass() }}">{{ ucfirst($ticket->priority) }}</span></td>
+                                    <th>Problem Category</th>
+                                    <td>
+                                        <span class="badge {{ $ticket->getProblemCategoryBadgeClass() }}">
+                                            <i class="fas {{ $ticket->getProblemCategoryIcon() }} me-1"></i>
+                                            {{ $ticket->getProblemCategoryLabel() }}
+                                        </span>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <th>Location</th>
-                                    <td><strong>{{ $ticket->location }}</strong></td>
+                                    <th>Created At</th>
+                                    <td>{{ $ticket->created_at->format('d M Y, H:i') }}</td>
                                 </tr>
-                                <tr>
-                                    <th>Equipment</th>
-                                    <td>{{ $ticket->equipment_name ?: '-' }}</td>
-                                </tr>
-                                @if($ticket->equipment_id)
-                                <tr>
-                                    <th>Equipment ID</th>
-                                    <td>{{ $ticket->equipment_id }}</td>
-                                </tr>
-                                @endif
                             </table>
                         </div>
                         <div class="col-md-6">
@@ -99,14 +100,6 @@
                                 <tr>
                                     <th>Email</th>
                                     <td><a href="mailto:{{ $ticket->requestor_email }}">{{ $ticket->requestor_email }}</a></td>
-                                </tr>
-                                <tr>
-                                    <th>Phone</th>
-                                    <td>{{ $ticket->requestor_phone ?: '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Department</th>
-                                    <td>{{ $ticket->requestor_department ?: '-' }}</td>
                                 </tr>
                             </table>
                         </div>
@@ -126,6 +119,16 @@
                     </div>
                     @endif
 
+                    @if($ticket->parent_ticket_id && $ticket->parentTicket && $ticket->parentTicket->report)
+                    <h6><i class="fas fa-history me-2 text-info"></i>Previous Work Done (Parent Ticket)</h6>
+                    <div class="bg-info bg-opacity-10 p-3 rounded mb-3 border-start border-info border-3">
+                        {!! nl2br(e($ticket->parentTicket->report->work_done)) !!}
+                        <div class="text-muted small mt-2">
+                            <i class="fas fa-link me-1"></i>From: <a href="{{ route('user.corrective-maintenance.show', $ticket->parentTicket) }}">{{ $ticket->parentTicket->ticket_number }}</a>
+                        </div>
+                    </div>
+                    @endif
+
                     @if($ticket->attachment_path)
                     <h6><i class="fas fa-paperclip me-2"></i>Attachment</h6>
                     <a href="{{ Storage::url($ticket->attachment_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
@@ -135,46 +138,105 @@
                 </div>
             </div>
 
-            <!-- Work Notes -->
+            <!-- Submitted Report -->
+            @if($ticket->report)
             <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-clipboard me-2"></i>Work Notes</h5>
-                </div>
-                <div class="card-body">
-                    @if($ticket->work_notes)
-                        <div class="bg-light p-3 rounded mb-3">
-                            {!! nl2br(e($ticket->work_notes)) !!}
-                        </div>
-                    @else
-                        <p class="text-muted mb-0">No work notes yet.</p>
-                    @endif
-
-                    @if($ticket->status == 'in_progress')
-                    <form action="{{ route('user.corrective-maintenance.update-notes', $ticket) }}" method="POST" class="mt-3">
-                        @csrf
-                        @method('PATCH')
-                        <div class="mb-3">
-                            <textarea name="work_notes" class="form-control" rows="3" placeholder="Add or update work notes...">{{ $ticket->work_notes }}</textarea>
-                        </div>
-                        <button type="submit" class="btn btn-secondary">
-                            <i class="fas fa-save me-2"></i>Save Notes
-                        </button>
-                    </form>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Resolution (if completed/failed) -->
-            @if($ticket->resolution)
-            <div class="card mb-4">
-                <div class="card-header {{ $ticket->status == 'completed' ? 'bg-success text-white' : 'bg-danger text-white' }}">
+                <div class="card-header {{ $ticket->report->status === 'done' ? 'bg-success' : 'bg-warning' }} text-white">
                     <h5 class="mb-0">
-                        <i class="fas {{ $ticket->status == 'completed' ? 'fa-check-circle' : 'fa-times-circle' }} me-2"></i>
-                        Resolution
+                        <i class="fas fa-file-alt me-2"></i>Submitted Report
+                        <span class="badge bg-light {{ $ticket->report->status === 'done' ? 'text-success' : 'text-warning' }} ms-2">
+                            {{ $ticket->report->getStatusLabel() }}
+                        </span>
                     </h5>
                 </div>
                 <div class="card-body">
-                    {!! nl2br(e($ticket->resolution)) !!}
+                    @if($ticket->report->asset)
+                    <div class="mb-3">
+                        <strong><i class="fas fa-cogs me-1"></i> Asset:</strong>
+                        <span class="ms-1">{{ $ticket->report->asset->asset_name }} ({{ $ticket->report->asset->asset_id }})</span>
+                    </div>
+                    @endif
+
+                    <div class="mb-3">
+                        <strong><i class="fas fa-search me-1"></i> Problem Detail:</strong>
+                        <div class="bg-light p-3 rounded mt-1">{!! nl2br(e($ticket->report->problem_detail)) !!}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong><i class="fas fa-wrench me-1"></i> Work Done:</strong>
+                        <div class="bg-light p-3 rounded mt-1">{!! nl2br(e($ticket->report->work_done)) !!}</div>
+                    </div>
+
+                    @if($ticket->report->notes)
+                    <div class="mb-3">
+                        <strong><i class="fas fa-sticky-note me-1"></i> Notes:</strong>
+                        <div class="bg-light p-3 rounded mt-1">{!! nl2br(e($ticket->report->notes)) !!}</div>
+                    </div>
+                    @endif
+
+                    <div class="text-muted small">
+                        <i class="fas fa-user me-1"></i> Submitted by {{ $ticket->report->submitter->name }}
+                        on {{ $ticket->report->submitted_at->format('d M Y, H:i') }}
+                        @if($ticket->work_duration)
+                            | <i class="fas fa-clock me-1"></i> Duration: {{ $ticket->work_duration }}
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Child Tickets (Sub-tickets) - for further_repair tracking -->
+            @if($ticket->childTickets && $ticket->childTickets->count() > 0)
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-code-branch me-2"></i>Follow-up Tickets
+                        <span class="badge bg-light text-info ms-2">{{ $ticket->childTickets->count() }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @foreach($ticket->childTickets as $childTicket)
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <a href="{{ route('user.corrective-maintenance.show', $childTicket) }}" class="text-decoration-none">
+                                            {{ $childTicket->ticket_number }}
+                                        </a>
+                                    </h6>
+                                    <p class="mb-1 small text-muted">
+                                        Created: {{ $childTicket->created_at->format('d M Y, H:i') }}
+                                    </p>
+                                    @if($childTicket->technicians->count() > 0)
+                                    <p class="mb-0 small">
+                                        <strong>Assigned:</strong>
+                                        @foreach($childTicket->technicians->take(2) as $tech)
+                                            <span class="badge bg-primary">{{ $tech->name }}</span>
+                                        @endforeach
+                                        @if($childTicket->technicians->count() > 2)
+                                            <span class="badge bg-secondary">+{{ $childTicket->technicians->count() - 2 }}</span>
+                                        @endif
+                                    </p>
+                                    @endif
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge {{ $childTicket->getStatusBadgeClass() }}">
+                                        {{ ucfirst(str_replace('_', ' ', $childTicket->status)) }}
+                                    </span>
+                                    @if($childTicket->work_duration)
+                                    <br><small class="text-muted"><i class="fas fa-clock"></i> {{ $childTicket->work_duration }}</small>
+                                    @endif
+                                </div>
+                            </div>
+                            @if($childTicket->report)
+                            <div class="mt-2 p-2 bg-light rounded small">
+                                <strong>Report:</strong> {{ Str::limit($childTicket->report->work_done, 100) }}
+                            </div>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
                 </div>
             </div>
             @endif
@@ -189,11 +251,8 @@
                     <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Actions</h5>
                 </div>
                 <div class="card-body">
-                    <button type="button" class="btn btn-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#completeModal">
-                        <i class="fas fa-check-circle me-2"></i>Complete Ticket
-                    </button>
-                    <button type="button" class="btn btn-danger w-100 mb-2" data-bs-toggle="modal" data-bs-target="#failModal">
-                        <i class="fas fa-times-circle me-2"></i>Mark as Failed
+                    <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#submitReportModal">
+                        <i class="fas fa-file-alt me-2"></i>Submit Report
                     </button>
                 </div>
             </div>
@@ -249,12 +308,15 @@
                                 @endif
                             </div>
                         </div>
-                        <div class="timeline-item {{ $ticket->completed_at ? 'active' : '' }}">
-                            <div class="timeline-marker {{ $ticket->completed_at ? ($ticket->status == 'completed' ? 'bg-success' : 'bg-danger') : 'bg-light border' }}"></div>
+                        <div class="timeline-item {{ $ticket->report_submitted_at ? 'active' : '' }}">
+                            <div class="timeline-marker {{ $ticket->report_submitted_at ? ($ticket->status === 'done' ? 'bg-success' : 'bg-warning') : 'bg-light border' }}"></div>
                             <div class="timeline-content">
-                                <strong>{{ $ticket->status == 'failed' ? 'Failed' : 'Completed' }}</strong>
-                                @if($ticket->completed_at)
-                                    <p class="mb-0 small text-muted">{{ $ticket->completed_at->format('d M Y, H:i') }}</p>
+                                <strong>Report Submitted</strong>
+                                @if($ticket->report_submitted_at)
+                                    <p class="mb-0 small text-muted">{{ $ticket->report_submitted_at->format('d M Y, H:i') }}</p>
+                                    @if($ticket->work_duration)
+                                        <p class="mb-0 small text-muted"><i class="fas fa-clock"></i> Duration: {{ $ticket->work_duration }}</p>
+                                    @endif
                                 @else
                                     <p class="mb-0 small text-muted">Pending</p>
                                 @endif
@@ -267,63 +329,112 @@
     </div>
 </div>
 
-<!-- Complete Modal -->
-<div class="modal fade" id="completeModal" tabindex="-1" data-bs-backdrop="false">
-    <div class="modal-dialog">
+<!-- Submit Report Modal -->
+@if($ticket->status == 'in_progress')
+<div class="modal fade" id="submitReportModal" tabindex="-1" data-bs-backdrop="false">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title"><i class="fas fa-check-circle me-2"></i>Complete Ticket</h5>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>Submit Report</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('user.corrective-maintenance.complete', $ticket) }}" method="POST">
+            <form action="{{ route('user.corrective-maintenance.submit-report', $ticket) }}" method="POST">
                 @csrf
                 @method('PATCH')
-                <input type="hidden" name="status" value="completed">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Resolution / Work Done <span class="text-danger">*</span></label>
-                        <textarea name="resolution" class="form-control" rows="4" placeholder="Describe what was done to resolve the issue..." required></textarea>
+                    <!-- Status Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Status <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="status" id="statusDone" value="done" required checked>
+                                <label class="form-check-label" for="statusDone">
+                                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Done</span>
+                                </label>
+                            </div>
+                            @if(!$ticket->parent_ticket_id)
+                            {{-- Only show Further Repair option for parent tickets --}}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="status" id="statusFurtherRepair" value="further_repair">
+                                <label class="form-check-label" for="statusFurtherRepair">
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-tools me-1"></i> Further Repair</span>
+                                </label>
+                            </div>
+                            @else
+                            {{-- For child tickets, show Failed option instead --}}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="status" id="statusFailed" value="failed">
+                                <label class="form-check-label" for="statusFailed">
+                                    <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i> Failed</span>
+                                </label>
+                            </div>
+                            @endif
+                        </div>
+                        @if($ticket->parent_ticket_id)
+                        <small class="text-muted mt-2 d-block">
+                            <i class="fas fa-info-circle me-1"></i>This is a follow-up ticket. Further repair option is not available.
+                        </small>
+                        @endif
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check me-2"></i>Mark as Completed
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-<!-- Fail Modal -->
-<div class="modal fade" id="failModal" tabindex="-1" data-bs-backdrop="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="fas fa-times-circle me-2"></i>Mark as Failed</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('user.corrective-maintenance.complete', $ticket) }}" method="POST">
-                @csrf
-                @method('PATCH')
-                <input type="hidden" name="status" value="failed">
-                <div class="modal-body">
+                    <!-- Asset Selection -->
                     <div class="mb-3">
-                        <label class="form-label">Reason for Failure <span class="text-danger">*</span></label>
-                        <textarea name="resolution" class="form-control" rows="4" placeholder="Explain why the maintenance could not be completed..." required></textarea>
+                        <label for="assetId" class="form-label fw-bold">Asset</label>
+                        @if($ticket->parent_ticket_id && $ticket->parentTicket && $ticket->parentTicket->report && $ticket->parentTicket->report->asset_id)
+                        {{-- For child ticket, show parent's asset as disabled --}}
+                        @php $parentAsset = $ticket->parentTicket->report->asset; @endphp
+                        <input type="hidden" name="asset_id" value="{{ $parentAsset->id }}">
+                        <input type="text" class="form-control" disabled
+                               value="{{ $parentAsset->asset_name }} ({{ $parentAsset->asset_id }}) - {{ $parentAsset->location ?? 'No location' }}">
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Asset inherited from parent ticket</small>
+                        @else
+                        <select name="asset_id" id="assetId" class="form-select">
+                            <option value="">-- Select Asset (Optional) --</option>
+                            @foreach($assets as $asset)
+                                <option value="{{ $asset->id }}">
+                                    {{ $asset->asset_name }} ({{ $asset->asset_id }}) - {{ $asset->location ?? 'No location' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @endif
+                    </div>
+
+                    <!-- Problem Detail -->
+                    <div class="mb-3">
+                        <label for="problemDetail" class="form-label fw-bold">Problem Detail <span class="text-danger">*</span></label>
+                        @if($ticket->parent_ticket_id && $ticket->parentTicket && $ticket->parentTicket->report)
+                        {{-- For child ticket, show parent's problem detail as disabled --}}
+                        <input type="hidden" name="problem_detail" value="{{ $ticket->parentTicket->report->problem_detail }}">
+                        <textarea class="form-control" rows="3" disabled>{{ $ticket->parentTicket->report->problem_detail }}</textarea>
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Problem detail inherited from parent ticket</small>
+                        @else
+                        <textarea name="problem_detail" id="problemDetail" class="form-control" rows="3" placeholder="Describe the detailed problem found..." required></textarea>
+                        @endif
+                    </div>
+
+                    <!-- Work Done -->
+                    <div class="mb-3">
+                        <label for="workDone" class="form-label fw-bold">Work Done <span class="text-danger">*</span></label>
+                        <textarea name="work_done" id="workDone" class="form-control" rows="3" placeholder="Describe what work was performed..." required></textarea>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-3">
+                        <label for="reportNotes" class="form-label fw-bold">Additional Notes</label>
+                        <textarea name="notes" id="reportNotes" class="form-control" rows="2" placeholder="Any additional notes (optional)..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-times me-2"></i>Mark as Failed
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Report
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+@endif
 
 <style>
 .timeline-vertical {

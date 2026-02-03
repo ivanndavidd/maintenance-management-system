@@ -46,6 +46,24 @@ class StockOpnameService
                     'is_active' => true,
                 ]);
                 $assignmentCount++;
+
+                // Send notification email to assigned user
+                try {
+                    $user = \App\Models\User::find($userId);
+                    if ($user && $user->email) {
+                        \Mail::to($user->email)->send(new \App\Mail\StockOpnameAssigned($schedule, $user));
+                        \Log::info('Stock opname assignment email sent', [
+                            'schedule_code' => $schedule->schedule_code,
+                            'user' => $user->name,
+                            'user_email' => $user->email,
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send stock opname assignment email: ' . $e->getMessage(), [
+                        'schedule_id' => $schedule->id,
+                        'user_id' => $userId,
+                    ]);
+                }
             }
         }
 

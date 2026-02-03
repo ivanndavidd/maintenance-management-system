@@ -50,7 +50,15 @@ class StockAdjustmentController extends Controller
         $validated['quantity_before'] = $item->quantity;
         $validated['quantity_after'] = $item->quantity + $validated['adjustment_qty'];
         $validated['adjusted_by'] = auth()->id();
-        $validated['status'] = 'approved'; // Auto-approve for admin
+
+        // Auto-approve only for admin, pending for others (supervisor, etc)
+        if (auth()->user()->hasRole('admin')) {
+            $validated['status'] = 'approved';
+            $validated['approved_by'] = auth()->id();
+            $validated['approved_at'] = now();
+        } else {
+            $validated['status'] = 'pending';
+        }
 
         // Ensure quantity doesn't go negative
         if ($validated['quantity_after'] < 0) {
@@ -62,12 +70,58 @@ class StockAdjustmentController extends Controller
         // Calculate value impact
         $adjustment->calculateValueImpact($item->parts_price);
 
-        // Apply adjustment
-        $adjustment->applyAdjustment();
+        // Apply adjustment only if approved (admin creates it)
+        if ($adjustment->status === 'approved') {
+            $adjustment->applyAdjustment();
+        }
+
+        // Refresh adjustment to get latest data with relationships
+        $adjustment->refresh();
+        $adjustment->load('adjustedByUser');
+
+        // Send notification based on status
+        try {
+            if ($adjustment->status === 'pending') {
+                // Notify all admins for approval
+                $admins = \App\Models\User::role('admin')->get();
+
+                foreach ($admins as $admin) {
+                    \Mail::to($admin->email)->send(new \App\Mail\StockAdjustmentCreated($adjustment));
+                }
+
+                \Log::info('Stock adjustment approval request sent to admins', [
+                    'adjustment_code' => $adjustment->adjustment_code,
+                    'created_by' => auth()->user()->name,
+                    'admins_count' => $admins->count(),
+                ]);
+            } else {
+                // Notify other admins (informational, already approved)
+                $admins = \App\Models\User::role('admin')->where('id', '!=', auth()->id())->get();
+
+                foreach ($admins as $admin) {
+                    \Mail::to($admin->email)->send(new \App\Mail\StockAdjustmentCreated($adjustment));
+                }
+
+                \Log::info('Stock adjustment notifications sent to admins', [
+                    'adjustment_code' => $adjustment->adjustment_code,
+                    'item_type' => $adjustment->item_type,
+                    'adjustment_qty' => $adjustment->adjustment_qty,
+                    'admins_count' => $admins->count(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send stock adjustment notification: ' . $e->getMessage(), [
+                'adjustment_id' => $adjustment->id,
+            ]);
+        }
+
+        $message = $adjustment->status === 'approved'
+            ? 'Stock adjustment created and applied successfully!'
+            : 'Stock adjustment created and waiting for admin approval.';
 
         return redirect()
             ->route('admin.adjustments.index')
-            ->with('success', 'Stock adjustment created and applied successfully!');
+            ->with('success', $message);
     }
 
     public function show(StockAdjustment $adjustment)

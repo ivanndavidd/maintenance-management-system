@@ -229,15 +229,15 @@
                     
                     <div class="mb-3">
                         <div class="d-flex justify-content-between mb-1">
-                            <strong>Total Reports</strong>
-                            <span class="badge bg-secondary">{{ $stats['total_reports'] }}</span>
+                            <strong>PM Tasks</strong>
+                            <span class="badge bg-success">{{ $stats['pm_tasks'] }}</span>
                         </div>
                     </div>
-                    
+
                     <div>
                         <div class="d-flex justify-content-between mb-1">
-                            <strong>Approved Reports</strong>
-                            <span class="badge bg-success">{{ $stats['approved_reports'] }}</span>
+                            <strong>CM Tasks</strong>
+                            <span class="badge bg-warning">{{ $stats['cm_tasks'] }}</span>
                         </div>
                     </div>
                 </div>

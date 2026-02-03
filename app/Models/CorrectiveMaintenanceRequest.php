@@ -38,6 +38,8 @@ class CorrectiveMaintenanceRequest extends Model
         'progress_email_sent_at',
         'completed_email_sent_at',
         'handled_by',
+        'parent_ticket_id',
+        'report_submitted_at',
     ];
 
     protected $casts = [
@@ -49,6 +51,7 @@ class CorrectiveMaintenanceRequest extends Model
         'received_email_sent_at' => 'datetime',
         'progress_email_sent_at' => 'datetime',
         'completed_email_sent_at' => 'datetime',
+        'report_submitted_at' => 'datetime',
     ];
 
     /**
@@ -146,7 +149,9 @@ class CorrectiveMaintenanceRequest extends Model
             'received' => 'bg-info',
             'in_progress' => 'bg-primary',
             'completed' => 'bg-success',
+            'done' => 'bg-success',
             'failed' => 'bg-danger',
+            'further_repair' => 'bg-warning text-dark',
             'cancelled' => 'bg-dark',
             default => 'bg-secondary',
         };
@@ -321,5 +326,53 @@ class CorrectiveMaintenanceRequest extends Model
             return null;
         }
         return $this->created_at->diffInHours($this->completed_at);
+    }
+
+    // Report relationship
+    public function report()
+    {
+        return $this->hasOne(CmReport::class, 'cm_request_id');
+    }
+
+    // Parent ticket (for sub-tickets)
+    public function parentTicket()
+    {
+        return $this->belongsTo(self::class, 'parent_ticket_id');
+    }
+
+    // Child tickets (sub-tickets created from further_repair)
+    public function childTickets()
+    {
+        return $this->hasMany(self::class, 'parent_ticket_id');
+    }
+
+    /**
+     * Get work duration (from in_progress to report submitted)
+     */
+    public function getWorkDurationAttribute(): ?string
+    {
+        if (!$this->in_progress_at || !$this->report_submitted_at) {
+            return null;
+        }
+
+        $minutes = $this->in_progress_at->diffInMinutes($this->report_submitted_at);
+        $hours = intdiv($minutes, 60);
+        $mins = $minutes % 60;
+
+        if ($hours > 0) {
+            return "{$hours}h {$mins}m";
+        }
+        return "{$mins}m";
+    }
+
+    /**
+     * Get work duration in minutes (for sorting/filtering)
+     */
+    public function getWorkDurationMinutesAttribute(): ?int
+    {
+        if (!$this->in_progress_at || !$this->report_submitted_at) {
+            return null;
+        }
+        return $this->in_progress_at->diffInMinutes($this->report_submitted_at);
     }
 }

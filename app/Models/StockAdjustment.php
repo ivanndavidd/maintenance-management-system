@@ -172,4 +172,20 @@ class StockAdjustment extends Model
         $this->value_impact = $this->adjustment_qty * $itemPrice;
         $this->save();
     }
+
+    // Get item name
+    public function getItemName()
+    {
+        if ($this->item_type === 'sparepart') {
+            $item = Sparepart::find($this->item_id);
+            return $item ? $item->sparepart_name : 'Unknown Sparepart';
+        } elseif ($this->item_type === 'tool') {
+            $item = Tool::find($this->item_id);
+            return $item ? $item->sparepart_name : 'Unknown Tool';
+        } elseif ($this->item_type === 'asset') {
+            $item = Asset::find($this->item_id);
+            return $item ? $item->asset_name : 'Unknown Asset';
+        }
+        return 'Unknown Item';
+    }
 }

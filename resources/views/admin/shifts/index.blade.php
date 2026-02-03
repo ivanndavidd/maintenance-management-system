@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('page-title', 'Shift Management')
+
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -56,30 +58,32 @@
                                         </a>
 
                                         @if($schedule->status === 'draft')
-                                            <form action="{{ route('admin.shifts.activate', $schedule) }}"
+                                            <form id="activate-form-{{ $schedule->id }}"
+                                                  action="{{ route('admin.shifts.activate', $schedule) }}"
                                                   method="POST"
                                                   class="d-inline">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="submit"
+                                                <button type="button"
                                                         class="btn btn-sm btn-success"
                                                         title="Activate"
-                                                        onclick="return confirm('Activate this schedule? This will deactivate any overlapping schedules.')">
+                                                        onclick="showConfirmModal('Activate this schedule? This will deactivate any overlapping schedules.', () => document.getElementById('activate-form-{{ $schedule->id }}').submit())">
                                                     <i class="fas fa-check-circle"></i>
                                                 </button>
                                             </form>
                                         @endif
 
                                         @if($schedule->status !== 'active')
-                                            <form action="{{ route('admin.shifts.destroy', $schedule) }}"
+                                            <form id="delete-form-{{ $schedule->id }}"
+                                                  action="{{ route('admin.shifts.destroy', $schedule) }}"
                                                   method="POST"
                                                   class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit"
+                                                <button type="button"
                                                         class="btn btn-sm btn-danger"
                                                         title="Delete"
-                                                        onclick="return confirm('Are you sure you want to delete this schedule?')">
+                                                        onclick="showConfirmModal('Are you sure you want to delete this schedule?', () => document.getElementById('delete-form-{{ $schedule->id }}').submit())">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
@@ -145,4 +149,36 @@
         </div>
     </div>
 </div>
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" data-bs-backdrop="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showConfirmModal(message, onConfirm) {
+    document.getElementById('confirmMessage').textContent = message;
+    const btn = document.getElementById('confirmBtn');
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', function() {
+        onConfirm();
+        bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+    });
+    new bootstrap.Modal(document.getElementById('confirmModal')).show();
+}
+</script>
 @endsection

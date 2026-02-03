@@ -16,15 +16,25 @@ class ProfileController extends Controller
         $user = auth()->user();
 
         // Get user statistics
+        // PM Tasks
+        $pmTasksTotal = \App\Models\PmTask::where('assigned_user_id', $user->id)->count();
+        $pmTasksCompleted = \App\Models\PmTask::where('assigned_user_id', $user->id)
+            ->where('status', 'completed')
+            ->count();
+
+        // CM Tasks (assigned as technician)
+        $cmTasksTotal = \App\Models\CorrectiveMaintenanceRequest::whereHas('technicians', function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->count();
+        $cmTasksCompleted = \App\Models\CorrectiveMaintenanceRequest::whereHas('technicians', function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->where('status', 'done')->count();
+
         $stats = [
-            'total_tasks' => \App\Models\MaintenanceJob::where('assigned_to', $user->id)->count(),
-            'completed_tasks' => \App\Models\MaintenanceJob::where('assigned_to', $user->id)
-                ->where('status', 'completed')
-                ->count(),
-            'total_reports' => \App\Models\WorkReport::where('user_id', $user->id)->count(),
-            'approved_reports' => \App\Models\WorkReport::where('user_id', $user->id)
-                ->where('status', 'approved')
-                ->count(),
+            'total_tasks' => $pmTasksTotal + $cmTasksTotal,
+            'completed_tasks' => $pmTasksCompleted + $cmTasksCompleted,
+            'pm_tasks' => $pmTasksTotal,
+            'cm_tasks' => $cmTasksTotal,
         ];
 
         // Calculate completion rate

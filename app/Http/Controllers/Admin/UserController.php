@@ -105,39 +105,24 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        $user->load(['roles', 'department', 'assignedJobs', 'workReports']);
+        $user->load(['roles', 'department']);
 
-        // Calculate user statistics
+        // Calculate user statistics from CMR
+        $totalCmr = $user->assignedCmr()->count();
+        $completedCmr = $user->assignedCmr()->where('status', 'completed')->count();
+
         $stats = [
-            'total_assigned_jobs' => $user->assignedJobs()->count(),
-            'completed_jobs' => $user->assignedJobs()->where('status', 'completed')->count(),
-            'pending_jobs' => $user->assignedJobs()->where('status', 'pending')->count(),
-            'in_progress_jobs' => $user->assignedJobs()->where('status', 'in_progress')->count(),
-            'total_work_reports' => $user->workReports()->count(),
-            'completed_reports' => $user->workReports()->where('status', 'completed')->count(),
-            'pending_reports' => $user->workReports()->where('status', 'pending')->count(),
-            'completion_rate' =>
-                $user->assignedJobs()->count() > 0
-                    ? round(
-                        ($user->assignedJobs()->where('status', 'completed')->count() /
-                            $user->assignedJobs()->count()) *
-                            100,
-                        1,
-                    )
-                    : 0,
+            'total_assigned' => $totalCmr,
+            'completed' => $completedCmr,
+            'pending' => $user->assignedCmr()->where('status', 'pending')->count(),
+            'in_progress' => $user->assignedCmr()->where('status', 'in_progress')->count(),
+            'completion_rate' => $totalCmr > 0 ? round(($completedCmr / $totalCmr) * 100, 1) : 0,
         ];
 
-        // Recent activities
-        $recentJobs = $user->assignedJobs()->latest()->limit(10)->get();
+        // Recent CMR tickets
+        $recentCmr = $user->assignedCmr()->latest()->limit(10)->get();
 
-        $recentReports = $user
-            ->workReports()
-            ->with(['job'])
-            ->latest()
-            ->limit(10)
-            ->get();
-
-        return view('admin.users.show', compact('user', 'stats', 'recentJobs', 'recentReports'));
+        return view('admin.users.show', compact('user', 'stats', 'recentCmr'));
     }
 
     /**

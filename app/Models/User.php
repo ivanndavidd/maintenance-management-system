@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\CorrectiveMaintenanceRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -64,19 +65,20 @@ class User extends Authenticatable
     }
 
     /**
-     * Jobs assigned to this user (as technician/operator)
+     * CMR tickets assigned to this user
      */
-    public function assignedJobs()
+    public function assignedCmr()
     {
-        return $this->hasMany(MaintenanceJob::class, 'assigned_to');
+        return $this->hasMany(CorrectiveMaintenanceRequest::class, 'assigned_to');
     }
 
     /**
-     * Work reports submitted by this user
+     * CMR tickets where this user is a technician
      */
-    public function workReports()
+    public function cmrAsTechnician()
     {
-        return $this->hasMany(WorkReport::class, 'user_id');
+        return $this->belongsToMany(CorrectiveMaintenanceRequest::class, 'corrective_maintenance_technicians', 'user_id', 'cm_request_id')
+            ->withTimestamps();
     }
 
     /**

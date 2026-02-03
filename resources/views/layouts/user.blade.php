@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Warehouse Maintenance') }} - User</title>
-    
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('assets/Blibli_Logo_Symbol_FC_RGB.png') }}">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome from jsDelivr -->
@@ -15,6 +18,7 @@
         :root {
             /* Variabel warna tetap sama */
             --sidebar-width: 250px;
+            --sidebar-collapsed-width: 70px;
             --primary-color: #4f46e5;
             --primary-gradient: linear-gradient(135deg, #4f46e5, #6366f1);
             --sidebar-bg: #1e293b;
@@ -31,165 +35,199 @@
 
        /* Sidebar */
         .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: var(--sidebar-width);
-        height: 100vh;
-        background: var(--sidebar-bg);
-        color: var(--sidebar-text);
-        display: flex;
-        flex-direction: column;
-        /* PERUBAHAN: Bayangan dibuat lebih halus dan modern */
-        box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2); 
-        transition: all 0.3s ease;
-        z-index: 1000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 70px;
+            height: 100vh;
+            background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e0 100%);
+            color: #1a202c;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: width 0.3s ease;
+            padding: 0 !important;
         }
 
-        /* Header (Tidak berubah) */
+        .sidebar:hover {
+            width: 260px;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
         .sidebar-header {
-        background: var(--primary-gradient);
-        text-align: center;
-        padding: 25px 15px;
-        color: white;
-        box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.15);
+            padding: 15px 0 !important;
+            margin: 0 !important;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            justify-content: center;
+            transition: padding 0.3s ease, justify-content 0.3s ease, gap 0.3s ease;
+            box-sizing: border-box;
         }
-        .sidebar-header i { /* Sedikit disesuaikan */
-        font-size: 30px;
-        margin-bottom: 10px;
+
+        .sidebar:hover .sidebar-header {
+            padding: 15px 10px !important;
+            justify-content: flex-start;
+            gap: 12px;
         }
+
+        .sidebar-header .logo {
+            width: 36px;
+            height: 48px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .sidebar-header .text-content {
+            opacity: 0;
+            max-width: 0;
+            overflow: hidden;
+            transition: opacity 0.3s ease, max-width 0.3s ease;
+        }
+
+        .sidebar:hover .sidebar-header .text-content {
+            opacity: 1;
+            max-width: 500px;
+        }
+
         .sidebar-header h4 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 17px;
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+            line-height: 1.2;
         }
+
         .sidebar-header small {
-        opacity: 0.9;
-        font-size: 13px;
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 11px;
+            white-space: nowrap;
+            display: block;
         }
 
-        /* User Info (Tidak berubah) */
-        .user-info {
-        text-align: center;
-        padding: 20px 15px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        
-        }
-        .avatar {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        margin: 0 auto 10px;
-        background: var(--primary-gradient);
-        color: white;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-        }
-        .user-info strong {
-        display: block;
-        font-size: 15px;
-        }
-        .user-info p {
-        font-size: 13px;
-        color: var(--sidebar-muted) !important;
-        }
-        .user-info small.text-muted {
-            color: var(--sidebar-muted) !important;
-            opacity: 0.9; /* Kita buat sedikit lebih redup dari nama */
+        .sidebar nav {
+            padding: 0;
+            margin: 0;
         }
 
-        /* Menu */
-        .sidebar-menu {
-        flex: 1;
-        /* PERUBAHAN: Padding di semua sisi agar link "pill" tidak menempel */
-        padding: 15px; 
+        .sidebar a {
+            color: #2d3748;
+            text-decoration: none;
+            padding: 12px 15px;
+            display: block;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-align: center;
         }
 
-        .sidebar-menu a {
-        display: flex;
-        align-items: center;
-        color: var(--sidebar-text);
-        text-decoration: none;
-        /* PERUBAHAN: Padding disesuaikan untuk "pill" */
-        padding: 13px 18px; 
-        font-size: 15px;
-        font-weight: 500;
-        /* PERUBAHAN: Transisi lebih halus (0.3s) */
-        transition: all 0.3s ease; 
-        /* Hapus border-left, ganti dengan border-radius */
-        border-left: 3px solid transparent; 
-        /* BARU: Membuat sudut membulat (tampilan "pill") */
-        border-radius: 8px; 
-        /* BARU: Memberi jarak antar link menu */
-        margin-bottom: 5px; 
+        .sidebar:hover a {
+            padding: 12px 20px;
+            text-align: left;
         }
 
-        .sidebar-menu a i {
-        width: 22px;
-        margin-right: 12px;
-        font-size: 17px;
-        opacity: 0.85;
-        /* BARU: Transisi untuk icon */
-        transition: opacity 0.3s; 
+        .sidebar a .menu-text {
+            opacity: 0;
+            max-width: 0;
+            display: inline-block;
+            transition: opacity 0.3s ease, max-width 0.3s ease;
+            overflow: hidden;
+            vertical-align: middle;
         }
 
-        .sidebar-menu a:hover {
-        background: var(--sidebar-hover);
-        color: #fff;
-        /* BARU: Efek "pop" kecil saat di-hover */
-        transform: translateX(4px); 
-        }
-        /* BARU: Ikon jadi lebih jelas saat di-hover */
-        .sidebar-menu a:hover i {
-        opacity: 1; 
+        .sidebar:hover a .menu-text {
+            opacity: 1;
+            max-width: 200px;
         }
 
-        .sidebar-menu a.active {
-        /* PERUBAHAN: Latar belakang solid yang kuat */
-        background: var(--sidebar-active); 
-        /* PERUBAHAN: Teks putih agar kontras */
-        color: #ffffff; 
-        /* PERUBAHAN: Hapus border kiri */
-        border-left-color: transparent; 
-        font-weight: 600;
-        /* PERUBAHAN: Bayangan untuk memberi kedalaman */
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-        /* BARU: Reset transform dari hover */
-        transform: translateX(0); 
+        .sidebar a:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-left-color: #0072FF;
         }
 
-        /* BARU: Ikon pada link aktif juga lebih jelas */
-        .sidebar-menu a.active i {
-        opacity: 1;
+        .sidebar:hover a:hover {
+            padding: 12px 20px 12px 25px;
         }
 
-        .menu-badge {
-        margin-left: auto;
-        background: #ef4444;
-        padding: 3px 7px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: bold;
-        color: white;
+        .sidebar a.active {
+            background: rgba(0, 114, 255, 0.1);
+            border-left-color: #0072FF;
+            font-weight: 600;
+            color: #0072FF;
         }
 
-        hr {
-        /* PERUBAHAN: Garis lebih tipis dan margin disesuaikan */
-        border-color: rgba(255, 255, 255, 0.1); 
-        margin: 15px; 
+        .sidebar a i {
+            width: 25px;
+            text-align: center;
+            display: inline-block;
+            vertical-align: middle;
         }
 
-        /* Main Content (Tidak berubah) */
+        .sidebar:hover a i {
+            margin-right: 10px;
+        }
+
+        .sidebar hr {
+            border-color: rgba(0, 0, 0, 0.1);
+            margin: 10px 0;
+        }
+
+        .sidebar a {
+            position: relative;
+        }
+
+        .sidebar .badge {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .sidebar:hover .badge {
+            opacity: 1;
+            position: static;
+            transform: none;
+        }
+
+        /* Main Content */
         .main-content {
-        margin-left: var(--sidebar-width);
-        min-height: 100vh;
-        padding: 25px;
-        background-color: #f8fafc;
-        transition: margin-left 0.3s;
+            margin-left: 70px;
+            min-height: 100vh;
+            padding: 25px;
+            background-color: #f8fafc;
+            transition: margin-left 0.3s;
         }
 
         /* Mobile */
@@ -238,115 +276,74 @@
     <div class="sidebar" id="sidebar">
         <!-- Sidebar Header -->
         <div class="sidebar-header">
-            <i class="fas fa-warehouse fa-2x mb-2"></i>
-            <h4>Warehouse Maintenance</h4>
-            <small>User Panel</small>
-        </div>
-
-        <!-- User Info -->
-        <div class="user-info">
-            <div class="avatar">
-                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            <div class="logo">
+                <img src="{{ asset('assets/Blibli_Logo_Symbol_FC_RGB.svg') }}" alt="Logo">
             </div>
-            <div class="text-center">
-                <strong>{{ auth()->user()->name }}</strong>
-                <p class="mb-0 small text-muted">{{ auth()->user()->email }}</p>
-                @if(auth()->user()->employee_id)
-                    <small class="text-muted">
-                        <i class="fas fa-id-card"></i> {{ auth()->user()->employee_id }}
-                    </small>
-                @endif
+            <div class="text-content">
+                <h4>Warehouse Maintenance</h4>
+                <small>User Panel</small>
             </div>
         </div>
 
         <!-- Sidebar Menu -->
-        <div class="sidebar-menu">
+        <nav>
             <a href="{{ route('user.dashboard') }}" class="{{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-
-            @if(Route::has('user.urgent-alerts.index'))
-            <a href="{{ route('user.urgent-alerts.index') }}" class="{{ request()->routeIs('user.urgent-alerts.*') ? 'active' : '' }}">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>Urgent Alerts</span>
-                <span class="menu-badge bg-danger">New</span>
-            </a>
-            @endif
-
-            <a href="{{ route('user.tasks.index') }}" class="{{ request()->routeIs('user.tasks.*') ? 'active' : '' }}">
-                <i class="fas fa-tasks"></i>
-                <span>My Tasks</span>
-            </a>
-
-            <a href="{{ route('user.reports.index') }}" class="{{ request()->routeIs('user.reports.*') ? 'active' : '' }}">
-                <i class="fas fa-file-alt"></i>
-                <span>My Work Reports</span>
-            </a>
-
-            <a href="{{ route('user.assigned-incidents.index') }}" class="{{ request()->routeIs('user.assigned-incidents.*') ? 'active' : '' }}">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>Assigned Incidents</span>
-                @php
-                    $pendingIncidents = \App\Models\IncidentReport::whereHas('operators', function($q) {
-                        $q->where('user_id', auth()->id());
-                    })->whereNull('completed_by')->count();
-                @endphp
-                @if($pendingIncidents > 0)
-                    <span class="badge bg-danger ms-auto">{{ $pendingIncidents }}</span>
-                @endif
+                <i class="fas fa-home"></i><span class="menu-text"> Dashboard</span>
             </a>
 
             <a href="{{ route('user.corrective-maintenance.index') }}" class="{{ request()->routeIs('user.corrective-maintenance.*') ? 'active' : '' }}">
-                <i class="fas fa-tools"></i>
-                <span>Corrective Maintenance</span>
+                <i class="fas fa-tools"></i><span class="menu-text"> Corrective Maintenance</span>
                 @php
-                    $pendingCM = \App\Models\CorrectiveMaintenanceRequest::whereHas('technicians', function($q) {
-                        $q->where('user_id', auth()->id());
-                    })->where('status', 'in_progress')->count();
+                    $pendingCM = cache()->remember('pending_cm_user_' . auth()->id(), 60, function() {
+                        return \App\Models\CorrectiveMaintenanceRequest::whereHas('technicians', function($q) {
+                            $q->where('user_id', auth()->id());
+                        })->where('status', 'in_progress')->count();
+                    });
                 @endphp
                 @if($pendingCM > 0)
-                    <span class="badge bg-warning ms-auto">{{ $pendingCM }}</span>
+                    <span class="badge bg-warning text-white ms-2">{{ $pendingCM }}
                 @endif
             </a>
 
             <a href="{{ route('user.stock-opname.index') }}" class="{{ request()->routeIs('user.stock-opname.*') ? 'active' : '' }}">
-                <i class="fas fa-clipboard-check"></i>
-                <span>Stock Opname</span>
+                <i class="fas fa-clipboard-check"></i><span class="menu-text"> Stock Opname</span>
                 @php
-                    $pendingOpname = \App\Models\StockOpnameSchedule::whereHas('userAssignments', function($q) {
-                        $q->where('user_id', auth()->id());
-                    })->where('status', 'active')->count();
+                    $pendingOpname = cache()->remember('pending_opname_user_' . auth()->id(), 60, function() {
+                        return \App\Models\StockOpnameSchedule::whereHas('userAssignments', function($q) {
+                            $q->where('user_id', auth()->id());
+                        })->where('status', 'active')->count();
+                    });
                 @endphp
                 @if($pendingOpname > 0)
-                    <span class="badge bg-info ms-auto">{{ $pendingOpname }}</span>
+                    <span class="badge bg-info text-white ms-2">{{ $pendingOpname }}
                 @endif
             </a>
 
-            <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 10px 20px;">
+            <a href="{{ route('user.preventive-maintenance.index') }}" class="{{ request()->routeIs('user.preventive-maintenance.*') ? 'active' : '' }}">
+                <i class="fas fa-calendar-check"></i><span class="menu-text"> Preventive Maintenance</span>
+            </a>
+
+            <hr class="text-white">
 
             <a href="{{ route('user.help.index') }}" class="{{ request()->routeIs('user.help.*') ? 'active' : '' }}">
-                <i class="fas fa-question-circle"></i>
-                <span>Help & Support</span>
+                <i class="fas fa-question-circle"></i><span class="menu-text"> Help & Support</span>
             </a>
 
             <a href="{{ route('profile.index') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
-                <i class="fas fa-user"></i>
-                <span>My Profile</span>
+                <i class="fas fa-user"></i><span class="menu-text"> My Profile</span>
             </a>
 
-            <hr style="border-color: rgba(255, 255, 255, 0.2); margin: 10px 20px;">
+            <hr class="text-white">
 
             <a href="{{ route('logout') }}"
                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
+                <i class="fas fa-sign-out-alt"></i><span class="menu-text"> Logout</span>
             </a>
 
             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                 @csrf
             </form>
-        </div>
+        </nav>
     </div>
 
     <!-- Main Content -->
@@ -400,7 +397,7 @@
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const toggle = document.querySelector('.mobile-toggle');
-            
+
             if (window.innerWidth <= 768) {
                 if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
                     sidebar.classList.remove('show');

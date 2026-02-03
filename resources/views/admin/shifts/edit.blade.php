@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('page-title', 'Edit Shift Schedule')
+
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
