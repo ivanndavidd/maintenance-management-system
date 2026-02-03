@@ -16,6 +16,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if referenced table exists first
+        if (!Schema::hasTable('shift_assignments')) {
+            return; // Referenced table doesn't exist yet, skip this migration
+        }
+
         Schema::create('shift_change_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('shift_assignment_id')->constrained()->onDelete('cascade');
