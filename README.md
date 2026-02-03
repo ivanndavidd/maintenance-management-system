@@ -1,61 +1,133 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏭 Warehouse Maintenance System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive warehouse maintenance management system built with Laravel, featuring automated deployment to Intel NUC via CI/CD pipeline.
 
-## About Laravel
+![Laravel](https://img.shields.io/badge/Laravel-10.x-red?logo=laravel)
+![PHP](https://img.shields.io/badge/PHP-8.3-blue?logo=php)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-green?logo=github)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 🔧 Maintenance Management
+- **Corrective Maintenance (CM)** - Track and manage breakdown maintenance requests
+- **Preventive Maintenance (PM)** - Schedule and execute preventive maintenance tasks
+  - Cleaning groups management
+  - SPR (Spare Part Replacement) groups
+  - Calendar-based task scheduling
+  - Shift assignment integration
 
-## Learning Laravel
+### 📦 Inventory Management
+- **Spareparts** - Track spare parts inventory with import/export capabilities
+- **Tools** - Manage tool inventory
+- **Assets** - Asset management and tracking
+- **Stock Opname** - Regular stock counting and reconciliation
+- **Stock Adjustments** - Approval-based stock adjustment workflow
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 📊 Reporting & Analytics
+- KPI Dashboard
+- Work Reports
+- Maintenance Analytics
+- Stock Reports
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 👥 User Management
+- **Role-based Access Control**
+  - Admin
+  - Supervisor Maintenance
+  - Staff Maintenance
+- Shift-based task assignment
+- Real-time notifications
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 📧 Email Notifications
+- Automated email notifications for:
+  - Maintenance request assignments
+  - Task completions
+  - Approval requests
+  - Stock adjustments
+  - PM task assignments
 
-## Laravel Sponsors
+### 🎯 Additional Features
+- Purchase Order Management
+- Help Articles & Documentation
+- Multi-shift Support (24/7 operations)
+- Queue-based background job processing
+- Redis caching for performance
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 🚀 Quick Start
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Prerequisites
+- Docker & Docker Compose
+- Git
+- Ubuntu/Debian Linux (for NUC deployment)
 
-## Contributing
+### Docker Deployment
+```bash
+# Build and start containers
+docker compose up -d
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Run migrations
+docker compose exec app php artisan migrate --seed
 
-## Code of Conduct
+# Access application
+http://localhost
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 📖 Documentation
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **[CI/CD Deployment Guide](CICD_DEPLOYMENT_GUIDE.md)** - Complete guide for automated deployment to NUC
+- **[Quick Reference](QUICK_REFERENCE.md)** - Cheat sheet for common operations
+- **[Docker Deployment Guide](DOCKER_DEPLOYMENT_GUIDE.md)** - Detailed Docker setup instructions
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🏗️ Architecture
+
+### Tech Stack
+- **Backend:** Laravel 10.x (PHP 8.3)
+- **Database:** MySQL 8.0
+- **Cache/Queue:** Redis 7
+- **Frontend:** Blade Templates, Bootstrap 5
+- **Containerization:** Docker & Docker Compose
+- **CI/CD:** GitHub Actions
+- **Web Server:** Nginx (in Docker)
+
+### Docker Services
+- `app` - Laravel application (Nginx + PHP-FPM)
+- `db` - MySQL database
+- `redis` - Redis cache and queue
+- `queue` - Laravel queue worker
+- `scheduler` - Laravel task scheduler
+
+---
+
+## 🔄 CI/CD Pipeline
+
+This project uses GitHub Actions for automated deployment to Intel NUC.
+
+### Deployment Flow
+```
+Push to main → GitHub Actions → SSH to NUC → Pull code →
+Build containers → Run migrations → Optimize → Health check → ✅ Done!
+```
+
+### Setup CI/CD
+1. Follow the **[CI/CD Deployment Guide](CICD_DEPLOYMENT_GUIDE.md)**
+2. Configure GitHub Secrets
+3. Push code to `main` branch
+4. Deployment runs automatically!
+
+---
+
+## 📄 License
+
+This project is proprietary software for GDN Commerce.
+
+---
+
+**Made with ❤️ for efficient warehouse operations**
