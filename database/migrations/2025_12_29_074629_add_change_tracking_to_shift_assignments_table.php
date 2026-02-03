@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if table exists first
+        if (!Schema::hasTable('shift_assignments')) {
+            return; // Table doesn't exist yet, skip this migration
+        }
+
         Schema::table('shift_assignments', function (Blueprint $table) {
             // Track if assignment was changed (cancelled or replaced)
             $table->string('change_action')->nullable()->after('color')

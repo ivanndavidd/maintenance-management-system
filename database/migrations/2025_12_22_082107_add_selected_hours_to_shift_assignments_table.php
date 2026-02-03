@@ -14,6 +14,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if table exists first
+        if (!Schema::hasTable('shift_assignments')) {
+            return; // Table doesn't exist yet, skip this migration
+        }
+
         Schema::table('shift_assignments', function (Blueprint $table) {
             $table->json('selected_hours')->nullable()->after('shift_id')
                 ->comment('Array of specific hours assigned (e.g., [0,1,2] for partial shift)');

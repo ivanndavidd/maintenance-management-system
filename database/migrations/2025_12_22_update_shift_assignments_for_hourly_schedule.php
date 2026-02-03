@@ -12,6 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if table exists first
+        if (!Schema::hasTable('shift_assignments')) {
+            return; // Table doesn't exist yet, skip this migration
+        }
+
         // First, try to drop the unique constraint if it exists
         try {
             DB::statement('ALTER TABLE shift_assignments DROP INDEX unique_shift_assignment');

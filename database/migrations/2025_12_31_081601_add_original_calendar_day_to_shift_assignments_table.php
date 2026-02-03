@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if table exists first
+        if (!Schema::hasTable('shift_assignments')) {
+            return; // Table doesn't exist yet, skip this migration
+        }
+
         Schema::table('shift_assignments', function (Blueprint $table) {
             // Store the original calendar day where assignment was created
             // For Sunday 22-23 assigned in Week 1, this will be 'sunday' even though duty_day is 'monday'
