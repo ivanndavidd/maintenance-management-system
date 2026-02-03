@@ -52,7 +52,7 @@ return new class extends Migration
         });
 
         // Tasks (under an SPR group)
-        Schema::create('pm_tasks', function (Blueprint $table) {
+        Schema::create('pm_tasks', function (Blueprint $table) use ($hasShiftSchedules) {
             $table->id();
             $table->foreignId('pm_spr_group_id')->constrained('pm_spr_groups')->cascadeOnDelete();
             $table->string('task_name');
