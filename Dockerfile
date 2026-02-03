@@ -25,7 +25,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies (skip if no package.json)
-RUN if [ -f package.json ]; then npm ci; fi
+RUN if [ -f package.json ]; then npm install --legacy-peer-deps; fi
 
 # Copy source files
 COPY . .
