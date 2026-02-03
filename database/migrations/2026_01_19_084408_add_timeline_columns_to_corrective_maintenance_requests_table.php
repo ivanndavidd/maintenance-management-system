@@ -12,8 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('corrective_maintenance_requests', function (Blueprint $table) {
-            $table->timestamp('received_at')->nullable()->after('completed_at');
-            $table->timestamp('in_progress_at')->nullable()->after('received_at');
+            // Only add columns if they don't already exist
+            if (!Schema::hasColumn('corrective_maintenance_requests', 'received_at')) {
+                $table->timestamp('received_at')->nullable()->after('completed_at');
+            }
+            if (!Schema::hasColumn('corrective_maintenance_requests', 'in_progress_at')) {
+                $table->timestamp('in_progress_at')->nullable()->after('received_at');
+            }
         });
     }
 
