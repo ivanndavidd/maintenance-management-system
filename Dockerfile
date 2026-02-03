@@ -16,22 +16,12 @@ COPY . .
 # Generate optimized autoloader
 RUN composer dump-autoload --optimize --no-dev --ignore-platform-reqs
 
-# Stage 2: Build frontend assets (if needed)
-FROM node:20-alpine AS node-builder
-
+# Stage 2: Build frontend assets (SKIPPED - using CDN for production)
+# Frontend assets are loaded via CDN (Bootstrap, Font Awesome, etc.)
+# No build step needed for production deployment
+FROM alpine:latest AS node-builder
 WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies (skip if no package.json)
-RUN if [ -f package.json ]; then npm install --legacy-peer-deps --omit=optional; fi
-
-# Copy source files
-COPY . .
-
-# Build assets (skip if no build script)
-RUN if [ -f package.json ] && grep -q "\"build\"" package.json; then npm run build; fi
+RUN mkdir -p public/build && echo "No build artifacts - using CDN" > public/build/.gitkeep
 
 # Stage 3: Production image
 FROM php:8.3-fpm-alpine
