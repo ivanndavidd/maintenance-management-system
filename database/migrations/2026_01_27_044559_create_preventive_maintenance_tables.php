@@ -17,6 +17,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if shift_schedules table exists (for foreign key constraint)
+        $hasShiftSchedules = Schema::hasTable('shift_schedules');
+
         // Main Preventive Maintenance Schedule
         Schema::create('pm_schedules', function (Blueprint $table) {
             $table->id();
@@ -56,7 +59,14 @@ return new class extends Migration
             $table->text('task_description')->nullable();
             $table->string('frequency'); // 1_week, 2_weeks, 3_weeks, 1_month, 2_months, etc.
             $table->string('equipment_type')->nullable(); // from spareparts.equipment_type
-            $table->foreignId('assigned_shift_id')->nullable()->constrained('shift_schedules')->nullOnDelete();
+
+            // Add shift constraint only if shift_schedules table exists
+            if ($hasShiftSchedules) {
+                $table->foreignId('assigned_shift_id')->nullable()->constrained('shift_schedules')->nullOnDelete();
+            } else {
+                $table->unsignedBigInteger('assigned_shift_id')->nullable();
+            }
+
             $table->foreignId('assigned_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->enum('status', ['pending', 'in_progress', 'completed', 'skipped'])->default('pending');
             $table->timestamp('completed_at')->nullable();

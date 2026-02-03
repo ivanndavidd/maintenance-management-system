@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Check if referenced table exists first
+        if (!Schema::hasTable('shift_schedules')) {
+            return; // Referenced table doesn't exist yet, skip this migration
+        }
+
         // Add shift support to Stock Opname Schedules
         Schema::table('stock_opname_schedules', function (Blueprint $table) {
             $table->foreignId('shift_schedule_id')->nullable()->after('assigned_to')->constrained('shift_schedules')->onDelete('set null');
