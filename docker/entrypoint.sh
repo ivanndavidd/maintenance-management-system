@@ -61,9 +61,10 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Run migrations
-echo "Running database migrations..."
-php artisan migrate --force
+# Skip auto-migration on startup to avoid conflicts
+# Run migrations manually after container is up: docker compose exec app php artisan migrate --force
+# echo "Running database migrations..."
+# php artisan migrate --force
 
 # Create storage link if not exists
 if [ ! -L /var/www/html/public/storage ]; then
