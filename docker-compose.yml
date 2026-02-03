@@ -79,8 +79,10 @@ services:
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis-data:/data
-    ports:
-      - "6379:6379"
+    # Port 6379 only accessible within Docker network, not exposed to host
+    # Uncomment below if you need external access to Redis
+    # ports:
+    #   - "6379:6379"
     networks:
       - warehouse-network
     healthcheck:
