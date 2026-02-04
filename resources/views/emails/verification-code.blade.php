@@ -42,8 +42,8 @@
             margin-bottom: 20px;
         }
         .verification-code {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background-color: #667eea;
+            color: #333333;
             font-size: 36px;
             font-weight: bold;
             letter-spacing: 8px;
@@ -93,7 +93,7 @@
 
             <p>Thank you for registering with Warehouse Maintenance System. To complete your registration, please use the verification code below:</p>
 
-            <div class="verification-code">
+            <div class="verification-code" style="background-color: #667eea; color: #333333; font-size: 36px; font-weight: bold; letter-spacing: 8px; text-align: center; padding: 20px; border-radius: 10px; margin: 25px 0;">
                 {{ $code }}
             </div>
 
