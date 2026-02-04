@@ -13,8 +13,12 @@ services:
     ports:
       - "8080:80"  # Changed to 8080 to avoid conflict with existing web server
     environment:
+      - APP_NAME=Warehouse Maintenance
       - APP_ENV=production
+      - APP_KEY=${APP_KEY:-base64:vlbgy3dM01TbMX3KnZ0hNBPJCQ4ft2+Q85Q0HGQ0TVQ=}
       - APP_DEBUG=false
+      - APP_URL=http://10.177.143.3:8080
+      - APP_TIMEZONE=Asia/Jakarta
       - DB_CONNECTION=mysql
       - DB_HOST=db
       - DB_PORT=3306
@@ -26,6 +30,14 @@ services:
       - CACHE_DRIVER=redis
       - SESSION_DRIVER=redis
       - QUEUE_CONNECTION=redis
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=smtp.office365.com
+      - MAIL_PORT=587
+      - MAIL_USERNAME=pir.maintenance@gdn-commerce.com
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-tywwbswpctnhrjsr}
+      - MAIL_ENCRYPTION=tls
+      - MAIL_FROM_ADDRESS=pir.maintenance@gdn-commerce.com
+      - MAIL_FROM_NAME=Warehouse Maintenance
     volumes:
       - app-storage:/var/www/html/storage/app
       - app-logs:/var/www/html/storage/logs
@@ -102,7 +114,12 @@ services:
     restart: unless-stopped
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
     environment:
+      - APP_NAME=Warehouse Maintenance
       - APP_ENV=production
+      - APP_KEY=${APP_KEY:-base64:vlbgy3dM01TbMX3KnZ0hNBPJCQ4ft2+Q85Q0HGQ0TVQ=}
+      - APP_DEBUG=false
+      - APP_URL=http://10.177.143.3:8080
+      - APP_TIMEZONE=Asia/Jakarta
       - DB_CONNECTION=mysql
       - DB_HOST=db
       - DB_PORT=3306
@@ -112,6 +129,14 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - QUEUE_CONNECTION=redis
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=smtp.office365.com
+      - MAIL_PORT=587
+      - MAIL_USERNAME=pir.maintenance@gdn-commerce.com
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-tywwbswpctnhrjsr}
+      - MAIL_ENCRYPTION=tls
+      - MAIL_FROM_ADDRESS=pir.maintenance@gdn-commerce.com
+      - MAIL_FROM_NAME=Warehouse Maintenance
     volumes:
       - app-storage:/var/www/html/storage/app
       - app-logs:/var/www/html/storage/logs
