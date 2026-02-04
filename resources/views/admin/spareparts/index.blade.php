@@ -14,46 +14,6 @@
         </nav>
     </div>
 
-    <!-- Quick Access Cards -->
-    <div class="row mb-3 g-2">
-        <div class="col-6 col-md-3">
-            <div class="card border-primary h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-boxes text-primary mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="mb-2">Stock Management</h6>
-                    <a href="#master-data" class="btn btn-primary btn-sm">View</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-success h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-shopping-cart text-success mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="mb-2">Purchase Orders</h6>
-                    <a href="{{ route('admin.spareparts.purchase-orders') }}" class="btn btn-success btn-sm">View</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-info h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-clipboard-check text-info mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="mb-2">Stock Opname</h6>
-                    <a href="{{ route('admin.spareparts.opname.dashboard') }}" class="btn btn-info btn-sm">View</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-warning h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-edit text-warning mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="mb-2">Stock Adjustments</h6>
-                    <a href="{{ route('admin.spareparts.adjustments') }}" class="btn btn-warning btn-sm">View</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Master Data Section -->
     <div id="master-data" class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
