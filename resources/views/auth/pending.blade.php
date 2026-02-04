@@ -5,64 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Account Pending - {{ config('app.name', 'Warehouse Maintenance') }}</title>
-    
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('assets/Blibli_Logo_Symbol_FC_RGB.png') }}">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('{{ asset('assets/maxresdefault.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             display: flex;
             align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding: 20px 0;
+            position: relative;
         }
-        
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
+
         .pending-container {
             width: 100%;
             max-width: 550px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 1;
         }
-        
+
         .pending-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             overflow: hidden;
         }
-        
+
         .pending-header {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: #0095DA;
             color: white;
             padding: 40px 30px;
             text-align: center;
         }
-        
+
         .pending-header .icon-container {
             margin-bottom: 20px;
         }
-        
+
         .pending-header i.main-icon {
             font-size: 70px;
             animation: pulse 2s infinite;
             display: inline-block;
         }
-        
+
         @keyframes pulse {
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.15); opacity: 0.8; }
         }
-        
+
         .pending-header h3 {
             margin: 15px 0;
             font-weight: 600;
             font-size: 26px;
         }
-        
+
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -70,58 +88,58 @@
             gap: 8px;
             padding: 10px 25px;
             background: rgba(255, 255, 255, 0.95);
-            color: #f5576c;
+            color: #0095DA;
             border-radius: 25px;
             font-weight: 600;
             font-size: 15px;
             margin-top: 10px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         .status-badge i {
             font-size: 16px;
         }
-        
+
         .pending-body {
             padding: 35px 30px;
         }
-        
+
         .info-box {
             background: #f8f9fa;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #0095DA;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 25px;
         }
-        
+
         .info-box h5 {
-            color: #667eea;
+            color: #0095DA;
             margin-bottom: 15px;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
+
         .info-box ul {
             margin-bottom: 0;
             padding-left: 20px;
         }
-        
+
         .info-box li {
             margin-bottom: 10px;
             color: #6c757d;
             line-height: 1.6;
         }
-        
+
         .user-info {
-            background: linear-gradient(135deg, #e7f3ff 0%, #f0f7ff 100%);
+            background: #E6F7FF;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 25px;
-            border: 1px solid #d0e7ff;
+            border: 1px solid #B3E0F7;
         }
-        
+
         .user-info p {
             margin: 8px 0;
             color: #495057;
@@ -129,23 +147,23 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .user-info strong {
             color: #2c3e50;
             min-width: 120px;
         }
-        
+
         .user-info i {
             width: 18px;
             text-align: center;
-            color: #667eea;
+            color: #0095DA;
         }
-        
+
         .btn-back {
             width: 100%;
             padding: 14px;
             border-radius: 8px;
-            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            background: #0095DA;
             border: none;
             color: white;
             font-weight: 600;
@@ -157,13 +175,14 @@
             transition: all 0.3s;
             font-size: 15px;
         }
-        
+
         .btn-back:hover {
+            background: #007AB8;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+            box-shadow: 0 5px 20px rgba(0, 149, 218, 0.4);
             color: white;
         }
-        
+
         .contact-info {
             text-align: center;
             margin-top: 25px;
@@ -172,31 +191,31 @@
             color: #6c757d;
             font-size: 14px;
         }
-        
+
         .contact-info p {
             margin: 5px 0;
         }
-        
+
         .contact-info i {
-            color: #667eea;
+            color: #0095DA;
         }
-        
+
         .alert {
             border-radius: 10px;
             border: none;
             margin-bottom: 20px;
         }
-        
+
         .alert-success {
             background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
             color: #155724;
         }
-        
+
         .alert-warning {
             background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
             color: #856404;
         }
-        
+
         .alert i {
             margin-right: 8px;
         }
@@ -216,7 +235,7 @@
                     <span>Awaiting Activation</span>
                 </div>
             </div>
-            
+
             <!-- Body -->
             <div class="pending-body">
                 <!-- Success Message -->
@@ -281,12 +300,12 @@
                 <!-- Contact Info -->
                 <div class="contact-info">
                     <p><strong>Need help? Contact administrator at:</strong></p>
-                    <p><i class="fas fa-envelope"></i> admin@warehouse.com</p>
+                    <p><i class="fas fa-envelope"></i> ivan.david@gdn-commerce.com</p>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
