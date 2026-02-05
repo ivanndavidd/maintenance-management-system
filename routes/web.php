@@ -704,6 +704,56 @@ Route::middleware(['auth'])->group(function () {
                 'changeAssignment',
             ])->name('shifts.change-assignment');
 
+            // User Management (limited to supervisor_maintenance and staff_maintenance roles)
+            Route::prefix('users')
+                ->name('users.')
+                ->group(function () {
+                    Route::get('/', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'index',
+                    ])->name('index');
+
+                    Route::get('/create', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'create',
+                    ])->name('create');
+
+                    Route::post('/', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'store',
+                    ])->name('store');
+
+                    Route::get('/{user}', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'show',
+                    ])->name('show');
+
+                    Route::get('/{user}/edit', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'edit',
+                    ])->name('edit');
+
+                    Route::put('/{user}', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'update',
+                    ])->name('update');
+
+                    Route::delete('/{user}', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'destroy',
+                    ])->name('destroy');
+
+                    Route::patch('/{user}/toggle-status', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'toggleStatus',
+                    ])->name('toggle-status');
+
+                    Route::post('/{user}/reset-password', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'resetPassword',
+                    ])->name('reset-password');
+                });
+
             // Share all admin routes untuk inventory, stock opname, PM, CM, KPI, help articles
             // Inventory Management routes... (copy dari admin, terlalu panjang)
 
