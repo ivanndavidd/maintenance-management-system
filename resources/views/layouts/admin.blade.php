@@ -666,8 +666,8 @@
 
  <hr class="text-white">
 
- <a href="{{ route('profile.index') }}">
- <i class="fas fa-user"></i><span class="menu-text"> Profile</span> 
+ <a href="{{ route('profile.index') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
+ <i class="fas fa-user"></i><span class="menu-text"> Profile</span>
  </a>
 
  <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
