@@ -8,7 +8,7 @@
         <h2>Import Spareparts from Excel</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.index') }}">Spareparts</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.index') }}">Spareparts</a></li>
                 <li class="breadcrumb-item active">Import Excel</li>
             </ol>
         </nav>
@@ -37,7 +37,7 @@
                     <h5 class="mb-0"><i class="fas fa-upload"></i> Upload Excel File</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.spareparts.import.process') }}" method="POST" enctype="multipart/form-data" id="importForm">
+                    <form action="{{ route($routePrefix.'.spareparts.import.process') }}" method="POST" enctype="multipart/form-data" id="importForm">
                         @csrf
 
                         <div class="alert alert-info">
@@ -77,7 +77,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.spareparts.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.spareparts.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -108,7 +108,7 @@
                 </div>
                 <div class="card-body">
                     <p>Download the CSV template with sample data to get started.</p>
-                    <a href="{{ route('admin.spareparts.import.template') }}" class="btn btn-success w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.spareparts.import.template') }}" class="btn btn-success w-100 mb-2">
                         <i class="fas fa-download"></i> Download CSV Template
                     </a>
                     <small class="text-muted d-block">

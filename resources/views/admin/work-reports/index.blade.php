@@ -10,16 +10,16 @@
             <h2><i class="fas fa-file-alt"></i> Work Reports</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Work Reports</li>
                 </ol>
             </nav>
         </div>
         <div>
-            <a href="{{ route('admin.work-reports.my-reports') }}" class="btn btn-info">
+            <a href="{{ route($routePrefix.'.work-reports.my-reports') }}" class="btn btn-info">
                 <i class="fas fa-user"></i> My Reports
             </a>
-            <a href="{{ route('admin.work-reports.create') }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'.work-reports.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Submit New Report
             </a>
         </div>
@@ -32,7 +32,7 @@
             <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.work-reports.index') }}">
+            <form method="GET" action="{{ route($routePrefix.'.work-reports.index') }}">
                 <div class="row g-3">
                     <!-- Search -->
                     <div class="col-md-3">
@@ -87,7 +87,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-search"></i> Apply Filters
                     </button>
-                    <a href="{{ route('admin.work-reports.index') }}" class="btn btn-secondary">
+                    <a href="{{ route($routePrefix.'.work-reports.index') }}" class="btn btn-secondary">
                         <i class="fas fa-redo"></i> Reset
                     </a>
                 </div>
@@ -173,7 +173,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>
-                                <a href="{{ route('admin.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                <a href="{{ route($routePrefix.'.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'report_code',
                                     'sort_order' => request('sort_by') == 'report_code' && request('sort_order') == 'asc' ? 'desc' : 'asc'
                                 ])) }}" class="text-decoration-none text-dark">
@@ -189,7 +189,7 @@
                             <th>Machine</th>
                             <th>Submitted By</th>
                             <th>
-                                <a href="{{ route('admin.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                <a href="{{ route($routePrefix.'.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'work_start',
                                     'sort_order' => request('sort_by') == 'work_start' && request('sort_order') == 'asc' ? 'desc' : 'asc'
                                 ])) }}" class="text-decoration-none text-dark">
@@ -203,7 +203,7 @@
                             </th>
                             <th>Duration</th>
                             <th>
-                                <a href="{{ route('admin.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                <a href="{{ route($routePrefix.'.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'machine_condition',
                                     'sort_order' => request('sort_by') == 'machine_condition' && request('sort_order') == 'asc' ? 'desc' : 'asc'
                                 ])) }}" class="text-decoration-none text-dark">
@@ -216,7 +216,7 @@
                                 </a>
                             </th>
                             <th>
-                                <a href="{{ route('admin.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                <a href="{{ route($routePrefix.'.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'status',
                                     'sort_order' => request('sort_by') == 'status' && request('sort_order') == 'asc' ? 'desc' : 'asc'
                                 ])) }}" class="text-decoration-none text-dark">
@@ -278,7 +278,7 @@
                             </td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('admin.work-reports.show', $report) }}" 
+                                    <a href="{{ route($routePrefix.'.work-reports.show', $report) }}" 
                                        class="btn btn-sm btn-info" 
                                        title="View Details">
                                         <i class="fas fa-eye"></i>
@@ -302,7 +302,7 @@
                         <div class="modal fade" id="validateModal{{ $report->id }}" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form action="{{ route('admin.work-reports.validate', $report) }}" method="POST">
+                                    <form action="{{ route($routePrefix.'.work-reports.validate', $report) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
                                         <div class="modal-header">

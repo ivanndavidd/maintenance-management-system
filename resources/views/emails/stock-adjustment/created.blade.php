@@ -121,14 +121,14 @@
 
             <p style="text-align: center; margin: 25px 0;">
                 @if($adjustment->status === 'pending')
-                    <a href="{{ route('admin.adjustments.show', $adjustment->id) }}" class="btn" style="background: #22C55E; margin-right: 10px;">
+                    <a href="{{ route($routePrefix.'.adjustments.show', $adjustment->id) }}" class="btn" style="background: #22C55E; margin-right: 10px;">
                         <strong>✓</strong> Approve Adjustment
                     </a>
-                    <a href="{{ route('admin.adjustments.show', $adjustment->id) }}" class="btn" style="background: #EF4444;">
+                    <a href="{{ route($routePrefix.'.adjustments.show', $adjustment->id) }}" class="btn" style="background: #EF4444;">
                         <strong>✗</strong> Reject Adjustment
                     </a>
                 @else
-                    <a href="{{ route('admin.adjustments.show', $adjustment->id) }}" class="btn">
+                    <a href="{{ route($routePrefix.'.adjustments.show', $adjustment->id) }}" class="btn">
                         View Adjustment Details
                     </a>
                 @endif

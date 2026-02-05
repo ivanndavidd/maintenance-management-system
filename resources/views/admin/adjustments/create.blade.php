@@ -24,7 +24,7 @@
         <h2>Create Stock Adjustment</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.adjustments.index') }}">Stock Adjustments</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'adjustments.index') }}">Stock Adjustments</a></li>
                 <li class="breadcrumb-item active">Create</li>
             </ol>
         </nav>
@@ -37,7 +37,7 @@
                     <h5 class="mb-0"><i class="fas fa-plus-circle"></i> New Stock Adjustment</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.adjustments.store') }}" method="POST">
+                    <form action="{{ route($routePrefix.'.adjustments.store') }}" method="POST">
                         @csrf
 
                         {{-- Item Type Selection --}}
@@ -188,7 +188,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Create Adjustment
                             </button>
-                            <a href="{{ route('admin.adjustments.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.adjustments.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
                         </div>

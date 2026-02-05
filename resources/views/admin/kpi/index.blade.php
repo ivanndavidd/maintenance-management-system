@@ -16,7 +16,7 @@
         <!-- Filter Panel -->
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.kpi.index') }}" class="row g-3">
+                <form method="GET" action="{{ route($routePrefix.'.kpi.index') }}" class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">Date From</label>
                         <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
@@ -29,7 +29,7 @@
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="fas fa-filter"></i> Apply Filter
                         </button>
-                        <a href="{{ route('admin.kpi.index') }}" class="btn btn-secondary">
+                        <a href="{{ route($routePrefix.'.kpi.index') }}" class="btn btn-secondary">
                             <i class="fas fa-times"></i> Clear
                         </a>
                     </div>
@@ -162,7 +162,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a href="{{ route('admin.kpi.show', $item['user']->id) }}"
+                                            <a href="{{ route($routePrefix.'.kpi.show', $item['user']->id) }}"
                                                 class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-eye"></i> Details
                                             </a>
@@ -176,7 +176,7 @@
                     <div class="text-center py-5">
                         <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
                         <p class="text-muted">No KPI data available for the selected period</p>
-                        <a href="{{ route('admin.kpi.index') }}" class="btn btn-sm btn-primary">Clear Filters</a>
+                        <a href="{{ route($routePrefix.'.kpi.index') }}" class="btn btn-sm btn-primary">Clear Filters</a>
                     </div>
                 @endif
             </div>

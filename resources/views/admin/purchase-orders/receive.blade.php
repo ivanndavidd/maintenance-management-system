@@ -8,8 +8,8 @@
         <h2><i class="fas fa-truck"></i> Receive Goods</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.purchase-orders.index') }}">Purchase Orders</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.purchase-orders.show', $purchaseOrder) }}">{{ $purchaseOrder->po_number }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.purchase-orders.index') }}">Purchase Orders</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.purchase-orders.show', $purchaseOrder) }}">{{ $purchaseOrder->po_number }}</a></li>
                 <li class="breadcrumb-item active">Receive Goods</li>
             </ol>
         </nav>
@@ -51,7 +51,7 @@
             </button>
         </div>
         <div class="card-body">
-            <form action="{{ route('admin.purchase-orders.batch-receive') }}" method="POST" id="batchReceiveForm">
+            <form action="{{ route($routePrefix.'.purchase-orders.batch-receive') }}" method="POST" id="batchReceiveForm">
                 @csrf
                 <input type="hidden" name="purchase_order_id" value="{{ $purchaseOrder->id }}">
 
@@ -130,7 +130,7 @@
                 </div>
 
                 <div class="mt-4 d-flex justify-content-between">
-                    <a href="{{ route('admin.purchase-orders.show', $purchaseOrder) }}" class="btn btn-secondary">
+                    <a href="{{ route($routePrefix.'.purchase-orders.show', $purchaseOrder) }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Back to PO Details
                     </a>
                     <button type="submit" class="btn btn-success btn-lg" onclick="return confirmBatchReceive()">

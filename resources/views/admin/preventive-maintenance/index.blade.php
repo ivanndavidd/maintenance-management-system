@@ -11,7 +11,7 @@
             <p class="text-muted mb-0">Manage preventive maintenance tasks and schedules</p>
         </div>
         <div>
-            <a href="{{ route('admin.preventive-maintenance.calendar') }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'.preventive-maintenance.calendar') }}" class="btn btn-primary">
                 <i class="fas fa-calendar-alt me-1"></i> Calendar View
             </a>
         </div>
@@ -40,7 +40,7 @@
                     <button type="submit" class="btn btn-outline-primary me-2">
                         <i class="fas fa-search"></i> Filter
                     </button>
-                    <a href="{{ route('admin.preventive-maintenance.index') }}" class="btn btn-outline-secondary">
+                    <a href="{{ route($routePrefix.'.preventive-maintenance.index') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-times"></i> Reset
                     </a>
                 </div>
@@ -108,11 +108,11 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ route('admin.preventive-maintenance.show', $schedule) }}"
+                                        <a href="{{ route($routePrefix.'.preventive-maintenance.show', $schedule) }}"
                                            class="btn btn-outline-primary" title="View">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('admin.preventive-maintenance.edit', $schedule) }}"
+                                        <a href="{{ route($routePrefix.'.preventive-maintenance.edit', $schedule) }}"
                                            class="btn btn-outline-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -122,7 +122,7 @@
                                         </button>
                                     </div>
                                     <form id="delete-form-{{ $schedule->id }}"
-                                          action="{{ route('admin.preventive-maintenance.destroy', $schedule) }}"
+                                          action="{{ route($routePrefix.'.preventive-maintenance.destroy', $schedule) }}"
                                           method="POST" class="d-none">
                                         @csrf
                                         @method('DELETE')
@@ -135,7 +135,7 @@
                                     <div class="text-muted">
                                         <i class="fas fa-calendar-times fa-3x mb-3"></i>
                                         <p>No preventive maintenance schedules found.</p>
-                                        <a href="{{ route('admin.preventive-maintenance.create') }}" class="btn btn-primary btn-sm">
+                                        <a href="{{ route($routePrefix.'.preventive-maintenance.create') }}" class="btn btn-primary btn-sm">
                                             Create First Schedule
                                         </a>
                                     </div>

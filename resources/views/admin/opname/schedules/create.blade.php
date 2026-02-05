@@ -8,7 +8,7 @@
         <h2><i class="fas fa-calendar-plus"></i> Create Stock Opname Schedule</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.opname.schedules.index') }}">Schedules</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.opname.schedules.index') }}">Schedules</a></li>
                 <li class="breadcrumb-item active">Create</li>
             </ol>
         </nav>
@@ -21,7 +21,7 @@
                     <h5 class="mb-0"><i class="fas fa-calendar-check"></i> Schedule Information</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.opname.schedules.store') }}" method="POST" id="scheduleForm">
+                    <form action="{{ route($routePrefix.'.opname.schedules.store') }}" method="POST" id="scheduleForm">
                         @csrf
 
                         {{-- Schedule Code (Display Only) --}}
@@ -189,7 +189,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Create Schedule
                             </button>
-                            <a href="{{ route('admin.opname.schedules.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.opname.schedules.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
                         </div>

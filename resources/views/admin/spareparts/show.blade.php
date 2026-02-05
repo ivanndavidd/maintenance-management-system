@@ -8,7 +8,7 @@
         <h2>Sparepart Details</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.index') }}">Spareparts</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.index') }}">Spareparts</a></li>
                 <li class="breadcrumb-item active">{{ $sparepart->sparepart_name }}</li>
             </ol>
         </nav>
@@ -211,26 +211,26 @@
                     <h5 class="mb-0">Actions</h5>
                 </div>
                 <div class="card-body">
-                    <a href="{{ route('admin.spareparts.edit', $sparepart) }}" class="btn btn-warning w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.spareparts.edit', $sparepart) }}" class="btn btn-warning w-100 mb-2">
                         <i class="fas fa-edit"></i> Edit Sparepart
                     </a>
-                    <a href="{{ route('admin.spareparts.adjustments.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-primary w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.spareparts.adjustments.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-primary w-100 mb-2">
                         <i class="fas fa-sliders-h"></i> Adjust Stock
                     </a>
-                    <a href="{{ route('admin.spareparts.purchase-orders.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-success w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.spareparts.purchase-orders.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-success w-100 mb-2">
                         <i class="fas fa-shopping-cart"></i> Create Purchase Order
                     </a>
-                    <a href="{{ route('admin.spareparts.opname.executions.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-info w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.spareparts.opname.executions.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-info w-100 mb-2">
                         <i class="fas fa-clipboard-check"></i> Record Opname
                     </a>
 
                     <hr>
 
-                    <a href="{{ route('admin.spareparts.index') }}" class="btn btn-secondary w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.spareparts.index') }}" class="btn btn-secondary w-100 mb-2">
                         <i class="fas fa-arrow-left"></i> Back to List
                     </a>
 
-                    <form action="{{ route('admin.spareparts.destroy', $sparepart) }}" method="POST"
+                    <form action="{{ route($routePrefix.'.spareparts.destroy', $sparepart) }}" method="POST"
                         onsubmit="return confirm('Are you sure you want to delete this sparepart?')">
                         @csrf
                         @method('DELETE')
@@ -252,7 +252,7 @@
                     <p><strong>Current:</strong> {{ $sparepart->quantity }} {{ $sparepart->unit }}</p>
                     <p><strong>Minimum:</strong> {{ $sparepart->minimum_stock }} {{ $sparepart->unit }}</p>
                     <p><strong>Suggested Order:</strong> {{ max($sparepart->minimum_stock * 2 - $sparepart->quantity, 0) }} {{ $sparepart->unit }}</p>
-                    <a href="{{ route('admin.spareparts.purchase-orders.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-warning w-100">
+                    <a href="{{ route($routePrefix.'.spareparts.purchase-orders.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-warning w-100">
                         <i class="fas fa-shopping-cart"></i> Order Now
                     </a>
                 </div>

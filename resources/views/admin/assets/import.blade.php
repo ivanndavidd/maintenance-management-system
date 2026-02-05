@@ -8,7 +8,7 @@
         <h2>Import Assets from Excel</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.assets.index') }}">Assets</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.assets.index') }}">Assets</a></li>
                 <li class="breadcrumb-item active">Import Excel</li>
             </ol>
         </nav>
@@ -37,7 +37,7 @@
                     <h5 class="mb-0"><i class="fas fa-upload"></i> Upload Excel File</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.assets.import.process') }}" method="POST" enctype="multipart/form-data" id="importForm">
+                    <form action="{{ route($routePrefix.'.assets.import.process') }}" method="POST" enctype="multipart/form-data" id="importForm">
                         @csrf
 
                         <div class="alert alert-info">
@@ -82,7 +82,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.assets.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.assets.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -113,7 +113,7 @@
                 </div>
                 <div class="card-body">
                     <p>Download the Excel template with sample data to get started.</p>
-                    <a href="{{ route('admin.assets.import.template') }}" class="btn btn-success w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.assets.import.template') }}" class="btn btn-success w-100 mb-2">
                         <i class="fas fa-download"></i> Download Excel Template
                     </a>
                     <small class="text-muted d-block">

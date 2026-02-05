@@ -8,7 +8,7 @@
         <h2>Stock Opname Accuracy Report</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.opname.dashboard') }}">Opname Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.opname.dashboard') }}">Opname Dashboard</a></li>
                 <li class="breadcrumb-item active">Accuracy Report</li>
             </ol>
         </nav>
@@ -17,7 +17,7 @@
     <!-- Filter Section -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.opname.reports.accuracy') }}" class="mb-0">
+            <form method="GET" action="{{ route($routePrefix.'.opname.reports.accuracy') }}" class="mb-0">
                 <div class="row">
                     <div class="col-md-2">
                         <label class="form-label">Item Type</label>
@@ -58,7 +58,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-filter"></i> Filter
                             </button>
-                            <a href="{{ route('admin.opname.reports.accuracy') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.opname.reports.accuracy') }}" class="btn btn-secondary">
                                 <i class="fas fa-redo"></i> Reset
                             </a>
                         </div>
@@ -76,31 +76,31 @@
                 @if(request('item_type'))
                     <span class="badge bg-info">
                         Type: {{ ucfirst(request('item_type')) }}
-                        <a href="{{ route('admin.opname.reports.accuracy', array_filter(request()->except('item_type'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                        <a href="{{ route($routePrefix.'.opname.reports.accuracy', array_filter(request()->except('item_type'))) }}" class="text-white text-decoration-none ms-1">×</a>
                     </span>
                 @endif
                 @if(request('accuracy_level'))
                     <span class="badge bg-info">
                         Level: {{ ucfirst(request('accuracy_level')) }}
-                        <a href="{{ route('admin.opname.reports.accuracy', array_filter(request()->except('accuracy_level'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                        <a href="{{ route($routePrefix.'.opname.reports.accuracy', array_filter(request()->except('accuracy_level'))) }}" class="text-white text-decoration-none ms-1">×</a>
                     </span>
                 @endif
                 @if(request('has_discrepancy'))
                     <span class="badge bg-info">
                         Discrepancy: {{ ucfirst(request('has_discrepancy')) }}
-                        <a href="{{ route('admin.opname.reports.accuracy', array_filter(request()->except('has_discrepancy'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                        <a href="{{ route($routePrefix.'.opname.reports.accuracy', array_filter(request()->except('has_discrepancy'))) }}" class="text-white text-decoration-none ms-1">×</a>
                     </span>
                 @endif
                 @if(request('date_from'))
                     <span class="badge bg-info">
                         From: {{ request('date_from') }}
-                        <a href="{{ route('admin.opname.reports.accuracy', array_filter(request()->except('date_from'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                        <a href="{{ route($routePrefix.'.opname.reports.accuracy', array_filter(request()->except('date_from'))) }}" class="text-white text-decoration-none ms-1">×</a>
                     </span>
                 @endif
                 @if(request('date_to'))
                     <span class="badge bg-info">
                         To: {{ request('date_to') }}
-                        <a href="{{ route('admin.opname.reports.accuracy', array_filter(request()->except('date_to'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                        <a href="{{ route($routePrefix.'.opname.reports.accuracy', array_filter(request()->except('date_to'))) }}" class="text-white text-decoration-none ms-1">×</a>
                     </span>
                 @endif
             </div>
@@ -220,7 +220,7 @@
                             </td>
                             <td>{{ $execution->executedByUser->name }}</td>
                             <td>
-                                <a href="{{ route('admin.opname.executions.show', $execution) }}" class="btn btn-sm btn-info">
+                                <a href="{{ route($routePrefix.'.opname.executions.show', $execution) }}" class="btn btn-sm btn-info">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </td>

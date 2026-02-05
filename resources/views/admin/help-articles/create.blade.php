@@ -10,7 +10,7 @@
             <h2><i class="fas fa-plus-circle"></i> Create New Help Article</h2>
             <p class="text-muted mb-0">Add a new FAQ, SOP, Tutorial, or Documentation</p>
         </div>
-        <a href="{{ route('admin.help-articles.index') }}" class="btn btn-secondary">
+        <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Back to List
         </a>
     </div>
@@ -19,7 +19,7 @@
         <div class="col-lg-8">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <form id="create-article-form" action="{{ route('admin.help-articles.store') }}" method="POST">
+                    <form id="create-article-form" action="{{ route($routePrefix.'.help-articles.store') }}" method="POST">
                         @csrf
 
                         <!-- Title -->
@@ -142,7 +142,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Create Article
                             </button>
-                            <a href="{{ route('admin.help-articles.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary">
                                 Cancel
                             </a>
                         </div>

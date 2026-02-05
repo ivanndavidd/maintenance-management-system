@@ -10,7 +10,7 @@
             <h2><i class="fas fa-edit"></i> Edit Help Article</h2>
             <p class="text-muted mb-0">{{ $helpArticle->title }}</p>
         </div>
-        <a href="{{ route('admin.help-articles.index') }}" class="btn btn-secondary">
+        <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Back to List
         </a>
     </div>
@@ -19,7 +19,7 @@
         <div class="col-lg-8">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <form id="edit-article-form" action="{{ route('admin.help-articles.update', $helpArticle) }}" method="POST">
+                    <form id="edit-article-form" action="{{ route($routePrefix.'.help-articles.update', $helpArticle) }}" method="POST">
                         @csrf
                         @method('PUT')
 
@@ -148,7 +148,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Update Article
                             </button>
-                            <a href="{{ route('admin.help-articles.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary">
                                 Cancel
                             </a>
                         </div>
@@ -206,7 +206,7 @@
                            target="_blank">
                             <i class="fas fa-external-link-alt"></i> Preview Article
                         </a>
-                        <form action="{{ route('admin.help-articles.toggle-publish', $helpArticle) }}"
+                        <form action="{{ route($routePrefix.'.help-articles.toggle-publish', $helpArticle) }}"
                               method="POST">
                             @csrf
                             @method('PATCH')
@@ -215,7 +215,7 @@
                                 {{ $helpArticle->is_published ? 'Unpublish' : 'Publish' }}
                             </button>
                         </form>
-                        <form action="{{ route('admin.help-articles.destroy', $helpArticle) }}"
+                        <form action="{{ route($routePrefix.'.help-articles.destroy', $helpArticle) }}"
                               method="POST"
                               onsubmit="return confirm('Are you sure you want to delete this article permanently?')">
                             @csrf

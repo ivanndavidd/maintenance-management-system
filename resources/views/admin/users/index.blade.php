@@ -10,13 +10,13 @@
             <h2><i class="fas fa-users"></i> User Management</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Users</li>
                 </ol>
             </nav>
         </div>
         <div>
-            <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'.users.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Add New User
             </a>
         </div>
@@ -29,7 +29,7 @@
             <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.users.index') }}" id="filterForm">
+            <form method="GET" action="{{ route($routePrefix.'.users.index') }}" id="filterForm">
                 <div class="row g-3">
                     <!-- Search -->
                     <div class="col-md-3">
@@ -80,7 +80,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-search"></i> Apply Filters
                     </button>
-                    <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+                    <a href="{{ route($routePrefix.'.users.index') }}" class="btn btn-secondary">
                         <i class="fas fa-redo"></i> Reset
                     </a>
                 </div>
@@ -158,12 +158,12 @@
                             </td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('admin.users.show', $user) }}" 
+                                    <a href="{{ route($routePrefix.'.users.show', $user) }}" 
                                        class="btn btn-sm btn-info" 
                                        title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('admin.users.edit', $user) }}" 
+                                    <a href="{{ route($routePrefix.'.users.edit', $user) }}" 
                                        class="btn btn-sm btn-warning" 
                                        title="Edit">
                                         <i class="fas fa-edit"></i>
@@ -171,7 +171,7 @@
                                     
                                     @if($user->id !== auth()->id())
                                         <!-- Toggle Status -->
-                                        <form action="{{ route('admin.users.toggle-status', $user) }}" 
+                                        <form action="{{ route($routePrefix.'.users.toggle-status', $user) }}" 
                                               method="POST" 
                                               class="d-inline">
                                             @csrf
@@ -185,7 +185,7 @@
                                         </form>
                                         
                                         <!-- Delete -->
-                                        <form action="{{ route('admin.users.destroy', $user) }}" 
+                                        <form action="{{ route($routePrefix.'.users.destroy', $user) }}" 
                                               method="POST" 
                                               class="d-inline">
                                             @csrf

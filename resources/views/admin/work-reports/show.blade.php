@@ -10,19 +10,19 @@
             <h2><i class="fas fa-file-alt"></i> Work Report Details</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.work-reports.index') }}">Work Reports</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.work-reports.index') }}">Work Reports</a></li>
                     <li class="breadcrumb-item active">{{ $workReport->report_code }}</li>
                 </ol>
             </nav>
         </div>
         <div>
             @if($workReport->user_id === auth()->id() && in_array($workReport->status, ['draft', 'pending']))
-            <a href="{{ route('admin.work-reports.edit', $workReport) }}" class="btn btn-warning">
+            <a href="{{ route($routePrefix.'.work-reports.edit', $workReport) }}" class="btn btn-warning">
                 <i class="fas fa-edit"></i> Edit Report
             </a>
             @endif
-            <a href="{{ route('admin.work-reports.index') }}" class="btn btn-secondary">
+            <a href="{{ route($routePrefix.'.work-reports.index') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
         </div>
@@ -315,7 +315,7 @@
 <div class="modal fade" id="validateModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.work-reports.validate', $workReport) }}" method="POST">
+            <form action="{{ route($routePrefix.'.work-reports.validate', $workReport) }}" method="POST">
                 @csrf
                 @method('PATCH')
                 <div class="modal-header bg-primary text-white">
@@ -401,7 +401,7 @@
 <div class="modal fade" id="approveModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ route('admin.work-reports.approve', $workReport) }}">
+            <form method="POST" action="{{ route($routePrefix.'.work-reports.approve', $workReport) }}">
                 @csrf
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title">
@@ -457,7 +457,7 @@
 <div class="modal fade" id="rejectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ route('admin.work-reports.reject', $workReport) }}">
+            <form method="POST" action="{{ route($routePrefix.'.work-reports.reject', $workReport) }}">
                 @csrf
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">

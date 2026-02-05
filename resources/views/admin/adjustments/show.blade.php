@@ -8,7 +8,7 @@
         <h2>Stock Adjustment Details</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.adjustments.index') }}">Stock Adjustments</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.adjustments.index') }}">Stock Adjustments</a></li>
                 <li class="breadcrumb-item active">{{ $adjustment->adjustment_code }}</li>
             </ol>
         </nav>
@@ -152,7 +152,7 @@
                 <div class="card-body">
                     <p>This adjustment is pending approval.</p>
 
-                    <form action="{{ route('admin.adjustments.approve', $adjustment) }}" method="POST" class="mb-2">
+                    <form action="{{ route($routePrefix.'.adjustments.approve', $adjustment) }}" method="POST" class="mb-2">
                         @csrf
                         <button type="submit" class="btn btn-success w-100">
                             <i class="fas fa-check"></i> Approve Adjustment
@@ -213,7 +213,7 @@
 <div class="modal fade" id="rejectModal" tabindex="-1" data-bs-backdrop="false">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.adjustments.reject', $adjustment) }}" method="POST">
+            <form action="{{ route($routePrefix.'.adjustments.reject', $adjustment) }}" method="POST">
                 @csrf
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">Reject Adjustment</h5>

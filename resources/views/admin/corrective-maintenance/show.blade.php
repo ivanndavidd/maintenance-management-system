@@ -7,7 +7,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <a href="{{ route('admin.corrective-maintenance.index') }}" class="text-decoration-none">
+            <a href="{{ route($routePrefix.'.corrective-maintenance.index') }}" class="text-decoration-none">
                 <i class="fas fa-arrow-left me-2"></i>Back to Tickets
             </a>
             <h2 class="mt-2"><i class="fas fa-ticket-alt me-2"></i>{{ $ticket->ticket_number }}</h2>
@@ -73,7 +73,7 @@
                     <div class="bg-info bg-opacity-10 p-3 rounded mb-3 border-start border-info border-3">
                         {!! nl2br(e($ticket->parentTicket->report->work_done)) !!}
                         <div class="text-muted small mt-2">
-                            <i class="fas fa-link me-1"></i>From: <a href="{{ route('admin.corrective-maintenance.show', $ticket->parentTicket) }}">{{ $ticket->parentTicket->ticket_number }}</a>
+                            <i class="fas fa-link me-1"></i>From: <a href="{{ route($routePrefix.'.corrective-maintenance.show', $ticket->parentTicket) }}">{{ $ticket->parentTicket->ticket_number }}</a>
                         </div>
                     </div>
                     @endif
@@ -157,7 +157,7 @@
                     <h5 class="mb-0"><i class="fas fa-link me-2"></i>Parent Ticket</h5>
                 </div>
                 <div class="card-body">
-                    <a href="{{ route('admin.corrective-maintenance.show', $ticket->parentTicket) }}">
+                    <a href="{{ route($routePrefix.'.corrective-maintenance.show', $ticket->parentTicket) }}">
                         {{ $ticket->parentTicket->ticket_number }}
                     </a>
                     <span class="badge {{ $ticket->parentTicket->getStatusBadgeClass() }} ms-2">{{ ucfirst(str_replace('_', ' ', $ticket->parentTicket->status)) }}</span>
@@ -174,7 +174,7 @@
                 <div class="card-body">
                     @foreach($ticket->childTickets as $child)
                     <div class="d-flex align-items-center mb-2">
-                        <a href="{{ route('admin.corrective-maintenance.show', $child) }}">{{ $child->ticket_number }}</a>
+                        <a href="{{ route($routePrefix.'.corrective-maintenance.show', $child) }}">{{ $child->ticket_number }}</a>
                         <span class="badge {{ $child->getStatusBadgeClass() }} ms-2">{{ ucfirst(str_replace('_', ' ', $child->status)) }}</span>
                     </div>
                     @endforeach
@@ -196,7 +196,7 @@
                             <i class="fas fa-info-circle me-2"></i>
                             <small>Ticket is waiting for processing. Auto-assignment happens when ticket is created based on shift schedule.</small>
                         </div>
-                        <form action="{{ route('admin.corrective-maintenance.mark-received', $ticket) }}" method="POST">
+                        <form action="{{ route($routePrefix.'.corrective-maintenance.mark-received', $ticket) }}" method="POST">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="btn btn-info w-100 mb-2">
@@ -230,7 +230,7 @@
                     @endif
 
                     @if($ticket->status == 'further_repair' && !$ticket->childTickets->count())
-                        <form action="{{ route('admin.corrective-maintenance.create-sub-ticket', $ticket) }}" method="POST">
+                        <form action="{{ route($routePrefix.'.corrective-maintenance.create-sub-ticket', $ticket) }}" method="POST">
                             @csrf
                             <button type="submit" class="btn btn-warning w-100 mb-2" onclick="return confirm('Create a new sub-ticket for further repair?')">
                                 <i class="fas fa-plus-circle me-2"></i>Create Sub-Ticket
@@ -373,7 +373,7 @@
                 <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Assign Technician</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('admin.corrective-maintenance.assign', $ticket) }}" method="POST">
+            <form action="{{ route($routePrefix.'.corrective-maintenance.assign', $ticket) }}" method="POST">
                 @csrf
                 @method('PATCH')
                 <div class="modal-body">
@@ -406,7 +406,7 @@
                 <h5 class="modal-title"><i class="fas fa-ban me-2"></i>Cancel Ticket</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('admin.corrective-maintenance.cancel', $ticket) }}" method="POST">
+            <form action="{{ route($routePrefix.'.corrective-maintenance.cancel', $ticket) }}" method="POST">
                 @csrf
                 @method('DELETE')
                 <div class="modal-body">

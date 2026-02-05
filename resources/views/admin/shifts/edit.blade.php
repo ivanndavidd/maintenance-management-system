@@ -8,7 +8,7 @@
         <h2>Edit Shift Schedule: {{ $shift->name }}</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.shifts.index') }}">Shift Management</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'Prefix.'.shifts.index') }}">Shift Management</a></li>
                 <li class="breadcrumb-item active">{{ $shift->name }}</li>
             </ol>
         </nav>
@@ -23,7 +23,7 @@
             </span>
         </div>
         <div class="card-body">
-            <form action="{{ route('admin.shifts.update', $shift) }}" method="POST">
+            <form action="{{ route($routePrefix.'Prefix.'.shifts.update', $shift) }}" method="POST">
                 @csrf
                 @method('PATCH')
 

@@ -97,7 +97,7 @@
             </div>
 
             <p style="text-align: center; margin: 25px 0;">
-                <a href="{{ route('admin.preventive-maintenance.calendar') }}" class="btn">
+                <a href="{{ route($routePrefix.'.preventive-maintenance.calendar') }}" class="btn">
                     View PM Calendar
                 </a>
             </p>

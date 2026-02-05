@@ -9,8 +9,8 @@
         <h2><i class="fas fa-plus-circle"></i> Submit Work Report</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.work-reports.my-reports') }}">My Reports</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.work-reports.my-reports') }}">My Reports</a></li>
                 <li class="breadcrumb-item active">Submit Report</li>
             </ol>
         </nav>
@@ -30,7 +30,7 @@
                     <h5 class="mb-0"><i class="fas fa-file-alt"></i> Work Report Information</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.work-reports.store') }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route($routePrefix.'.work-reports.store') }}" enctype="multipart/form-data">
                         @csrf
 
                         <!-- Basic Information -->
@@ -249,7 +249,7 @@
 
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.work-reports.my-reports') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.work-reports.my-reports') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary">

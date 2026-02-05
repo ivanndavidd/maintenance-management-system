@@ -8,8 +8,8 @@
         <h2>Edit Sparepart</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.index') }}">Spareparts</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.show', $sparepart) }}">{{ $sparepart->sparepart_name }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.index') }}">Spareparts</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.show', $sparepart) }}">{{ $sparepart->sparepart_name }}</a></li>
                 <li class="breadcrumb-item active">Edit</li>
             </ol>
         </nav>
@@ -22,7 +22,7 @@
                     <h5 class="mb-0">Sparepart Information</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.spareparts.update', $sparepart) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route($routePrefix.'.spareparts.update', $sparepart) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -78,7 +78,7 @@
                         </div>
 
                         <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> To change quantity, please use <a href="{{ route('admin.spareparts.adjustments.create') }}">Stock Adjustment</a> feature for proper tracking.
+                            <i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> To change quantity, please use <a href="{{ route($routePrefix.'.spareparts.adjustments.create') }}">Stock Adjustment</a> feature for proper tracking.
                         </div>
 
                         <div class="row mb-3">
@@ -176,7 +176,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.spareparts.show', $sparepart) }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.spareparts.show', $sparepart) }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary">
@@ -222,13 +222,13 @@
                     <h5 class="mb-0">Quick Actions</h5>
                 </div>
                 <div class="card-body">
-                    <a href="{{ route('admin.spareparts.adjustments.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-warning w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.spareparts.adjustments.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-warning w-100 mb-2">
                         <i class="fas fa-edit"></i> Adjust Stock
                     </a>
-                    <a href="{{ route('admin.spareparts.purchase-orders.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-success w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.spareparts.purchase-orders.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-success w-100 mb-2">
                         <i class="fas fa-shopping-cart"></i> Create Purchase Order
                     </a>
-                    <a href="{{ route('admin.spareparts.opname.executions.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-info w-100">
+                    <a href="{{ route($routePrefix.'.spareparts.opname.executions.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-info w-100">
                         <i class="fas fa-clipboard-check"></i> Record Opname
                     </a>
                 </div>

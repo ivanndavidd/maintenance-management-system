@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="fas fa-calendar-alt"></i> Stock Opname Schedules</h2>
-        <a href="{{ route('admin.opname.schedules.create') }}" class="btn btn-primary">
+        <a href="{{ route($routePrefix.'.opname.schedules.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> New Schedule
         </a>
     </div>
@@ -14,7 +14,7 @@
     {{-- Filters --}}
     <div class="card mb-3">
         <div class="card-body">
-            <form action="{{ route('admin.opname.schedules.index') }}" method="GET" class="row g-3">
+            <form action="{{ route($routePrefix.'.opname.schedules.index') }}" method="GET" class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Status</label>
                     <select name="status" class="form-select">
@@ -38,7 +38,7 @@
                     <button type="submit" class="btn btn-primary me-2">
                         <i class="fas fa-filter"></i> Filter
                     </button>
-                    <a href="{{ route('admin.opname.schedules.index') }}" class="btn btn-secondary">
+                    <a href="{{ route($routePrefix.'.opname.schedules.index') }}" class="btn btn-secondary">
                         <i class="fas fa-redo"></i> Reset
                     </a>
                 </div>
@@ -131,13 +131,13 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.opname.schedules.show', $schedule) }}"
+                                    <a href="{{ route($routePrefix.'.opname.schedules.show', $schedule) }}"
                                         class="btn btn-sm btn-info"
                                         title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     @if($schedule->status !== 'completed')
-                                    <a href="{{ route('admin.opname.schedules.edit', $schedule) }}"
+                                    <a href="{{ route($routePrefix.'.opname.schedules.edit', $schedule) }}"
                                         class="btn btn-sm btn-warning"
                                         title="Edit">
                                         <i class="fas fa-edit"></i>
@@ -157,7 +157,7 @@
             @else
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i> No schedules found.
-                    <a href="{{ route('admin.opname.schedules.create') }}">Create your first schedule</a>
+                    <a href="{{ route($routePrefix.'.opname.schedules.create') }}">Create your first schedule</a>
                 </div>
             @endif
         </div>

@@ -9,12 +9,12 @@
             <h4 class="mb-1">Edit Preventive Maintenance Schedule</h4>
             <p class="text-muted mb-0">{{ $schedule->scheduled_month->format('F Y') }}</p>
         </div>
-        <a href="{{ route('admin.preventive-maintenance.show', $schedule) }}" class="btn btn-outline-secondary">
+        <a href="{{ route($routePrefix.'.preventive-maintenance.show', $schedule) }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back
         </a>
     </div>
 
-    <form action="{{ route('admin.preventive-maintenance.update', $schedule) }}" method="POST">
+    <form action="{{ route($routePrefix.'.preventive-maintenance.update', $schedule) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -52,7 +52,7 @@
                 </div>
             </div>
             <div class="card-footer d-flex justify-content-between">
-                <a href="{{ route('admin.preventive-maintenance.show', $schedule) }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ route($routePrefix.'.preventive-maintenance.show', $schedule) }}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save me-1"></i> Save Changes
                 </button>

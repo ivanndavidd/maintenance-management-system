@@ -8,7 +8,7 @@
         <h2>Stock Opname Dashboard - Spareparts</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.index') }}">Spareparts</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.index') }}">Spareparts</a></li>
                 <li class="breadcrumb-item active">Opname Dashboard</li>
             </ol>
         </nav>
@@ -92,7 +92,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Recent Executions</h5>
-                    <a href="{{ route('admin.spareparts.opname.executions') }}" class="btn btn-sm btn-primary">View All</a>
+                    <a href="{{ route($routePrefix.'.spareparts.opname.executions') }}" class="btn btn-sm btn-primary">View All</a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -145,7 +145,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Upcoming Schedules</h5>
-                    <a href="{{ route('admin.spareparts.opname.schedules') }}" class="btn btn-sm btn-primary">View All</a>
+                    <a href="{{ route($routePrefix.'.spareparts.opname.schedules') }}" class="btn btn-sm btn-primary">View All</a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -197,22 +197,22 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
-                            <a href="{{ route('admin.spareparts.opname.schedules.create') }}" class="btn btn-primary w-100 mb-2">
+                            <a href="{{ route($routePrefix.'.spareparts.opname.schedules.create') }}" class="btn btn-primary w-100 mb-2">
                                 <i class="fas fa-calendar-plus"></i> Create Schedule
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{{ route('admin.spareparts.opname.executions.create') }}" class="btn btn-success w-100 mb-2">
+                            <a href="{{ route($routePrefix.'.spareparts.opname.executions.create') }}" class="btn btn-success w-100 mb-2">
                                 <i class="fas fa-clipboard-check"></i> Record Execution
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{{ route('admin.spareparts.opname.compliance-report') }}" class="btn btn-info w-100 mb-2">
+                            <a href="{{ route($routePrefix.'.spareparts.opname.compliance-report') }}" class="btn btn-info w-100 mb-2">
                                 <i class="fas fa-chart-bar"></i> Compliance Report
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{{ route('admin.spareparts.opname.accuracy-report') }}" class="btn btn-warning w-100 mb-2">
+                            <a href="{{ route($routePrefix.'.spareparts.opname.accuracy-report') }}" class="btn btn-warning w-100 mb-2">
                                 <i class="fas fa-chart-pie"></i> Accuracy Report
                             </a>
                         </div>

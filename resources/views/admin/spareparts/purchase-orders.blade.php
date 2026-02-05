@@ -8,7 +8,7 @@
         <h2>Purchase Orders - Spareparts</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.index') }}">Spareparts</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.index') }}">Spareparts</a></li>
                 <li class="breadcrumb-item active">Purchase Orders</li>
             </ol>
         </nav>
@@ -17,7 +17,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Purchase Orders List</h5>
-            <a href="{{ route('admin.spareparts.purchase-orders.create') }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'.spareparts.purchase-orders.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Create Purchase Order
             </a>
         </div>
@@ -69,7 +69,7 @@
                             </td>
                             <td>{{ $po->order_date->format('d M Y') }}</td>
                             <td>
-                                <a href="{{ route('admin.purchase-orders.show', $po) }}" class="btn btn-sm btn-info" title="View Details">
+                                <a href="{{ route($routePrefix.'.purchase-orders.show', $po) }}" class="btn btn-sm btn-info" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </td>

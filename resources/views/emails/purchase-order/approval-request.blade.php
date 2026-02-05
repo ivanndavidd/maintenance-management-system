@@ -83,7 +83,7 @@
             </div>
 
             <p style="text-align: center; margin: 25px 0;">
-                <a href="{{ route('admin.purchase-orders.show', $purchaseOrder->id) }}" class="btn">
+                <a href="{{ route($routePrefix.'.purchase-orders.show', $purchaseOrder->id) }}" class="btn">
                     Review & Approve PO
                 </a>
             </p>
