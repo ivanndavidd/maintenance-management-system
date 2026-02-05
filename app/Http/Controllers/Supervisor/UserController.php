@@ -60,7 +60,7 @@ class UserController extends Controller
         $roles = Role::whereIn('name', $this->allowedRoles)->get();
         $departments = Department::all();
 
-        return view('admin.users.index', compact('users', 'roles', 'departments'));
+        return view('supervisor.users.index', compact('users', 'roles', 'departments'));
     }
 
     /**
@@ -71,7 +71,7 @@ class UserController extends Controller
         $roles = Role::whereIn('name', $this->allowedRoles)->get();
         $departments = Department::all();
 
-        return view('admin.users.create', compact('roles', 'departments'));
+        return view('supervisor.users.create', compact('roles', 'departments'));
     }
 
     /**
@@ -136,7 +136,7 @@ class UserController extends Controller
         // Recent CMR tickets
         $recentCmr = $user->assignedCmr()->latest()->limit(10)->get();
 
-        return view('admin.users.show', compact('user', 'stats', 'recentCmr'));
+        return view('supervisor.users.show', compact('user', 'stats', 'recentCmr'));
     }
 
     /**
@@ -153,7 +153,7 @@ class UserController extends Controller
         $departments = Department::all();
         $userRole = $user->roles->first();
 
-        return view('admin.users.edit', compact('user', 'roles', 'departments', 'userRole'));
+        return view('supervisor.users.edit', compact('user', 'roles', 'departments', 'userRole'));
     }
 
     /**
