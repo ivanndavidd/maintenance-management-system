@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
-@section('page-title', 'Create User')
+@section('page-title', 'Add New User')
 
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="mb-4">
-        <h2><i class="fas fa-user-plus"></i> Create User</h2>
+        <h2><i class="fas fa-user-plus"></i> Add New User</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('supervisor.dashboard') }}">Dashboard</a></li>
@@ -129,6 +129,9 @@
                                 @error('role')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <small class="text-muted">
+                                    User roles determine access levels to system features
+                                </small>
                             </div>
 
                             <!-- Active Status -->
@@ -151,7 +154,7 @@
                         <!-- Password -->
                         <div class="row mb-4">
                             <div class="col-12">
-                                <h6 class="border-bottom pb-2 mb-3">Password</h6>
+                                <h6 class="border-bottom pb-2 mb-3">Security</h6>
                             </div>
 
                             <!-- Password -->
@@ -195,17 +198,35 @@
 
         <!-- Info Sidebar -->
         <div class="col-lg-4">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm mb-3">
                 <div class="card-header bg-info text-white">
-                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> Notes</h6>
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> Information</h6>
+                </div>
+                <div class="card-body">
+                    <h6>Role Descriptions:</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong class="text-info">Supervisor Maintenance:</strong>
+                            <small class="d-block text-muted">Manage maintenance tasks and oversee staff</small>
+                        </li>
+                        <li class="mb-2">
+                            <strong class="text-primary">Staff Maintenance:</strong>
+                            <small class="d-block text-muted">Execute maintenance tasks and submit work reports</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Important Notes</h6>
                 </div>
                 <div class="card-body">
                     <ul class="small mb-0">
-                        <li>Email must be unique in the system</li>
                         <li>Employee ID must be unique</li>
-                        <li>Password must be at least 8 characters</li>
-                        <li>Active users can login immediately</li>
-                        <li class="text-info"><strong>You can only assign Supervisor Maintenance or Staff Maintenance roles</strong></li>
+                        <li>Email will be used for login</li>
+                        <li>Users will receive credentials via email (if configured)</li>
+                        <li>Inactive users cannot login to the system</li>
                     </ul>
                 </div>
             </div>

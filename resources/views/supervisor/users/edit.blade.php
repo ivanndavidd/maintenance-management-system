@@ -16,6 +16,9 @@
         </nav>
     </div>
 
+    <!-- Success/Error Messages
+    -->
+
     <div class="row">
         <div class="col-lg-8">
             <div class="card shadow-sm">
@@ -120,7 +123,8 @@
                                 <select class="form-select @error('role') is-invalid @enderror"
                                         id="role"
                                         name="role"
-                                        required>
+                                        required
+                                        {{ false ? 'disabled' : '' }}>
                                     @foreach($roles as $role)
                                         <option value="{{ $role->name }}"
                                                 {{ old('role', $userRole ? $userRole->name : '') == $role->name ? 'selected' : '' }}>
@@ -128,6 +132,10 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                @if(false)
+                                    <input type="hidden" name="role" value="super-admin">
+                                    <small class="text-muted">Super Admin role cannot be changed</small>
+                                @endif
                                 @error('role')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -231,7 +239,7 @@
                         <i class="fas fa-eye"></i> View Full Profile
                     </a>
 
-                    @if($user->id !== auth()->id())
+                    @if($user->id !== auth()->id() && !false)
                         <form action="{{ route('supervisor.users.toggle-status', $user) }}" method="POST" class="mb-2">
                             @csrf
                             @method('PATCH')
@@ -274,9 +282,11 @@
                         <li>Employee ID must be unique</li>
                         <li>Changing role affects user permissions</li>
                         <li>Inactive users cannot login</li>
-                        <li class="text-info"><strong>You can only assign Supervisor Maintenance or Staff Maintenance roles</strong></li>
                         @if($user->id === auth()->id())
                             <li class="text-danger"><strong>You cannot delete your own account</strong></li>
+                        @endif
+                        @if(false)
+                            <li class="text-danger"><strong>Super Admin cannot be deleted</strong></li>
                         @endif
                     </ul>
                 </div>
