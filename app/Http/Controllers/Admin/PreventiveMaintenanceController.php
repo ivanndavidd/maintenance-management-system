@@ -669,6 +669,19 @@ class PreventiveMaintenanceController extends Controller
             'recurrence_end_date' => 'nullable|date',
         ]);
 
+        // Check if task date is being changed
+        $currentDate = $task->task_date instanceof \Carbon\Carbon
+            ? $task->task_date->format('Y-m-d')
+            : $task->task_date;
+        $newDate = $validated['task_date'];
+
+        if ($currentDate !== $newDate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Task date cannot be changed. Please create a new task with the correct date and delete the old one.',
+            ], 422);
+        }
+
         $task->update($validated);
 
         return response()->json([
