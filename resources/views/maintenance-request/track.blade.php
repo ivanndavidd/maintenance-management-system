@@ -4,22 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Ticket - {{ $ticket->ticket_number ?? 'Search' }}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('assets/Blibli_Logo_Symbol_FC_RGB.png') }}">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('{{ asset('assets/maxresdefault.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             padding: 30px 0;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
+        .container {
+            position: relative;
+            z-index: 1;
         }
         .track-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             overflow: hidden;
         }
         .track-header {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            background: #0095DA;
             color: white;
             padding: 30px;
             text-align: center;
@@ -78,8 +98,8 @@
             box-shadow: 0 0 0 2px #27ae60;
         }
         .timeline-dot.current {
-            background: #3498db;
-            box-shadow: 0 0 0 2px #3498db;
+            background: #0095DA;
+            box-shadow: 0 0 0 2px #0095DA;
             animation: pulse 1.5s infinite;
         }
         .timeline-dot.failed {
@@ -125,7 +145,7 @@
             letter-spacing: 1px;
         }
         .status-pending { background: #f39c12; color: white; }
-        .status-received { background: #3498db; color: white; }
+        .status-received { background: #0095DA; color: white; }
         .status-in_progress { background: #9b59b6; color: white; }
         .status-completed { background: #27ae60; color: white; }
         .status-done { background: #27ae60; color: white; }
@@ -133,7 +153,7 @@
         .status-failed { background: #e74c3c; color: white; }
         .status-cancelled { background: #95a5a6; color: white; }
         .child-ticket-card {
-            border-left: 3px solid #17a2b8;
+            border-left: 3px solid #0095DA;
             margin-left: 20px;
             padding: 15px;
             background: #f8f9fa;
@@ -143,6 +163,14 @@
         .timeline-dot.warning {
             background: #fd7e14;
             box-shadow: 0 0 0 2px #fd7e14;
+        }
+        .btn-primary {
+            background: #0095DA;
+            border-color: #0095DA;
+        }
+        .btn-primary:hover {
+            background: #007AB8;
+            border-color: #007AB8;
         }
     </style>
 </head>
@@ -359,7 +387,7 @@
                 </div>
 
                 <div class="text-center mt-4 text-white">
-                    <small>&copy; {{ date('Y') }} Warehouse Maintenance System</small>
+                    <small>&copy; {{ date('Y') }} {{ config('app.name', 'Warehouse Maintenance') }}</small>
                 </div>
             </div>
         </div>

@@ -16,8 +16,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h1 class="h3 mb-0">KPI Details: {{ $user->name }}</h1>
-                    <p class="text-muted mb-0">{{ $user->employee_id }} | {{ $user->department->name ?? 'No Department' }}
-                    </p>
+                    <p class="text-muted mb-0">{{ $user->employee_id }} | {{ $user->department->name ?? 'No Department' }}</p>
                 </div>
                 <a href="{{ route('admin.kpi.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back to KPI List
@@ -30,109 +29,115 @@
             <div class="col-md-3">
                 <div class="card shadow-sm border-left-primary">
                     <div class="card-body">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Jobs</div>
-                        <div class="h5 mb-0 font-weight-bold">{{ $totalJobs }}</div>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-clipboard-check fa-2x text-primary opacity-50"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">PM Tasks</div>
+                                <div class="h5 mb-0 font-weight-bold">{{ $pmCount }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow-sm border-left-success">
+                <div class="card shadow-sm border-left-warning">
                     <div class="card-body">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">On Time Jobs</div>
-                        <div class="h5 mb-0 font-weight-bold">{{ $onTimeJobs }}</div>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-wrench fa-2x text-warning opacity-50"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">CM Tickets</div>
+                                <div class="h5 mb-0 font-weight-bold">{{ $cmCount }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card shadow-sm border-left-info">
                     <div class="card-body">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Early Jobs</div>
-                        <div class="h5 mb-0 font-weight-bold">{{ $earlyJobs }}</div>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-boxes-stacked fa-2x text-info opacity-50"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Stock Opname</div>
+                                <div class="h5 mb-0 font-weight-bold">{{ $soCount }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow-sm border-left-danger">
+                <div class="card shadow-sm border-left-success">
                     <div class="card-body">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Late Jobs</div>
-                        <div class="h5 mb-0 font-weight-bold">{{ $lateJobs }}</div>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-check-double fa-2x text-success opacity-50"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Completed</div>
+                                <div class="h5 mb-0 font-weight-bold">{{ $totalCompleted }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Performance Metrics -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h6 class="font-weight-bold text-primary mb-3">On-Time Rate</h6>
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="progress flex-grow-1 me-3" style="height: 25px;">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ $onTimeRate }}%">
-                                    {{ $onTimeRate }}%
-                                </div>
-                            </div>
-                            <strong>{{ $onTimeRate }}%</strong>
-                        </div>
-                        <small class="text-muted">Percentage of jobs completed on time or early</small>
+        <!-- Filter Panel -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="GET" action="{{ route('admin.kpi.show', $user->id) }}" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Date From</label>
+                        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}">
                     </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h6 class="font-weight-bold text-primary mb-3">Average Days Late</h6>
-                        <div class="mb-2">
-                            <h3 class="mb-0 {{ $avgDaysLate > 0 ? 'text-danger' : 'text-success' }}">
-                                @if ($avgDaysLate > 0)
-                                    {{ round($avgDaysLate, 1) }} days
-                                @else
-                                    No late jobs
-                                @endif
-                            </h3>
-                        </div>
-                        <small class="text-muted">Average delay for late completions</small>
+                    <div class="col-md-4">
+                        <label class="form-label">Date To</label>
+                        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}">
                     </div>
-                </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-sm me-2">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <a href="{{ route('admin.kpi.show', $user->id) }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
 
         <!-- Monthly Trend -->
-        @if ($monthlyTrend->count() > 0)
+        @if ($monthlyTrend->sum('total') > 0)
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Monthly Trend (Last 6 Months)</h6>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-sm">
+                        <table class="table table-sm align-middle">
                             <thead class="table-light">
                                 <tr>
                                     <th>Month</th>
-                                    <th>Total Jobs</th>
-                                    <th>Late Jobs</th>
-                                    <th>On-Time Rate</th>
+                                    <th class="text-center">PM Tasks</th>
+                                    <th class="text-center">CM Tickets</th>
+                                    <th class="text-center">Stock Opname</th>
+                                    <th class="text-center">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($monthlyTrend as $trend)
-                                    @php
-                                        $rate = $trend->total > 0 ? round((($trend->total - $trend->late_count) / $trend->total) * 100, 1) : 0;
-                                    @endphp
                                     <tr>
-                                        <td>{{ \Carbon\Carbon::parse($trend->month . '-01')->format('F Y') }}</td>
-                                        <td><span class="badge bg-secondary">{{ $trend->total }}</span></td>
-                                        <td><span class="badge bg-danger">{{ $trend->late_count }}</span></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <span class="me-2">{{ $rate }}%</span>
-                                                <div class="progress" style="height: 8px; width: 100px;">
-                                                    <div class="progress-bar bg-success" role="progressbar"
-                                                        style="width: {{ $rate }}%"></div>
-                                                </div>
-                                            </div>
-                                        </td>
+                                        <td>{{ \Carbon\Carbon::parse($trend['month'] . '-01')->format('F Y') }}</td>
+                                        <td class="text-center"><span class="badge bg-primary">{{ $trend['pm'] }}</span></td>
+                                        <td class="text-center"><span class="badge bg-warning text-dark">{{ $trend['cm'] }}</span></td>
+                                        <td class="text-center"><span class="badge bg-info">{{ $trend['so'] }}</span></td>
+                                        <td class="text-center"><span class="badge bg-success">{{ $trend['total'] }}</span></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -142,148 +147,171 @@
             </div>
         @endif
 
-        <!-- Filter Panel -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <form method="GET" action="{{ route('admin.kpi.show', $user->id) }}" class="row g-3">
-                    <div class="col-md-2">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select form-select-sm">
-                            <option value="">All</option>
-                            @foreach ($statuses as $status)
-                                <option value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>
-                                    {{ ucfirst(str_replace('_', ' ', $status)) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Job Type</label>
-                        <select name="job_type" class="form-select form-select-sm">
-                            <option value="">All</option>
-                            @foreach ($types as $type)
-                                <option value="{{ $type }}" {{ request('job_type') == $type ? 'selected' : '' }}>
-                                    {{ ucfirst($type) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Date From</label>
-                        <input type="date" name="date_from" class="form-control form-control-sm"
-                            value="{{ request('date_from') }}">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Date To</label>
-                        <input type="date" name="date_to" class="form-control form-control-sm"
-                            value="{{ request('date_to') }}">
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary btn-sm me-2">
-                            <i class="fas fa-filter"></i> Filter
-                        </button>
-                        <a href="{{ route('admin.kpi.show', $user->id) }}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-times"></i>
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <!-- Tabs for PM / CM / SO -->
+        <ul class="nav nav-tabs mb-0" id="kpiTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pm-tab" data-bs-toggle="tab" data-bs-target="#pm" type="button" role="tab">
+                    <i class="fas fa-clipboard-check text-primary"></i> PM Tasks <span class="badge bg-primary">{{ $pmCount }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="cm-tab" data-bs-toggle="tab" data-bs-target="#cm" type="button" role="tab">
+                    <i class="fas fa-wrench text-warning"></i> CM Tickets <span class="badge bg-warning text-dark">{{ $cmCount }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="so-tab" data-bs-toggle="tab" data-bs-target="#so" type="button" role="tab">
+                    <i class="fas fa-boxes-stacked text-info"></i> Stock Opname <span class="badge bg-info">{{ $soCount }}</span>
+                </button>
+            </li>
+        </ul>
 
-        <!-- Completion Logs -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Job Completion History</h6>
+        <div class="tab-content">
+            <!-- PM Tasks Tab -->
+            <div class="tab-pane fade show active" id="pm" role="tabpanel">
+                <div class="card shadow-sm border-top-0" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-body">
+                        @if ($pmTasks->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Task Name</th>
+                                            <th>Equipment</th>
+                                            <th>Frequency</th>
+                                            <th>Task Date</th>
+                                            <th>Completed At</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($pmTasks as $task)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td><strong>{{ $task->task_name }}</strong></td>
+                                                <td>{{ $task->equipment_type ?? '-' }}</td>
+                                                <td><span class="badge bg-secondary">{{ $task->frequency_label }}</span></td>
+                                                <td>{{ $task->task_date ? $task->task_date->format('d M Y') : '-' }}</td>
+                                                <td>{{ $task->completed_at ? $task->completed_at->format('d M Y H:i') : '-' }}</td>
+                                                <td>{{ Str::limit($task->completion_notes, 50) ?? '-' }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-clipboard-check fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">No PM tasks completed</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                @if ($logs->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Job Code</th>
-                                    <th>Job Title</th>
-                                    <th>Type</th>
-                                    <th>Priority</th>
-                                    <th>Scheduled Date</th>
-                                    <th>Completed At</th>
-                                    <th>Status</th>
-                                    <th>Days Late</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($logs as $log)
-                                    <tr>
-                                        <td>
-                                            <a href="{{ route('admin.jobs.show', $log->job_id) }}"
-                                                class="text-decoration-none">
-                                                {{ $log->job_code }}
-                                            </a>
-                                        </td>
-                                        <td>{{ $log->job_title }}</td>
-                                        <td>
-                                            @php
-                                                $typeColor = match ($log->job_type) {
-                                                    'preventive' => 'primary',
-                                                    'corrective' => 'warning',
-                                                    'predictive' => 'info',
-                                                    'breakdown' => 'danger',
-                                                    default => 'secondary',
-                                                };
-                                            @endphp
-                                            <span class="badge bg-{{ $typeColor }}">{{ ucfirst($log->job_type) }}</span>
-                                        </td>
-                                        <td>
-                                            @php
-                                                $priorityColor = match ($log->priority) {
-                                                    'urgent' => 'danger',
-                                                    'high' => 'warning',
-                                                    'medium' => 'info',
-                                                    'low' => 'secondary',
-                                                    default => 'secondary',
-                                                };
-                                            @endphp
-                                            <span class="badge bg-{{ $priorityColor }}">
-                                                {{ ucfirst($log->priority) }}
-                                            </span>
-                                        </td>
-                                        <td>{{ \Carbon\Carbon::parse($log->scheduled_date)->format('d M Y') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($log->completed_at)->format('d M Y H:i') }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $log->status_badge }}">
-                                                {{ ucfirst(str_replace('_', ' ', $log->completion_status)) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            @if ($log->days_late > 0)
-                                                <span class="text-danger font-weight-bold">+{{ $log->days_late }}
-                                                    days</span>
-                                            @elseif($log->days_late < 0)
-                                                <span class="text-info font-weight-bold">{{ $log->days_late }} days</span>
-                                            @else
-                                                <span class="text-success font-weight-bold">On time</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
 
-                    <!-- Pagination -->
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div class="text-muted small">
-                            Showing {{ $logs->firstItem() }} to {{ $logs->lastItem() }} of {{ $logs->total() }}
-                            entries
-                        </div>
-                        {{ $logs->appends(request()->except('page'))->links() }}
+            <!-- CM Tickets Tab -->
+            <div class="tab-pane fade" id="cm" role="tabpanel">
+                <div class="card shadow-sm border-top-0" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-body">
+                        @if ($cmTickets->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Ticket Number</th>
+                                            <th>Equipment</th>
+                                            <th>Category</th>
+                                            <th>Priority</th>
+                                            <th>Completed At</th>
+                                            <th>Resolution</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($cmTickets as $ticket)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td><strong>{{ $ticket->ticket_number }}</strong></td>
+                                                <td>{{ $ticket->equipment_name ?? '-' }}</td>
+                                                <td>
+                                                    <span class="badge {{ $ticket->getProblemCategoryBadgeClass() }}">
+                                                        {{ $ticket->getProblemCategoryLabel() }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge {{ $ticket->getPriorityBadgeClass() }}">
+                                                        {{ ucfirst($ticket->priority) }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ $ticket->completed_at ? $ticket->completed_at->format('d M Y H:i') : '-' }}</td>
+                                                <td>{{ Str::limit($ticket->resolution, 50) ?? '-' }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-wrench fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">No CM tickets completed</p>
+                            </div>
+                        @endif
                     </div>
-                @else
-                    <div class="text-center py-5">
-                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No completion logs found for the selected filters</p>
+                </div>
+            </div>
+
+            <!-- Stock Opname Tab -->
+            <div class="tab-pane fade" id="so" role="tabpanel">
+                <div class="card shadow-sm border-top-0" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-body">
+                        @if ($soItems->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Item Name</th>
+                                            <th>Item Type</th>
+                                            <th>System Qty</th>
+                                            <th>Physical Qty</th>
+                                            <th>Discrepancy</th>
+                                            <th>Executed At</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($soItems as $item)
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td><strong>{{ $item->getItemName() }}</strong></td>
+                                                <td><span class="badge bg-secondary">{{ ucfirst($item->item_type) }}</span></td>
+                                                <td>{{ $item->system_quantity ?? '-' }}</td>
+                                                <td>{{ $item->physical_quantity ?? '-' }}</td>
+                                                <td>
+                                                    @if ($item->discrepancy_qty != 0)
+                                                        <span class="text-{{ $item->discrepancy_qty > 0 ? 'success' : 'danger' }} fw-bold">
+                                                            {{ $item->discrepancy_qty > 0 ? '+' : '' }}{{ $item->discrepancy_qty }}
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted">0</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $item->executed_at ? $item->executed_at->format('d M Y H:i') : '-' }}</td>
+                                                <td>{{ Str::limit($item->notes, 50) ?? '-' }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-boxes-stacked fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">No stock opname items executed</p>
+                            </div>
+                        @endif
                     </div>
-                @endif
+                </div>
             </div>
         </div>
     </div>
@@ -297,16 +325,24 @@
             border-left: 4px solid #1cc88a !important;
         }
 
+        .border-left-warning {
+            border-left: 4px solid #f6c23e !important;
+        }
+
         .border-left-info {
             border-left: 4px solid #36b9cc !important;
         }
 
-        .border-left-danger {
-            border-left: 4px solid #dc3545 !important;
-        }
-
         .text-xs {
             font-size: 0.7rem;
+        }
+
+        .nav-tabs .nav-link {
+            color: #6c757d;
+        }
+
+        .nav-tabs .nav-link.active {
+            font-weight: 600;
         }
     </style>
 @endsection

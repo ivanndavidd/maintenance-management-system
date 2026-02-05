@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\JobCompletionLog;
+use App\Models\PmTask;
+use App\Models\CorrectiveMaintenanceRequest;
+use App\Models\StockOpnameScheduleItem;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,57 +17,80 @@ class KpiController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::role(['user', 'admin'])
-            ->with(['jobCompletionLogs' => function ($q) use ($request) {
-                if ($request->has('date_from') && $request->date_from != '') {
-                    $q->whereDate('completed_at', '>=', $request->date_from);
-                }
-                if ($request->has('date_to') && $request->date_to != '') {
-                    $q->whereDate('completed_at', '<=', $request->date_to);
-                }
-            }]);
+        $dateFrom = $request->date_from;
+        $dateTo = $request->date_to;
 
-        // Calculate KPI metrics for each user
-        $users = $query->get()->map(function ($user) use ($request) {
-            // Get all logs for this user with date filters applied
-            $logsQuery = $user->jobCompletionLogs();
+        // Get all maintenance staff users
+        $staffUsers = User::role(['staff_maintenance', 'admin', 'supervisor_maintenance'])->get();
 
-            // Apply date filters
-            if ($request->has('date_from') && $request->date_from != '') {
-                $logsQuery->whereDate('completed_at', '>=', $request->date_from);
-            }
-            if ($request->has('date_to') && $request->date_to != '') {
-                $logsQuery->whereDate('completed_at', '<=', $request->date_to);
-            }
+        $users = $staffUsers->map(function ($user) use ($dateFrom, $dateTo) {
+            // PM Tasks completed by this user
+            $pmQuery = PmTask::where('completed_by', $user->id)
+                ->where('status', 'completed');
+            if ($dateFrom) $pmQuery->whereDate('completed_at', '>=', $dateFrom);
+            if ($dateTo) $pmQuery->whereDate('completed_at', '<=', $dateTo);
+            $pmCount = $pmQuery->count();
 
-            // Get all logs once
-            $logs = $logsQuery->get();
+            // PM Tasks assigned to this user (for completion rate)
+            $pmAssignedQuery = PmTask::where('assigned_user_id', $user->id);
+            if ($dateFrom) $pmAssignedQuery->whereDate('task_date', '>=', $dateFrom);
+            if ($dateTo) $pmAssignedQuery->whereDate('task_date', '<=', $dateTo);
+            $pmAssigned = $pmAssignedQuery->count();
 
-            $totalJobs = $logs->count();
-            $lateJobs = $logs->where('completion_status', 'late')->count();
-            $onTimeJobs = $logs->where('completion_status', 'on_time')->count();
-            $earlyJobs = $logs->where('completion_status', 'early')->count();
+            // CM Tickets completed by this user (via technicians pivot)
+            $cmQuery = CorrectiveMaintenanceRequest::whereHas('technicians', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                ->where('status', 'completed');
+            if ($dateFrom) $cmQuery->whereDate('completed_at', '>=', $dateFrom);
+            if ($dateTo) $cmQuery->whereDate('completed_at', '<=', $dateTo);
+            $cmCount = $cmQuery->count();
 
-            $onTimeRate = $totalJobs > 0 ? round(($onTimeJobs + $earlyJobs) / $totalJobs * 100, 1) : 0;
-            $lateRate = $totalJobs > 0 ? round($lateJobs / $totalJobs * 100, 1) : 0;
+            // CM Tickets assigned to this user (all statuses)
+            $cmAssignedQuery = CorrectiveMaintenanceRequest::whereHas('technicians', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+            if ($dateFrom) $cmAssignedQuery->whereDate('created_at', '>=', $dateFrom);
+            if ($dateTo) $cmAssignedQuery->whereDate('created_at', '<=', $dateTo);
+            $cmAssigned = $cmAssignedQuery->count();
 
-            $avgDaysLate = $logs->where('completion_status', 'late')->avg('days_late') ?? 0;
+            // Stock Opname items executed by this user
+            $soQuery = StockOpnameScheduleItem::where('executed_by', $user->id)
+                ->where('execution_status', 'completed');
+            if ($dateFrom) $soQuery->whereDate('executed_at', '>=', $dateFrom);
+            if ($dateTo) $soQuery->whereDate('executed_at', '<=', $dateTo);
+            $soCount = $soQuery->count();
+
+            // SO assigned (all statuses for this user)
+            $soAssignedQuery = StockOpnameScheduleItem::where('executed_by', $user->id);
+            if ($dateFrom) $soAssignedQuery->whereDate('executed_at', '>=', $dateFrom);
+            if ($dateTo) $soAssignedQuery->whereDate('executed_at', '<=', $dateTo);
+            $soAssigned = $soAssignedQuery->count();
+
+            $totalCompleted = $pmCount + $cmCount + $soCount;
+            $totalAssigned = $pmAssigned + $cmAssigned + $soAssigned;
+            $completionRate = $totalAssigned > 0 ? round(($totalCompleted / $totalAssigned) * 100, 1) : 0;
 
             return [
                 'user' => $user,
-                'total_jobs' => $totalJobs,
-                'late_jobs' => $lateJobs,
-                'on_time_jobs' => $onTimeJobs,
-                'early_jobs' => $earlyJobs,
-                'on_time_rate' => $onTimeRate,
-                'late_rate' => $lateRate,
-                'avg_days_late' => round($avgDaysLate, 1),
+                'pm_count' => $pmCount,
+                'cm_count' => $cmCount,
+                'so_count' => $soCount,
+                'total_completed' => $totalCompleted,
+                'total_assigned' => $totalAssigned,
+                'completion_rate' => $completionRate,
             ];
         })->filter(function ($item) {
-            return $item['total_jobs'] > 0; // Only show users with completed jobs
-        })->sortByDesc('total_jobs');
+            return $item['total_completed'] > 0 || $item['total_assigned'] > 0;
+        })->sortByDesc('total_completed');
 
-        return view('admin.kpi.index', compact('users'));
+        // Global summary
+        $totalPm = $users->sum('pm_count');
+        $totalCm = $users->sum('cm_count');
+        $totalSo = $users->sum('so_count');
+        $totalAll = $users->sum('total_completed');
+
+        return view('admin.kpi.index', compact('users', 'totalPm', 'totalCm', 'totalSo', 'totalAll'));
     }
 
     /**
@@ -73,71 +98,97 @@ class KpiController extends Controller
      */
     public function show(Request $request, User $user)
     {
-        $query = JobCompletionLog::where('user_id', $user->id);
+        $dateFrom = $request->date_from;
+        $dateTo = $request->date_to;
+        $filterType = $request->type; // pm, cm, so
 
-        // Filters
-        if ($request->has('status') && $request->status != '') {
-            $query->where('completion_status', $request->status);
-        }
+        // PM Tasks
+        $pmQuery = PmTask::where('completed_by', $user->id)->where('status', 'completed');
+        if ($dateFrom) $pmQuery->whereDate('completed_at', '>=', $dateFrom);
+        if ($dateTo) $pmQuery->whereDate('completed_at', '<=', $dateTo);
+        $pmTasks = $pmQuery->orderBy('completed_at', 'desc')->get();
 
-        if ($request->has('job_type') && $request->job_type != '') {
-            $query->where('job_type', $request->job_type);
-        }
+        // CM Tickets
+        $cmQuery = CorrectiveMaintenanceRequest::whereHas('technicians', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->where('status', 'completed');
+        if ($dateFrom) $cmQuery->whereDate('completed_at', '>=', $dateFrom);
+        if ($dateTo) $cmQuery->whereDate('completed_at', '<=', $dateTo);
+        $cmTickets = $cmQuery->orderBy('completed_at', 'desc')->get();
 
-        if ($request->has('date_from') && $request->date_from != '') {
-            $query->whereDate('completed_at', '>=', $request->date_from);
-        }
+        // Stock Opname Items
+        $soQuery = StockOpnameScheduleItem::where('executed_by', $user->id)
+            ->where('execution_status', 'completed');
+        if ($dateFrom) $soQuery->whereDate('executed_at', '>=', $dateFrom);
+        if ($dateTo) $soQuery->whereDate('executed_at', '<=', $dateTo);
+        $soItems = $soQuery->orderBy('executed_at', 'desc')->get();
 
-        if ($request->has('date_to') && $request->date_to != '') {
-            $query->whereDate('completed_at', '<=', $request->date_to);
-        }
+        // Summary counts
+        $pmCount = $pmTasks->count();
+        $cmCount = $cmTickets->count();
+        $soCount = $soItems->count();
+        $totalCompleted = $pmCount + $cmCount + $soCount;
 
-        $logs = $query->orderBy('completed_at', 'desc')->paginate(15);
-
-        // Summary statistics
-        $totalJobs = JobCompletionLog::where('user_id', $user->id)->count();
-        $lateJobs = JobCompletionLog::where('user_id', $user->id)
-            ->where('completion_status', 'late')
-            ->count();
-        $onTimeJobs = JobCompletionLog::where('user_id', $user->id)
-            ->where('completion_status', 'on_time')
-            ->count();
-        $earlyJobs = JobCompletionLog::where('user_id', $user->id)
-            ->where('completion_status', 'early')
-            ->count();
-
-        $onTimeRate = $totalJobs > 0 ? round(($onTimeJobs + $earlyJobs) / $totalJobs * 100, 1) : 0;
-        $avgDaysLate = JobCompletionLog::where('user_id', $user->id)
-            ->where('completion_status', 'late')
-            ->avg('days_late') ?? 0;
-
-        // Monthly trend (last 6 months)
-        $monthlyTrend = JobCompletionLog::where('user_id', $user->id)
+        // Monthly trend (last 6 months) - PM
+        $pmTrend = PmTask::where('completed_by', $user->id)
+            ->where('status', 'completed')
             ->where('completed_at', '>=', now()->subMonths(6))
             ->select(
                 DB::raw('DATE_FORMAT(completed_at, "%Y-%m") as month'),
-                DB::raw('COUNT(*) as total'),
-                DB::raw('SUM(CASE WHEN completion_status = "late" THEN 1 ELSE 0 END) as late_count')
+                DB::raw('COUNT(*) as count')
             )
             ->groupBy('month')
-            ->orderBy('month', 'desc')
-            ->get();
+            ->pluck('count', 'month');
 
-        $statuses = ['on_time', 'late', 'early'];
-        $types = ['preventive', 'corrective', 'predictive', 'breakdown'];
+        // Monthly trend - CM
+        $cmTrend = CorrectiveMaintenanceRequest::whereHas('technicians', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->where('status', 'completed')
+            ->where('completed_at', '>=', now()->subMonths(6))
+            ->select(
+                DB::raw('DATE_FORMAT(completed_at, "%Y-%m") as month'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('month')
+            ->pluck('count', 'month');
+
+        // Monthly trend - SO
+        $soTrend = StockOpnameScheduleItem::where('executed_by', $user->id)
+            ->where('execution_status', 'completed')
+            ->where('executed_at', '>=', now()->subMonths(6))
+            ->select(
+                DB::raw('DATE_FORMAT(executed_at, "%Y-%m") as month'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('month')
+            ->pluck('count', 'month');
+
+        // Merge trends into unified monthly data
+        $allMonths = collect();
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i)->format('Y-m');
+            $allMonths->put($month, [
+                'month' => $month,
+                'pm' => $pmTrend->get($month, 0),
+                'cm' => $cmTrend->get($month, 0),
+                'so' => $soTrend->get($month, 0),
+                'total' => ($pmTrend->get($month, 0) + $cmTrend->get($month, 0) + $soTrend->get($month, 0)),
+            ]);
+        }
+        $monthlyTrend = $allMonths->values();
 
         return view('admin.kpi.show', compact(
             'user',
-            'logs',
-            'totalJobs',
-            'lateJobs',
-            'onTimeJobs',
-            'earlyJobs',
-            'onTimeRate',
-            'avgDaysLate',
-            'monthlyTrend',
-            'statuses',
-            'types'
+            'pmTasks',
+            'cmTickets',
+            'soItems',
+            'pmCount',
+            'cmCount',
+            'soCount',
+            'totalCompleted',
+            'monthlyTrend'
         ));
     }
 }

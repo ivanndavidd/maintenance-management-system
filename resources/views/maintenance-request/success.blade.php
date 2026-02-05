@@ -4,20 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request Submitted - {{ $ticket->ticket_number }}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('assets/Blibli_Logo_Symbol_FC_RGB.png') }}">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('{{ asset('assets/maxresdefault.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             display: flex;
             align-items: center;
             padding: 30px 0;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
+        .container {
+            position: relative;
+            z-index: 1;
         }
         .success-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             overflow: hidden;
         }
         .success-header {
@@ -78,6 +98,14 @@
             padding: 5px 15px;
             border-radius: 20px;
             font-size: 0.85rem;
+        }
+        .btn-primary {
+            background: #0095DA;
+            border-color: #0095DA;
+        }
+        .btn-primary:hover {
+            background: #007AB8;
+            border-color: #007AB8;
         }
     </style>
 </head>
@@ -152,7 +180,7 @@
                 </div>
 
                 <div class="text-center mt-4 text-white">
-                    <small>&copy; {{ date('Y') }} Warehouse Maintenance System</small>
+                    <small>&copy; {{ date('Y') }} {{ config('app.name', 'Warehouse Maintenance') }}</small>
                 </div>
             </div>
         </div>
