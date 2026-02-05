@@ -1294,10 +1294,14 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            let errorMessage = '<strong>Error saving task</strong><br>';
+            let errorMessage = '';
+
+            // Check if error has a message from server response
             if (error.message) {
-                errorMessage += error.message + '<br>';
+                errorMessage = error.message;
             }
+
+            // Check for validation errors
             if (error.errors) {
                 errorMessage += '<br><strong>Validation errors:</strong><ul class="mb-0">';
                 Object.keys(error.errors).forEach(field => {
@@ -1306,6 +1310,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 errorMessage += '</ul>';
             }
+
+            // Fallback if no message found
+            if (!errorMessage) {
+                errorMessage = 'Error saving task. Please try again.';
+            }
+
             showAlert(errorMessage, 'danger');
         });
     });
