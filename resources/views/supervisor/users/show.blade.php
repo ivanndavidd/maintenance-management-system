@@ -1,15 +1,15 @@
 @extends('layouts.admin')
 
-@section('page-title', 'User Details')
+@section('page-title', 'User Profile')
 
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2><i class="fas fa-user"></i> User Details</h2>
+            <h2><i class="fas fa-user"></i> User Profile</h2>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
+                <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('supervisor.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('supervisor.users.index') }}">Users</a></li>
                     <li class="breadcrumb-item active">{{ $user->name }}</li>
@@ -21,215 +21,164 @@
                 <i class="fas fa-edit"></i> Edit User
             </a>
             <a href="{{ route('supervisor.users.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back
+                <i class="fas fa-arrow-left"></i> Back to List
             </a>
         </div>
     </div>
 
+    <!-- Success Messages -->
     <div class="row">
         <!-- User Profile Card -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-id-card"></i> Profile</h5>
-                </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
                 <div class="card-body text-center">
-                    <div class="avatar-lg bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; font-size: 32px;">
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                    <div class="avatar-circle-large bg-primary text-white mx-auto mb-3">
+                        {{ strtoupper(substr($user->name, 0, 2)) }}
                     </div>
-                    <h4>{{ $user->name }}</h4>
-                    <p class="text-muted mb-2">{{ $user->email }}</p>
+                    <h4 class="mb-1">{{ $user->name }}</h4>
+                    <p class="text-muted mb-3">{{ $user->employee_id }}</p>
 
-                    @if($user->roles->isNotEmpty())
-                        @foreach($user->roles as $role)
-                            <span class="badge bg-info mb-2">{{ ucfirst(str_replace('_', ' ', $role->name)) }}</span>
-                        @endforeach
+                    @foreach($user->roles as $role)
+                        <span class="badge bg-{{ $role->name == 'admin' ? 'warning' : ($role->name == 'supervisor_maintenance' ? 'info' : 'primary') }} mb-3">
+                            {{ ucfirst(str_replace('_', ' ', $role->name)) }}
+                        </span>
+                    @endforeach
+
+                    @if($user->is_active)
+                        <span class="badge bg-success mb-3">
+                            <i class="fas fa-check"></i> Active
+                        </span>
                     @else
-                        <span class="badge bg-secondary mb-2">No Role</span>
+                        <span class="badge bg-danger mb-3">
+                            <i class="fas fa-times"></i> Inactive
+                        </span>
                     @endif
 
                     <hr>
 
-                    <ul class="list-unstyled text-start small">
-                        <li class="mb-2">
-                            <i class="fas fa-id-badge text-primary me-2"></i>
-                            <strong>Employee ID:</strong> {{ $user->employee_id ?? 'N/A' }}
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-phone text-primary me-2"></i>
-                            <strong>Phone:</strong> {{ $user->phone ?? 'N/A' }}
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-building text-primary me-2"></i>
-                            <strong>Department:</strong> {{ $user->department->name ?? 'N/A' }}
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-circle {{ $user->is_active ? 'text-success' : 'text-danger' }} me-2"></i>
-                            <strong>Status:</strong>
-                            <span class="badge bg-{{ $user->is_active ? 'success' : 'danger' }}">
-                                {{ $user->is_active ? 'Active' : 'Inactive' }}
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+                    <div class="text-start">
+                        <p class="mb-2">
+                            <i class="fas fa-envelope text-primary"></i>
+                            <strong class="ms-2">Email:</strong>
+                            <span class="d-block ms-4">{{ $user->email }}</span>
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-phone text-success"></i>
+                            <strong class="ms-2">Phone:</strong>
+                            <span class="d-block ms-4">{{ $user->phone ?? '-' }}</span>
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-building text-info"></i>
+                            <strong class="ms-2">Department:</strong>
+                            <span class="d-block ms-4">{{ $user->department->name ?? '-' }}</span>
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-calendar text-warning"></i>
+                            <strong class="ms-2">Joined:</strong>
+                            <span class="d-block ms-4">{{ $user->created_at->format('d M Y') }}</span>
+                        </p>
+                    </div>
 
-            <!-- Quick Actions -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h6 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h6>
-                </div>
-                <div class="card-body">
                     @if($user->id !== auth()->id())
-                        <form action="{{ route('supervisor.users.toggle-status', $user) }}" method="POST" class="mb-2">
+                    <hr>
+                    <div class="d-grid gap-2">
+                        <button type="button"
+                                class="btn btn-warning btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#resetPasswordModal">
+                            <i class="fas fa-key"></i> Reset Password
+                        </button>
+
+                        <form action="{{ route('supervisor.users.toggle-status', $user) }}" method="POST">
                             @csrf
                             @method('PATCH')
                             <button type="submit"
                                     class="btn btn-{{ $user->is_active ? 'secondary' : 'success' }} btn-sm w-100"
                                     onclick="return confirm('Are you sure?')">
                                 <i class="fas fa-power-off"></i>
-                                {{ $user->is_active ? 'Deactivate User' : 'Activate User' }}
+                                {{ $user->is_active ? 'Deactivate' : 'Activate' }}
                             </button>
                         </form>
-
-                        <button type="button"
-                                class="btn btn-warning btn-sm w-100 mb-2"
-                                data-bs-toggle="modal"
-                                data-bs-target="#resetPasswordModal">
-                            <i class="fas fa-key"></i> Reset Password
-                        </button>
-
-                        <form action="{{ route('supervisor.users.destroy', $user) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit"
-                                    class="btn btn-danger btn-sm w-100"
-                                    onclick="return confirm('Are you sure you want to delete this user?')">
-                                <i class="fas fa-trash"></i> Delete User
-                            </button>
-                        </form>
-                    @else
-                        <p class="text-muted small mb-0">
-                            <i class="fas fa-info-circle"></i> This is your own account
-                        </p>
+                    </div>
                     @endif
                 </div>
             </div>
         </div>
 
-        <!-- Statistics & Activity -->
+        <!-- Performance & Statistics -->
         <div class="col-lg-8">
-            <!-- Statistics Cards -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card bg-primary text-white">
-                        <div class="card-body text-center">
-                            <h3>{{ $stats['total_assigned'] }}</h3>
-                            <small>Total Assigned</small>
-                        </div>
-                    </div>
+            <!-- Performance Statistics -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Performance Statistics</h5>
                 </div>
-                <div class="col-md-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body text-center">
-                            <h3>{{ $stats['completed'] }}</h3>
-                            <small>Completed</small>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-primary mb-0">{{ $stats['total_assigned'] }}</h3>
+                                <small class="text-muted">Total CMR Assigned</small>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-warning text-dark">
-                        <div class="card-body text-center">
-                            <h3>{{ $stats['in_progress'] }}</h3>
-                            <small>In Progress</small>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-success mb-0">{{ $stats['completed'] }}</h3>
+                                <small class="text-muted">Completed</small>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-info text-white">
-                        <div class="card-body text-center">
-                            <h3>{{ $stats['completion_rate'] }}%</h3>
-                            <small>Completion Rate</small>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-warning mb-0">{{ $stats['in_progress'] }}</h3>
+                                <small class="text-muted">In Progress</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-info mb-0">{{ $stats['completion_rate'] }}%</h3>
+                                <small class="text-muted">Completion Rate</small>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Recent CMR -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-clipboard-list"></i> Recent CMR Tickets</h5>
+            <!-- Recent CMR Tickets -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-wrench"></i> Recent CMR Tickets</h5>
                 </div>
                 <div class="card-body p-0">
+                    @if($recentCmr->count() > 0)
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Ticket #</th>
-                                    <th>Title</th>
+                                    <th>Ticket</th>
+                                    <th>Equipment</th>
+                                    <th>Priority</th>
                                     <th>Status</th>
                                     <th>Date</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($recentCmr as $cmr)
-                                    <tr>
-                                        <td>
-                                            <a href="{{ route('supervisor.corrective-maintenance.index') }}">
-                                                {{ $cmr->ticket_number ?? 'CMR-'.$cmr->id }}
-                                            </a>
-                                        </td>
-                                        <td>{{ Str::limit($cmr->title ?? $cmr->description, 40) }}</td>
-                                        <td>
-                                            @php
-                                                $statusColors = [
-                                                    'pending' => 'warning',
-                                                    'in_progress' => 'info',
-                                                    'completed' => 'success',
-                                                    'cancelled' => 'danger',
-                                                ];
-                                            @endphp
-                                            <span class="badge bg-{{ $statusColors[$cmr->status] ?? 'secondary' }}">
-                                                {{ ucfirst(str_replace('_', ' ', $cmr->status)) }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $cmr->created_at->format('d M Y') }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="text-center py-4 text-muted">
-                                            No CMR tickets found
-                                        </td>
-                                    </tr>
-                                @endforelse
+                                @foreach($recentCmr as $cmr)
+                                <tr>
+                                    <td><strong>{{ $cmr->ticket_number }}</strong></td>
+                                    <td>{{ $cmr->equipment_name ?? '-' }}</td>
+                                    <td><span class="badge {{ $cmr->getPriorityBadgeClass() }}">{{ ucfirst($cmr->priority) }}</span></td>
+                                    <td><span class="badge {{ $cmr->getStatusBadgeClass() }}">{{ ucfirst(str_replace('_', ' ', $cmr->status)) }}</span></td>
+                                    <td><small>{{ $cmr->created_at->format('d M Y') }}</small></td>
+                                </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-
-            <!-- Account Information -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Account Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <strong>Created At:</strong>
-                            <p class="text-muted">{{ $user->created_at->format('d M Y, H:i') }}</p>
-                        </div>
-                        <div class="col-md-4">
-                            <strong>Last Updated:</strong>
-                            <p class="text-muted">{{ $user->updated_at->format('d M Y, H:i') }}</p>
-                        </div>
-                        <div class="col-md-4">
-                            <strong>Last Login:</strong>
-                            <p class="text-muted">
-                                {{ $user->last_login_at ? $user->last_login_at->format('d M Y, H:i') : 'Never' }}
-                            </p>
-                        </div>
+                    @else
+                    <div class="text-center py-4">
+                        <i class="fas fa-wrench fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No CMR tickets assigned yet</p>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -249,26 +198,18 @@
                 <div class="modal-body">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
-                        You are resetting password for: <strong>{{ $user->name }}</strong>
+                        Resetting password for: <strong>{{ $user->name }}</strong>
                     </div>
 
                     <div class="mb-3">
-                        <label for="modal_password" class="form-label">New Password <span class="text-danger">*</span></label>
-                        <input type="password"
-                               class="form-control"
-                               id="modal_password"
-                               name="password"
-                               required>
+                        <label for="password" class="form-label">New Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password" name="password" required>
                         <small class="text-muted">Minimum 8 characters</small>
                     </div>
 
                     <div class="mb-3">
-                        <label for="modal_password_confirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                        <input type="password"
-                               class="form-control"
-                               id="modal_password_confirmation"
-                               name="password_confirmation"
-                               required>
+                        <label for="password_confirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -281,4 +222,17 @@
         </div>
     </div>
 </div>
+
+<style>
+.avatar-circle-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 36px;
+}
+</style>
 @endsection
