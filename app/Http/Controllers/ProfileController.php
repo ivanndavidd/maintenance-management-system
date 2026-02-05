@@ -15,20 +15,42 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
+        // =========================
+        // Tentukan layout (SIMPLE)
+        // =========================
+        if ($user->hasRole(['admin', 'supervisor_maintenance'])) {
+            $layout = 'layouts.admin';
+        } elseif ($user->hasRole('pic')) {
+            $layout = 'layouts.pic';
+        } else {
+            $layout = 'layouts.user';
+        }
+
+        // =========================
         // Get user statistics
+        // =========================
+
         // PM Tasks
         $pmTasksTotal = \App\Models\PmTask::where('assigned_user_id', $user->id)->count();
         $pmTasksCompleted = \App\Models\PmTask::where('assigned_user_id', $user->id)
             ->where('status', 'completed')
             ->count();
 
-        // CM Tasks (assigned as technician)
-        $cmTasksTotal = \App\Models\CorrectiveMaintenanceRequest::whereHas('technicians', function($q) use ($user) {
+        // CM Tasks
+        $cmTasksTotal = \App\Models\CorrectiveMaintenanceRequest::whereHas('technicians', function (
+            $q,
+        ) use ($user) {
             $q->where('user_id', $user->id);
         })->count();
-        $cmTasksCompleted = \App\Models\CorrectiveMaintenanceRequest::whereHas('technicians', function($q) use ($user) {
-            $q->where('user_id', $user->id);
-        })->where('status', 'done')->count();
+
+        $cmTasksCompleted = \App\Models\CorrectiveMaintenanceRequest::whereHas(
+            'technicians',
+            function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            },
+        )
+            ->where('status', 'done')
+            ->count();
 
         $stats = [
             'total_tasks' => $pmTasksTotal + $cmTasksTotal,
@@ -37,7 +59,7 @@ class ProfileController extends Controller
             'cm_tasks' => $cmTasksTotal,
         ];
 
-        // Calculate completion rate
+        // Completion rate
         $stats['completion_rate'] =
             $stats['total_tasks'] > 0
                 ? round(($stats['completed_tasks'] / $stats['total_tasks']) * 100, 1)
@@ -46,7 +68,7 @@ class ProfileController extends Controller
         // Member since
         $stats['member_since'] = $user->created_at->diffForHumans();
 
-        return view('profile.index', compact('user', 'stats'));
+        return view('profile.index', compact('user', 'stats', 'layout'));
     }
 
     /**
@@ -80,14 +102,12 @@ class ProfileController extends Controller
 
         $user = auth()->user();
 
-        // Check current password
         if (!Hash::check($validated['current_password'], $user->password)) {
             return back()->withErrors([
                 'current_password' => 'Current password is incorrect',
             ]);
         }
 
-        // Update password
         $user->update([
             'password' => Hash::make($validated['password']),
         ]);
