@@ -221,13 +221,23 @@
             transform: none;
         }
 
-        /* Main Content */
+        /* Main Content - Adjusted for fixed sidebar */
         .main-content {
             margin-left: 70px;
             min-height: 100vh;
             padding: 25px;
             background-color: #f8fafc;
-            transition: margin-left 0.3s;
+            transition: margin-left 0.3s ease, width 0.3s ease;
+            width: calc(100% - 70px);
+            overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Push content when sidebar is hovered */
+        .sidebar:hover ~ .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
         }
 
         /* Mobile */
