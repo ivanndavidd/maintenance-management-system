@@ -515,6 +515,10 @@
  <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
  <i class="fas fa-users"></i><span class="menu-text"> User Management</span>
  </a>
+ @elseif(auth()->user()->hasRole('supervisor_maintenance'))
+ <a href="{{ route('supervisor.users.index') }}" class="{{ request()->routeIs('supervisor.users.*') ? 'active' : '' }}">
+ <i class="fas fa-users"></i><span class="menu-text"> User Management</span>
+ </a>
  @endif
 
  <a href="{{ route($routePrefix . '.shifts.index') }}" class="{{ request()->routeIs('admin.shifts.*') || request()->routeIs('supervisor.shifts.*') ? 'active' : '' }}">
