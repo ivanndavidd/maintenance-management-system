@@ -535,20 +535,20 @@
  </a>
  </div>
  <div class="sidebar-submenu {{ request()->routeIs('admin.spareparts.*') || request()->routeIs('admin.tools.*') || request()->routeIs('admin.assets.*') ? 'show' : '' }}" id="inventorySubmenu">
- <a href="{{ route('admin.spareparts.index') }}" class="{{ request()->routeIs('admin.spareparts.*') ? 'active' : '' }}">
- <i class="fas fa-cubes"></i><span class="menu-text"> Spareparts</span> 
+ <a href="{{ route($routePrefix . '.spareparts.index') }}" class="{{ request()->routeIs('admin.spareparts.*') || request()->routeIs('supervisor.spareparts.*') ? 'active' : '' }}">
+ <i class="fas fa-cubes"></i><span class="menu-text"> Spareparts</span>
  </a>
- <a href="{{ route('admin.tools.index') }}" class="{{ request()->routeIs('admin.tools.*') ? 'active' : '' }}">
- <i class="fas fa-tools"></i><span class="menu-text"> Tools</span> 
+ <a href="{{ route($routePrefix . '.tools.index') }}" class="{{ request()->routeIs('admin.tools.*') || request()->routeIs('supervisor.tools.*') ? 'active' : '' }}">
+ <i class="fas fa-tools"></i><span class="menu-text"> Tools</span>
  </a>
- <a href="{{ route('admin.assets.index') }}" class="{{ request()->routeIs('admin.assets.*') ? 'active' : '' }}">
- <i class="fas fa-sitemap"></i><span class="menu-text"> Assets</span> 
+ <a href="{{ route($routePrefix . '.assets.index') }}" class="{{ request()->routeIs('admin.assets.*') || request()->routeIs('supervisor.assets.*') ? 'active' : '' }}">
+ <i class="fas fa-sitemap"></i><span class="menu-text"> Assets</span>
  </a>
  </div>
 
  <!-- Purchase Orders -->
- <a href="{{ route('admin.purchase-orders.index') }}" class="{{ request()->routeIs('admin.purchase-orders.*') ? 'active' : '' }}">
- <i class="fas fa-shopping-cart"></i><span class="menu-text"> Purchase Orders</span> 
+ <a href="{{ route($routePrefix . '.purchase-orders.index') }}" class="{{ request()->routeIs('admin.purchase-orders.*') || request()->routeIs('supervisor.purchase-orders.*') ? 'active' : '' }}">
+ <i class="fas fa-shopping-cart"></i><span class="menu-text"> Purchase Orders</span>
  </a>
 
  <!-- Stock Opname -->
@@ -559,23 +559,23 @@
  </a>
  </div>
  <div class="sidebar-submenu {{ request()->routeIs('admin.opname.*') ? 'show' : '' }}" id="opnameSubmenu">
- <a href="{{ route('admin.opname.dashboard') }}" class="{{ request()->routeIs('admin.opname.dashboard') ? 'active' : '' }}">
- <i class="fas fa-tachometer-alt"></i><span class="menu-text"> Dashboard</span> 
+ <a href="{{ route($routePrefix . '.opname.dashboard') }}" class="{{ request()->routeIs('admin.opname.dashboard') || request()->routeIs('supervisor.opname.dashboard') ? 'active' : '' }}">
+ <i class="fas fa-tachometer-alt"></i><span class="menu-text"> Dashboard</span>
  </a>
- <a href="{{ route('admin.opname.schedules.index') }}" class="{{ request()->routeIs('admin.opname.schedules.*') && !request()->routeIs('admin.opname.compliance.*') ? 'active' : '' }}">
- <i class="fas fa-calendar-alt"></i><span class="menu-text"> Schedules</span> 
+ <a href="{{ route($routePrefix . '.opname.schedules.index') }}" class="{{ (request()->routeIs('admin.opname.schedules.*') || request()->routeIs('supervisor.opname.schedules.*')) && !request()->routeIs('*.opname.compliance.*') ? 'active' : '' }}">
+ <i class="fas fa-calendar-alt"></i><span class="menu-text"> Schedules</span>
  </a>
- <a href="{{ route('admin.opname.compliance.index') }}" class="{{ request()->routeIs('admin.opname.compliance.*') ? 'active' : '' }}">
- <i class="fas fa-file-alt"></i><span class="menu-text"> Compliance Report</span> 
+ <a href="{{ route($routePrefix . '.opname.compliance.index') }}" class="{{ request()->routeIs('admin.opname.compliance.*') || request()->routeIs('supervisor.opname.compliance.*') ? 'active' : '' }}">
+ <i class="fas fa-file-alt"></i><span class="menu-text"> Compliance Report</span>
  </a>
- <a href="{{ route('admin.opname.reports.accuracy') }}" class="{{ request()->routeIs('admin.opname.reports.accuracy') ? 'active' : '' }}">
- <i class="fas fa-chart-pie"></i><span class="menu-text"> Accuracy Report</span> 
+ <a href="{{ route($routePrefix . '.opname.reports.accuracy') }}" class="{{ request()->routeIs('admin.opname.reports.accuracy') || request()->routeIs('supervisor.opname.reports.accuracy') ? 'active' : '' }}">
+ <i class="fas fa-chart-pie"></i><span class="menu-text"> Accuracy Report</span>
  </a>
  {{-- Executions menu removed - NEW SYSTEM uses collaborative execution within schedules --}}
  </div>
 
  <!-- Stock Adjustments -->
- <a href="{{ route('admin.adjustments.index') }}" class="{{ request()->routeIs('admin.adjustments.*') ? 'active' : '' }}">
+ <a href="{{ route($routePrefix . '.adjustments.index') }}" class="{{ request()->routeIs('admin.adjustments.*') || request()->routeIs('supervisor.adjustments.*') ? 'active' : '' }}">
  <i class="fas fa-adjust"></i><span class="menu-text"> Stock Adjustments</span>
  @php
  $pendingAdjustments = cache()->remember('pending_adjustments_count', 60, function() {
@@ -589,8 +589,8 @@
 
  <hr class="text-white">
 
- <a href="{{ route('admin.preventive-maintenance.index') }}" class="{{ request()->routeIs('admin.preventive-maintenance.*') ? 'active' : '' }}">
- <i class="fas fa-calendar-check"></i><span class="menu-text"> Preventive Maintenance</span> 
+ <a href="{{ route($routePrefix . '.preventive-maintenance.index') }}" class="{{ request()->routeIs('admin.preventive-maintenance.*') || request()->routeIs('supervisor.preventive-maintenance.*') ? 'active' : '' }}">
+ <i class="fas fa-calendar-check"></i><span class="menu-text"> Preventive Maintenance</span>
  </a>
 
  <!-- Corrective Maintenance Dropdown -->
@@ -609,21 +609,21 @@
  </a>
  </div>
  <div class="sidebar-submenu {{ request()->routeIs('admin.corrective-maintenance.*') ? 'show' : '' }}" id="cmSubmenu">
- <a href="{{ route('admin.corrective-maintenance.index') }}" class="{{ request()->routeIs('admin.corrective-maintenance.index') || request()->routeIs('admin.corrective-maintenance.show') ? 'active' : '' }}">
- <i class="fas fa-list"></i><span class="menu-text"> Tickets</span> 
+ <a href="{{ route($routePrefix . '.corrective-maintenance.index') }}" class="{{ request()->routeIs('admin.corrective-maintenance.index') || request()->routeIs('admin.corrective-maintenance.show') || request()->routeIs('supervisor.corrective-maintenance.index') || request()->routeIs('supervisor.corrective-maintenance.show') ? 'active' : '' }}">
+ <i class="fas fa-list"></i><span class="menu-text"> Tickets</span>
  </a>
- <a href="{{ route('admin.corrective-maintenance.reports') }}" class="{{ request()->routeIs('admin.corrective-maintenance.reports') ? 'active' : '' }}">
- <i class="fas fa-file-alt"></i><span class="menu-text"> Reports</span> 
+ <a href="{{ route($routePrefix . '.corrective-maintenance.reports') }}" class="{{ request()->routeIs('admin.corrective-maintenance.reports') || request()->routeIs('supervisor.corrective-maintenance.reports') ? 'active' : '' }}">
+ <i class="fas fa-file-alt"></i><span class="menu-text"> Reports</span>
  </a>
  </div>
 
  <hr class="text-white">
 
- <a href="{{ route('admin.kpi.index') }}" class="{{ request()->routeIs('admin.kpi.*') ? 'active' : '' }}">
+ <a href="{{ route($routePrefix . '.kpi.index') }}" class="{{ request()->routeIs('admin.kpi.*') || request()->routeIs('supervisor.kpi.*') ? 'active' : '' }}">
  <i class="fas fa-chart-line"></i><span class="menu-text"> KPI Management</span>
  </a>
 
- <a href="{{ route('admin.help-articles.index') }}" class="{{ request()->routeIs('admin.help-articles.*') ? 'active' : '' }}">
+ <a href="{{ route($routePrefix . '.help-articles.index') }}" class="{{ request()->routeIs('admin.help-articles.*') || request()->routeIs('supervisor.help-articles.*') ? 'active' : '' }}">
  <i class="fas fa-question-circle"></i><span class="menu-text"> Help Articles</span>
  </a>
 

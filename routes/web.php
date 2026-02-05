@@ -754,20 +754,110 @@ Route::middleware(['auth'])->group(function () {
                     ])->name('reset-password');
                 });
 
-            // Share all admin routes untuk inventory, stock opname, PM, CM, KPI, help articles
-            // Inventory Management routes... (copy dari admin, terlalu panjang)
+            // Inventory Management - Spareparts (using same controller as admin)
+            Route::prefix('spareparts')->name('spareparts.')->group(function () {
+                Route::get('/import', [App\Http\Controllers\Admin\SparepartController::class, 'showImportForm'])->name('import');
+                Route::post('/import', [App\Http\Controllers\Admin\SparepartController::class, 'import'])->name('import.process');
+                Route::get('/import/template', [App\Http\Controllers\Admin\SparepartController::class, 'downloadTemplate'])->name('import.template');
+            });
+            Route::resource('spareparts', App\Http\Controllers\Admin\SparepartController::class);
 
-            // Redirect ke admin routes untuk simplicity - controller sama
-            Route::redirect('/spareparts', '/admin/spareparts')->name('spareparts.index');
-            Route::redirect('/tools', '/admin/tools')->name('tools.index');
-            Route::redirect('/assets', '/admin/assets')->name('assets.index');
-            Route::redirect('/purchase-orders', '/admin/purchase-orders')->name('purchase-orders.index');
-            Route::redirect('/opname', '/admin/opname')->name('opname.dashboard');
-            Route::redirect('/adjustments', '/admin/adjustments')->name('adjustments.index');
-            Route::redirect('/preventive-maintenance', '/admin/preventive-maintenance')->name('preventive-maintenance.index');
-            Route::redirect('/corrective-maintenance', '/admin/corrective-maintenance')->name('corrective-maintenance.index');
-            Route::redirect('/kpi', '/admin/kpi')->name('kpi.index');
-            Route::redirect('/help-articles', '/admin/help-articles')->name('help-articles.index');
+            // Tools
+            Route::post('tools/import', [App\Http\Controllers\Admin\ToolController::class, 'import'])->name('tools.import');
+            Route::resource('tools', App\Http\Controllers\Admin\ToolController::class);
+
+            // Assets
+            Route::prefix('assets')->name('assets.')->group(function () {
+                Route::get('/import', [App\Http\Controllers\Admin\AssetController::class, 'showImport'])->name('import');
+                Route::post('/import', [App\Http\Controllers\Admin\AssetController::class, 'import'])->name('import.process');
+                Route::get('/import/template', [App\Http\Controllers\Admin\AssetController::class, 'downloadTemplate'])->name('import.template');
+            });
+            Route::resource('assets', App\Http\Controllers\Admin\AssetController::class);
+
+            // Purchase Orders
+            Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'store'])->name('store');
+                Route::get('/{purchaseOrder}', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'show'])->name('show');
+                Route::get('/{purchaseOrder}/edit', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'edit'])->name('edit');
+                Route::put('/{purchaseOrder}', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'update'])->name('update');
+                Route::delete('/{purchaseOrder}', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'destroy'])->name('destroy');
+                Route::patch('/{purchaseOrder}/approve', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'approve'])->name('approve');
+                Route::patch('/{purchaseOrder}/reject', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'reject'])->name('reject');
+                Route::patch('/{purchaseOrder}/receive', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'receive'])->name('receive');
+                Route::patch('/{purchaseOrder}/cancel', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'cancel'])->name('cancel');
+                Route::get('/{purchaseOrder}/print', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'print'])->name('print');
+            });
+
+            // Stock Opname
+            Route::prefix('opname')->name('opname.')->group(function () {
+                Route::get('/dashboard', [App\Http\Controllers\Admin\StockOpnameController::class, 'dashboard'])->name('dashboard');
+                Route::prefix('schedules')->name('schedules.')->group(function () {
+                    Route::get('/', [App\Http\Controllers\Admin\StockOpnameController::class, 'scheduleIndex'])->name('index');
+                    Route::get('/create', [App\Http\Controllers\Admin\StockOpnameController::class, 'scheduleCreate'])->name('create');
+                    Route::post('/', [App\Http\Controllers\Admin\StockOpnameController::class, 'scheduleStore'])->name('store');
+                    Route::get('/{schedule}', [App\Http\Controllers\Admin\StockOpnameController::class, 'scheduleShow'])->name('show');
+                    Route::get('/{schedule}/edit', [App\Http\Controllers\Admin\StockOpnameController::class, 'scheduleEdit'])->name('edit');
+                    Route::put('/{schedule}', [App\Http\Controllers\Admin\StockOpnameController::class, 'scheduleUpdate'])->name('update');
+                    Route::post('/{schedule}/batch-approve', [App\Http\Controllers\Admin\StockOpnameController::class, 'batchApproveItems'])->name('batch-approve');
+                    Route::post('/{schedule}/sync-to-stock', [App\Http\Controllers\Admin\StockOpnameController::class, 'syncToStock'])->name('sync-to-stock');
+                    Route::get('/{schedule}/sync-status', [App\Http\Controllers\Admin\StockOpnameController::class, 'getSyncStatus'])->name('sync-status');
+                    Route::get('/{schedule}/export', [App\Http\Controllers\Admin\StockOpnameController::class, 'exportSchedule'])->name('export');
+                    Route::post('/{schedule}/close-ticket', [App\Http\Controllers\Admin\StockOpnameController::class, 'closeTicket'])->name('close-ticket');
+                });
+                Route::post('/items/{item}/approve', [App\Http\Controllers\Admin\StockOpnameController::class, 'approveItem'])->name('items.approve');
+                Route::post('/items/{item}/reject', [App\Http\Controllers\Admin\StockOpnameController::class, 'rejectItem'])->name('items.reject');
+                Route::post('/items/{item}/sync-to-stock', [App\Http\Controllers\Admin\StockOpnameController::class, 'syncItemToStock'])->name('items.sync-to-stock');
+                Route::get('/compliance', [App\Http\Controllers\Admin\StockOpnameController::class, 'complianceReport'])->name('compliance.index');
+                Route::get('/reports/accuracy', [App\Http\Controllers\Admin\StockOpnameController::class, 'accuracyReport'])->name('reports.accuracy');
+            });
+
+            // Stock Adjustments
+            Route::prefix('adjustments')->name('adjustments.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\StockAdjustmentController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\Admin\StockAdjustmentController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\Admin\StockAdjustmentController::class, 'store'])->name('store');
+                Route::get('/{adjustment}', [App\Http\Controllers\Admin\StockAdjustmentController::class, 'show'])->name('show');
+                Route::post('/{adjustment}/approve', [App\Http\Controllers\Admin\StockAdjustmentController::class, 'approve'])->name('approve');
+                Route::post('/{adjustment}/reject', [App\Http\Controllers\Admin\StockAdjustmentController::class, 'reject'])->name('reject');
+            });
+
+            // Preventive Maintenance
+            Route::prefix('preventive-maintenance')->name('preventive-maintenance.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'index'])->name('index');
+                Route::get('/calendar', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'calendar'])->name('calendar');
+                Route::get('/calendar/events', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'getCalendarEvents'])->name('calendar.events');
+                Route::post('/calendar/tasks', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'storeCalendarTask'])->name('calendar.store-task');
+                Route::put('/calendar/tasks/{task}', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'updateCalendarTask'])->name('calendar.update-task');
+                Route::patch('/calendar/tasks/{task}/move', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'moveCalendarTask'])->name('calendar.move-task');
+                Route::delete('/calendar/tasks/{task}', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'deleteTask'])->name('delete-task');
+                Route::post('/task/{task}/status', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'updateTaskStatus'])->name('update-task-status');
+                Route::resource('schedules', App\Http\Controllers\Admin\PreventiveMaintenanceController::class)->except(['index']);
+            });
+
+            // Corrective Maintenance
+            Route::prefix('corrective-maintenance')->name('corrective-maintenance.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\CorrectiveMaintenanceController::class, 'index'])->name('index');
+                Route::get('/reports', [App\Http\Controllers\Admin\CorrectiveMaintenanceController::class, 'reports'])->name('reports');
+                Route::post('/{ticket}/create-sub-ticket', [App\Http\Controllers\Admin\CorrectiveMaintenanceController::class, 'createSubTicket'])->name('create-sub-ticket');
+                Route::get('/{ticket}', [App\Http\Controllers\Admin\CorrectiveMaintenanceController::class, 'show'])->name('show');
+                Route::patch('/{ticket}/mark-received', [App\Http\Controllers\Admin\CorrectiveMaintenanceController::class, 'markReceived'])->name('mark-received');
+                Route::patch('/{ticket}/assign', [App\Http\Controllers\Admin\CorrectiveMaintenanceController::class, 'assign'])->name('assign');
+                Route::patch('/{ticket}/complete', [App\Http\Controllers\Admin\CorrectiveMaintenanceController::class, 'complete'])->name('complete');
+                Route::delete('/{ticket}/cancel', [App\Http\Controllers\Admin\CorrectiveMaintenanceController::class, 'cancel'])->name('cancel');
+                Route::patch('/{ticket}/update-notes', [App\Http\Controllers\Admin\CorrectiveMaintenanceController::class, 'updateNotes'])->name('update-notes');
+            });
+
+            // KPI Management
+            Route::prefix('kpi')->name('kpi.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\KpiController::class, 'index'])->name('index');
+                Route::get('/{user}', [App\Http\Controllers\Admin\KpiController::class, 'show'])->name('show');
+            });
+
+            // Help Articles
+            Route::resource('help-articles', App\Http\Controllers\Admin\HelpArticleController::class);
+            Route::patch('help-articles/{helpArticle}/toggle-publish', [App\Http\Controllers\Admin\HelpArticleController::class, 'togglePublish'])->name('help-articles.toggle-publish');
 
             // My Tasks (using User controller but need to use admin layout)
             Route::prefix('my-tasks')
