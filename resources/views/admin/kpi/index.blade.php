@@ -9,7 +9,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h1 class="h3 mb-0">KPI Management</h1>
-                <p class="text-muted mb-0">Monitor user performance and job completion metrics</p>
+                <p class="text-muted mb-0">Monitor user performance across PM, CM, and Stock Opname tasks</p>
             </div>
         </div>
 
@@ -42,38 +42,59 @@
             <div class="col-md-3">
                 <div class="card shadow-sm border-left-primary">
                     <div class="card-body">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Users</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $users->count() }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm border-left-success">
-                    <div class="card-body">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Jobs Completed</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $users->sum('total_jobs') }}</div>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-clipboard-check fa-2x text-primary opacity-50"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">PM Tasks</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalPm }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card shadow-sm border-left-warning">
                     <div class="card-body">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Total Late Jobs</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $users->sum('late_jobs') }}</div>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-wrench fa-2x text-warning opacity-50"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">CM Tickets</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalCm }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card shadow-sm border-left-info">
                     <div class="card-body">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Avg On-Time Rate</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            @php
-                                $totalJobs = $users->sum('total_jobs');
-                                $totalOnTime = $users->sum('on_time_jobs') + $users->sum('early_jobs');
-                                $avgRate = $totalJobs > 0 ? round(($totalOnTime / $totalJobs) * 100, 1) : 0;
-                            @endphp
-                            {{ $avgRate }}%
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-boxes-stacked fa-2x text-info opacity-50"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Stock Opname</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalSo }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-left-success">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-check-double fa-2x text-success opacity-50"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Completed</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalAll }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -94,20 +115,18 @@
                                     <th>#</th>
                                     <th>User</th>
                                     <th>Department</th>
-                                    <th>Total Jobs</th>
-                                    <th>On Time</th>
-                                    <th>Early</th>
-                                    <th>Late</th>
-                                    <th>On-Time Rate</th>
-                                    <th>Late Rate</th>
-                                    <th>Avg Days Late</th>
+                                    <th class="text-center">PM Tasks</th>
+                                    <th class="text-center">CM Tickets</th>
+                                    <th class="text-center">Stock Opname</th>
+                                    <th class="text-center">Total</th>
+                                    <th>Completion Rate</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($users as $index => $item)
                                     <tr>
-                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $loop->iteration }}</td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <div class="avatar-circle bg-primary text-white me-2">
@@ -121,34 +140,26 @@
                                             </div>
                                         </td>
                                         <td>{{ $item['user']->department->name ?? '-' }}</td>
-                                        <td><span class="badge bg-secondary">{{ $item['total_jobs'] }}</span></td>
-                                        <td><span class="badge bg-success">{{ $item['on_time_jobs'] }}</span></td>
-                                        <td><span class="badge bg-info">{{ $item['early_jobs'] }}</span></td>
-                                        <td><span class="badge bg-danger">{{ $item['late_jobs'] }}</span></td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary">{{ $item['pm_count'] }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-warning text-dark">{{ $item['cm_count'] }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info">{{ $item['so_count'] }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">{{ $item['total_completed'] }}</span>
+                                        </td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <span class="me-2">{{ $item['on_time_rate'] }}%</span>
+                                                <span class="me-2">{{ $item['completion_rate'] }}%</span>
                                                 <div class="progress flex-grow-1" style="height: 8px; width: 100px;">
                                                     <div class="progress-bar bg-success" role="progressbar"
-                                                        style="width: {{ $item['on_time_rate'] }}%"></div>
+                                                        style="width: {{ $item['completion_rate'] }}%"></div>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <span class="me-2">{{ $item['late_rate'] }}%</span>
-                                                <div class="progress flex-grow-1" style="height: 8px; width: 100px;">
-                                                    <div class="progress-bar bg-danger" role="progressbar"
-                                                        style="width: {{ $item['late_rate'] }}%"></div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            @if ($item['avg_days_late'] > 0)
-                                                <span class="text-danger">{{ $item['avg_days_late'] }} days</span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
                                         </td>
                                         <td>
                                             <a href="{{ route('admin.kpi.show', $item['user']->id) }}"

@@ -91,7 +91,7 @@ class MaintenanceJobController extends Controller
 
         // Get filter options
         $machines = Machine::orderBy('name')->get();
-        $users = User::role(['user', 'admin'])
+        $users = User::role(['staff_maintenance', 'admin', 'supervisor_maintenance'])
             ->orderBy('name')
             ->get();
         $statuses = ['pending', 'in_progress', 'completed', 'cancelled'];
@@ -110,7 +110,7 @@ class MaintenanceJobController extends Controller
     public function create()
     {
         $machines = Machine::where('status', '!=', 'retired')->orderBy('name')->get();
-        $users = User::role(['user', 'admin'])
+        $users = User::role(['staff_maintenance', 'admin', 'supervisor_maintenance'])
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
@@ -238,7 +238,7 @@ class MaintenanceJobController extends Controller
     public function edit(MaintenanceJob $job)
     {
         $machines = Machine::where('status', '!=', 'retired')->orderBy('name')->get();
-        $users = User::role(['user', 'admin'])
+        $users = User::role(['staff_maintenance', 'admin', 'supervisor_maintenance'])
             ->where('is_active', true)
             ->orderBy('name')
             ->get();

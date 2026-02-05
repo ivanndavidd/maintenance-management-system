@@ -3,23 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corrective Maintenance Request</title>
+    <title>Corrective Maintenance Request - {{ config('app.name', 'Warehouse Maintenance') }}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('assets/Blibli_Logo_Symbol_FC_RGB.png') }}">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('{{ asset('assets/maxresdefault.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             padding: 30px 0;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
+        .container {
+            position: relative;
+            z-index: 1;
         }
         .form-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             overflow: hidden;
         }
         .form-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            background: #0095DA;
             color: white;
             padding: 30px;
             text-align: center;
@@ -39,19 +59,19 @@
         .section-title {
             color: #2c3e50;
             font-weight: 600;
-            border-bottom: 2px solid #3498db;
+            border-bottom: 2px solid #0095DA;
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
         .btn-submit {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            background: #0095DA;
             border: none;
             padding: 15px 40px;
             font-size: 1.1rem;
             font-weight: 600;
         }
         .btn-submit:hover {
-            background: linear-gradient(135deg, #34495e 0%, #2980b9 100%);
+            background: #007AB8;
         }
         .track-link {
             color: white;
@@ -90,21 +110,21 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(135deg, #3498db, #2980b9);
+            background: #0095DA;
             opacity: 0;
             transition: opacity 0.3s;
         }
         .category-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.25);
+            box-shadow: 0 8px 25px rgba(0, 149, 218, 0.25);
         }
         .category-card:hover::before {
             opacity: 1;
         }
         .category-card.selected {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            background: #0095DA;
             color: white;
-            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 149, 218, 0.4);
             transform: translateY(-4px);
         }
         .category-card.selected::before {
@@ -117,7 +137,7 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ebf5fb 0%, #d4e6f1 100%);
+            background: linear-gradient(135deg, #E6F7FF 0%, #B3E0F7 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -132,7 +152,7 @@
         }
         .category-card i {
             font-size: 1.6rem;
-            color: #3498db;
+            color: #0095DA;
             transition: all 0.3s;
         }
         .category-card.selected i {
@@ -380,7 +400,7 @@
                 </div>
 
                 <div class="text-center mt-4 text-white">
-                    <small>&copy; {{ date('Y') }} Warehouse Maintenance System</small>
+                    <small>&copy; {{ date('Y') }} {{ config('app.name', 'Warehouse Maintenance') }}</small>
                 </div>
             </div>
         </div>
