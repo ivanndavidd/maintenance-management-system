@@ -1,4 +1,4 @@
-@extends(profileLayout())
+@extends($layout)
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
