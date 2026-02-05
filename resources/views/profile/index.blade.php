@@ -1,5 +1,4 @@
-@extends(auth()->user()->hasRole('admin') ? 'layouts.admin' : (auth()->user()->hasRole('supervisor_maintenance') ? 'layouts.admin' : (auth()->user()->hasRole('pic') ? 'layouts.pic' : 'layouts.user')))
-
+@extends(profileLayout())
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
