@@ -666,7 +666,7 @@
 
  <hr class="text-white">
 
- <a href="{{ route($routePrefix.'profile.index') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
+ <a href="{{ route('profile.index') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
  <i class="fas fa-user"></i><span class="menu-text"> Profile</span>
  </a>
 
