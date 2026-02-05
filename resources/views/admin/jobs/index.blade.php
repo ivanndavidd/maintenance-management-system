@@ -10,13 +10,13 @@
             <h2><i class="fas fa-tasks"></i> Maintenance Jobs</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Maintenance Jobs</li>
                 </ol>
             </nav>
         </div>
         <div>
-            <a href="{{ route('admin.jobs.create') }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'.jobs.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Create New Job
             </a>
         </div>
@@ -29,7 +29,7 @@
             <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.jobs.index') }}">
+            <form method="GET" action="{{ route($routePrefix.'.jobs.index') }}">
                 <div class="row g-3">
                     <!-- Search -->
                     <div class="col-md-3">
@@ -135,7 +135,7 @@
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="fas fa-search"></i> Apply Filters
                         </button>
-                        <a href="{{ route('admin.jobs.index') }}" class="btn btn-secondary">
+                        <a href="{{ route($routePrefix.'.jobs.index') }}" class="btn btn-secondary">
                             <i class="fas fa-redo"></i> Reset
                         </a>
                     </div>
@@ -222,7 +222,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>
-                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                <a href="{{ route($routePrefix.'.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'job_code',
                                     'sort_order' => request('sort_by') == 'job_code' && request('sort_order') == 'asc' ? 'desc' : 'asc'
                                 ])) }}" class="text-decoration-none text-dark">
@@ -235,7 +235,7 @@
                                 </a>
                             </th>
                             <th>
-                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                <a href="{{ route($routePrefix.'.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'title',
                                     'sort_order' => request('sort_by') == 'title' && request('sort_order') == 'asc' ? 'desc' : 'asc'
                                 ])) }}" class="text-decoration-none text-dark">
@@ -249,7 +249,7 @@
                             </th>
                             <th>Machine</th>
                             <th>
-                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                <a href="{{ route($routePrefix.'.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'type',
                                     'sort_order' => request('sort_by') == 'type' && request('sort_order') == 'asc' ? 'desc' : 'asc'
                                 ])) }}" class="text-decoration-none text-dark">
@@ -262,7 +262,7 @@
                                 </a>
                             </th>
                             <th>
-                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                <a href="{{ route($routePrefix.'.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'priority',
                                     'sort_order' => request('sort_by') == 'priority' && request('sort_order') == 'asc' ? 'desc' : 'asc'
                                 ])) }}" class="text-decoration-none text-dark">
@@ -276,7 +276,7 @@
                             </th>
                             <th>Assigned To</th>
                             <th>
-                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                <a href="{{ route($routePrefix.'.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'status',
                                     'sort_order' => request('sort_by') == 'status' && request('sort_order') == 'asc' ? 'desc' : 'asc'
                                 ])) }}" class="text-decoration-none text-dark">
@@ -289,7 +289,7 @@
                                 </a>
                             </th>
                             <th>
-                                <a href="{{ route('admin.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
+                                <a href="{{ route($routePrefix.'.jobs.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'scheduled_date',
                                     'sort_order' => request('sort_by') == 'scheduled_date' && request('sort_order') == 'asc' ? 'desc' : 'asc'
                                 ])) }}" class="text-decoration-none text-dark">
@@ -402,12 +402,12 @@
                             </td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('admin.jobs.show', $job) }}" 
+                                    <a href="{{ route($routePrefix.'.jobs.show', $job) }}" 
                                        class="btn btn-sm btn-info" 
                                        title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('admin.jobs.edit', $job) }}" 
+                                    <a href="{{ route($routePrefix.'.jobs.edit', $job) }}" 
                                        class="btn btn-sm btn-warning" 
                                        title="Edit">
                                         <i class="fas fa-edit"></i>
@@ -430,7 +430,7 @@
                                             </li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
-                                                <form action="{{ route('admin.jobs.destroy', $job) }}" 
+                                                <form action="{{ route($routePrefix.'.jobs.destroy', $job) }}" 
                                                       method="POST" 
                                                       onsubmit="return confirm('Are you sure you want to delete this job?')">
                                                     @csrf
@@ -450,7 +450,7 @@
                         <div class="modal fade" id="statusModal{{ $job->id }}" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form action="{{ route('admin.jobs.update-status', $job) }}" method="POST">
+                                    <form action="{{ route($routePrefix.'.jobs.update-status', $job) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
                                         <div class="modal-header">

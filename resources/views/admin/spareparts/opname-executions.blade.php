@@ -8,8 +8,8 @@
         <h2>Stock Opname Executions - Spareparts</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.index') }}">Spareparts</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.opname.dashboard') }}">Opname Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.index') }}">Spareparts</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.opname.dashboard') }}">Opname Dashboard</a></li>
                 <li class="breadcrumb-item active">Executions</li>
             </ol>
         </nav>
@@ -18,7 +18,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Execution History</h5>
-            <a href="{{ route('admin.spareparts.opname.executions.create') }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'.spareparts.opname.executions.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Record Execution
             </a>
         </div>
@@ -91,7 +91,7 @@
                             </td>
                             <td>{{ $execution->executedByUser->name }}</td>
                             <td>
-                                <a href="{{ route('admin.spareparts.opname.executions.show', $execution) }}" class="btn btn-sm btn-info">
+                                <a href="{{ route($routePrefix.'.spareparts.opname.executions.show', $execution) }}" class="btn btn-sm btn-info">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </td>

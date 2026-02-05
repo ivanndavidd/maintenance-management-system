@@ -9,7 +9,7 @@
         <div class="mb-4">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.kpi.index') }}">KPI Management</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.kpi.index') }}">KPI Management</a></li>
                     <li class="breadcrumb-item active">{{ $user->name }}</li>
                 </ol>
             </nav>
@@ -18,7 +18,7 @@
                     <h1 class="h3 mb-0">KPI Details: {{ $user->name }}</h1>
                     <p class="text-muted mb-0">{{ $user->employee_id }} | {{ $user->department->name ?? 'No Department' }}</p>
                 </div>
-                <a href="{{ route('admin.kpi.index') }}" class="btn btn-secondary">
+                <a href="{{ route($routePrefix.'.kpi.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back to KPI List
                 </a>
             </div>
@@ -91,7 +91,7 @@
         <!-- Filter Panel -->
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.kpi.show', $user->id) }}" class="row g-3">
+                <form method="GET" action="{{ route($routePrefix.'.kpi.show', $user->id) }}" class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Date From</label>
                         <input type="date" name="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}">
@@ -104,7 +104,7 @@
                         <button type="submit" class="btn btn-primary btn-sm me-2">
                             <i class="fas fa-filter"></i> Filter
                         </button>
-                        <a href="{{ route('admin.kpi.show', $user->id) }}" class="btn btn-secondary btn-sm">
+                        <a href="{{ route($routePrefix.'.kpi.show', $user->id) }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-times"></i> Clear
                         </a>
                     </div>

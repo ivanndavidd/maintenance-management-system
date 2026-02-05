@@ -8,8 +8,8 @@
         <h2>Stock Opname Compliance Report - Spareparts</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.index') }}">Spareparts</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.opname.dashboard') }}">Opname Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.index') }}">Spareparts</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.opname.dashboard') }}">Opname Dashboard</a></li>
                 <li class="breadcrumb-item active">Compliance Report</li>
             </ol>
         </nav>
@@ -85,7 +85,7 @@
                             </td>
                             <td>
                                 @if($execution->schedule)
-                                    <a href="{{ route('admin.spareparts.opname.schedules.show', $execution->schedule) }}">
+                                    <a href="{{ route($routePrefix.'.spareparts.opname.schedules.show', $execution->schedule) }}">
                                         {{ $execution->schedule->schedule_code }}
                                     </a>
                                 @else
@@ -122,7 +122,7 @@
                             </td>
                             <td>{{ $execution->executedByUser->name }}</td>
                             <td>
-                                <a href="{{ route('admin.spareparts.opname.executions.show', $execution) }}" class="btn btn-sm btn-info">
+                                <a href="{{ route($routePrefix.'.spareparts.opname.executions.show', $execution) }}" class="btn btn-sm btn-info">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </td>

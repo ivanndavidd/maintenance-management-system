@@ -84,7 +84,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Recent Executions</h5>
-                    <a href="{{ route('admin.opname.executions.index') }}" class="btn btn-sm btn-primary">View All</a>
+                    <a href="{{ route($routePrefix.'.opname.executions.index') }}" class="btn btn-sm btn-primary">View All</a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -101,7 +101,7 @@
                                 @forelse($recentExecutions as $execution)
                                 <tr>
                                     <td>
-                                        <a href="{{ route('admin.opname.executions.show', $execution) }}">
+                                        <a href="{{ route($routePrefix.'.opname.executions.show', $execution) }}">
                                             {{ $execution->execution_code }}
                                         </a>
                                         @if($execution->is_missed)
@@ -139,7 +139,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Upcoming Schedules</h5>
-                    <a href="{{ route('admin.opname.schedules.index') }}" class="btn btn-sm btn-primary">View All</a>
+                    <a href="{{ route($routePrefix.'.opname.schedules.index') }}" class="btn btn-sm btn-primary">View All</a>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -156,7 +156,7 @@
                                 @forelse($upcomingSchedules as $schedule)
                                 <tr class="{{ $schedule->isOverdue() ? 'table-warning' : '' }}">
                                     <td>
-                                        <a href="{{ route('admin.opname.schedules.show', $schedule) }}">
+                                        <a href="{{ route($routePrefix.'.opname.schedules.show', $schedule) }}">
                                             {{ $schedule->schedule_code }}
                                         </a>
                                     </td>
@@ -204,22 +204,22 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
-                            <a href="{{ route('admin.opname.schedules.create') }}" class="btn btn-primary w-100 mb-2">
+                            <a href="{{ route($routePrefix.'.opname.schedules.create') }}" class="btn btn-primary w-100 mb-2">
                                 <i class="fas fa-calendar-plus"></i> Create Schedule
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{{ route('admin.opname.executions.create') }}" class="btn btn-success w-100 mb-2">
+                            <a href="{{ route($routePrefix.'.opname.executions.create') }}" class="btn btn-success w-100 mb-2">
                                 <i class="fas fa-clipboard-check"></i> Record Execution
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{{ route('admin.opname.reports.compliance') }}" class="btn btn-info w-100 mb-2">
+                            <a href="{{ route($routePrefix.'.opname.reports.compliance') }}" class="btn btn-info w-100 mb-2">
                                 <i class="fas fa-chart-bar"></i> Compliance Report
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{{ route('admin.opname.reports.accuracy') }}" class="btn btn-warning w-100 mb-2">
+                            <a href="{{ route($routePrefix.'.opname.reports.accuracy') }}" class="btn btn-warning w-100 mb-2">
                                 <i class="fas fa-chart-pie"></i> Accuracy Report
                             </a>
                         </div>

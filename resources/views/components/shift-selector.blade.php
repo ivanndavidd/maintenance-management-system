@@ -91,7 +91,7 @@ function loadShiftData() {
     document.getElementById('shift-info').style.display = 'block';
 
     // Fetch shift data
-    fetch(`{{ route('admin.shifts.get-shift-for-date') }}?date=${date}`)
+    fetch(`{{ route($routePrefix.'.shifts.get-shift-for-date') }}?date=${date}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {

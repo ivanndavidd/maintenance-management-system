@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Stock Adjustments</h2>
-        <a href="{{ route('admin.adjustments.create') }}" class="btn btn-primary">
+        <a href="{{ route($routePrefix.'.adjustments.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> New Adjustment
         </a>
     </div>
@@ -95,7 +95,7 @@
                                 <td>{{ $adjustment->adjustedByUser->name ?? 'N/A' }}</td>
                                 <td>{{ $adjustment->created_at->format('d M Y H:i') }}</td>
                                 <td>
-                                    <a href="{{ route('admin.adjustments.show', $adjustment) }}" class="btn btn-sm btn-info">
+                                    <a href="{{ route($routePrefix.'.adjustments.show', $adjustment) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </td>

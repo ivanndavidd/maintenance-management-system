@@ -10,17 +10,17 @@
             <h2><i class="fas fa-user"></i> User Profile</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}">Users</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.users.index') }}">Users</a></li>
                     <li class="breadcrumb-item active">{{ $user->name }}</li>
                 </ol>
             </nav>
         </div>
         <div>
-            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning">
+            <a href="{{ route($routePrefix.'.users.edit', $user) }}" class="btn btn-warning">
                 <i class="fas fa-edit"></i> Edit User
             </a>
-            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+            <a href="{{ route($routePrefix.'.users.index') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
         </div>
@@ -89,7 +89,7 @@
                             <i class="fas fa-key"></i> Reset Password
                         </button>
                         
-                        <form action="{{ route('admin.users.toggle-status', $user) }}" method="POST">
+                        <form action="{{ route($routePrefix.'.users.toggle-status', $user) }}" method="POST">
                             @csrf
                             @method('PATCH')
                             <button type="submit" 
@@ -189,7 +189,7 @@
 <div class="modal fade" id="resetPasswordModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.users.reset-password', $user) }}" method="POST">
+            <form action="{{ route($routePrefix.'.users.reset-password', $user) }}" method="POST">
                 @csrf
                 <div class="modal-header bg-warning text-dark">
                     <h5 class="modal-title"><i class="fas fa-key"></i> Reset Password</h5>

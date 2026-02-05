@@ -8,7 +8,7 @@
         <h2>Spareparts Management</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
                 <li class="breadcrumb-item active">Spareparts</li>
             </ol>
         </nav>
@@ -18,13 +18,13 @@
     <div id="master-data" class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Master Data Spareparts</h5>
-            <a href="{{ route('admin.spareparts.create') }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'.spareparts.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Add New Sparepart
             </a>
         </div>
         <div class="card-body">
             <!-- Filter Section -->
-            <form method="GET" action="{{ route('admin.spareparts.index') }}">
+            <form method="GET" action="{{ route($routePrefix.'.spareparts.index') }}">
                 <div class="row mb-3 g-2">
                     <div class="col-12 col-md-3">
                         <input type="text" name="search" class="form-control form-control-sm" placeholder="Search..." value="{{ request('search') }}">
@@ -73,28 +73,28 @@
                         @if(request('search'))
                             <span class="badge bg-info">
                                 Search: {{ request('search') }}
-                                <a href="{{ route('admin.spareparts.index', array_filter(request()->except('search'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.spareparts.index', array_filter(request()->except('search'))) }}" class="text-white text-decoration-none ms-1">×</a>
                             </span>
                         @endif
                         @if(request('equipment_type'))
                             <span class="badge bg-info">
                                 Type: {{ ucfirst(request('equipment_type')) }}
-                                <a href="{{ route('admin.spareparts.index', array_filter(request()->except('equipment_type'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.spareparts.index', array_filter(request()->except('equipment_type'))) }}" class="text-white text-decoration-none ms-1">×</a>
                             </span>
                         @endif
                         @if(request('location'))
                             <span class="badge bg-info">
                                 Location: {{ request('location') }}
-                                <a href="{{ route('admin.spareparts.index', array_filter(request()->except('location'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.spareparts.index', array_filter(request()->except('location'))) }}" class="text-white text-decoration-none ms-1">×</a>
                             </span>
                         @endif
                         @if(request('stock_status'))
                             <span class="badge bg-info">
                                 Status: {{ ucfirst(request('stock_status')) }}
-                                <a href="{{ route('admin.spareparts.index', array_filter(request()->except('stock_status'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.spareparts.index', array_filter(request()->except('stock_status'))) }}" class="text-white text-decoration-none ms-1">×</a>
                             </span>
                         @endif
-                        <a href="{{ route('admin.spareparts.index') }}" class="badge bg-secondary text-decoration-none">
+                        <a href="{{ route($routePrefix.'.spareparts.index') }}" class="badge bg-secondary text-decoration-none">
                             Clear All
                         </a>
                     </div>
@@ -146,13 +146,13 @@
                             <td>{{ $sparepart->location ?? '-' }}</td>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('admin.spareparts.show', $sparepart) }}" class="btn btn-sm btn-info" title="View">
+                                    <a href="{{ route($routePrefix.'.spareparts.show', $sparepart) }}" class="btn btn-sm btn-info" title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('admin.spareparts.edit', $sparepart) }}" class="btn btn-sm btn-warning" title="Edit">
+                                    <a href="{{ route($routePrefix.'.spareparts.edit', $sparepart) }}" class="btn btn-sm btn-warning" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('admin.spareparts.destroy', $sparepart) }}" method="POST" class="d-inline"
+                                    <form action="{{ route($routePrefix.'.spareparts.destroy', $sparepart) }}" method="POST" class="d-inline"
                                         onsubmit="return confirm('Are you sure you want to delete this sparepart?')">
                                         @csrf
                                         @method('DELETE')

@@ -9,12 +9,12 @@
             <h4 class="mb-1">Create Preventive Maintenance Schedule</h4>
             <p class="text-muted mb-0">Create a monthly PM schedule, then add dates and tasks</p>
         </div>
-        <a href="{{ route('admin.preventive-maintenance.index') }}" class="btn btn-outline-secondary">
+        <a href="{{ route($routePrefix.'.preventive-maintenance.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back
         </a>
     </div>
 
-    <form action="{{ route('admin.preventive-maintenance.store') }}" method="POST">
+    <form action="{{ route($routePrefix.'.preventive-maintenance.store') }}" method="POST">
         @csrf
 
         <div class="card mb-4">
@@ -43,7 +43,7 @@
                 </div>
             </div>
             <div class="card-footer d-flex justify-content-end gap-2">
-                <a href="{{ route('admin.preventive-maintenance.index') }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ route($routePrefix.'.preventive-maintenance.index') }}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save me-1"></i> Create Schedule
                 </button>

@@ -283,7 +283,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-primary text-white">
-                    <a href="{{ route('admin.corrective-maintenance.index') }}" class="text-white text-decoration-none">
+                    <a href="{{ route($routePrefix . '.corrective-maintenance.index') }}" class="text-white text-decoration-none">
                         View All <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
@@ -310,7 +310,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-success text-white">
-                    <a href="{{ route('admin.preventive-maintenance.index') }}" class="text-white text-decoration-none">
+                    <a href="{{ route($routePrefix . '.preventive-maintenance.index') }}" class="text-white text-decoration-none">
                         View All <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
@@ -333,7 +333,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-info text-white">
-                    <a href="{{ route('admin.users.index') }}" class="text-white text-decoration-none">
+                    <a href="{{ route($routePrefix . '.users.index') }}" class="text-white text-decoration-none">
                         View All Users <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>

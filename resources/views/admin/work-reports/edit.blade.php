@@ -9,8 +9,8 @@
         <h2><i class="fas fa-edit"></i> Edit Work Report</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.work-reports.my-reports') }}">My Reports</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.work-reports.my-reports') }}">My Reports</a></li>
                 <li class="breadcrumb-item active">Edit: {{ $workReport->report_code }}</li>
             </ol>
         </nav>
@@ -23,7 +23,7 @@
                     <h5 class="mb-0"><i class="fas fa-file-alt"></i> Edit Report Information</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.work-reports.update', $workReport) }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route($routePrefix.'.work-reports.update', $workReport) }}" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -238,7 +238,7 @@
                                                  style="height: 150px; object-fit: cover;">
                                             <div class="card-body p-2">
                                                 <small class="text-muted d-block">{{ $attachment['original_name'] }}</small>
-                                                <form action="{{ route('admin.work-reports.delete-attachment', [$workReport, $index]) }}" 
+                                                <form action="{{ route($routePrefix.'.work-reports.delete-attachment', [$workReport, $index]) }}" 
                                                       method="POST" 
                                                       onsubmit="return confirm('Delete this attachment?')"
                                                       class="mt-1">
@@ -284,7 +284,7 @@
 
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.work-reports.my-reports') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.work-reports.my-reports') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-warning text-dark">
@@ -345,12 +345,12 @@
                     <h6 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h6>
                 </div>
                 <div class="card-body">
-                    <a href="{{ route('admin.work-reports.show', $workReport) }}" class="btn btn-info btn-sm w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.work-reports.show', $workReport) }}" class="btn btn-info btn-sm w-100 mb-2">
                         <i class="fas fa-eye"></i> View Full Details
                     </a>
                     
                     @if($workReport->status === 'draft')
-                    <form action="{{ route('admin.work-reports.destroy', $workReport) }}" method="POST">
+                    <form action="{{ route($routePrefix.'.work-reports.destroy', $workReport) }}" method="POST">
                         @csrf
                         @method('DELETE')
                         <button type="submit" 

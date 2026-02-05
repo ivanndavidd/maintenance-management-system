@@ -8,7 +8,7 @@
         <h2>Tool Details</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.tools.index') }}">Tools</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.tools.index') }}">Tools</a></li>
                 <li class="breadcrumb-item active">{{ $tool->sparepart_name }}</li>
             </ol>
         </nav>
@@ -211,26 +211,26 @@
                     <h5 class="mb-0">Actions</h5>
                 </div>
                 <div class="card-body">
-                    <a href="{{ route('admin.tools.edit', $tool) }}" class="btn btn-warning w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.tools.edit', $tool) }}" class="btn btn-warning w-100 mb-2">
                         <i class="fas fa-edit"></i> Edit Tool
                     </a>
-                    <a href="{{ route('admin.adjustments.create') }}?tool_id={{ $tool->id }}" class="btn btn-primary w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.adjustments.create') }}?tool_id={{ $tool->id }}" class="btn btn-primary w-100 mb-2">
                         <i class="fas fa-sliders-h"></i> Adjust Stock
                     </a>
-                    <a href="{{ route('admin.purchase-orders.create') }}?tool_id={{ $tool->id }}" class="btn btn-success w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.purchase-orders.create') }}?tool_id={{ $tool->id }}" class="btn btn-success w-100 mb-2">
                         <i class="fas fa-shopping-cart"></i> Create Purchase Order
                     </a>
-                    <a href="{{ route('admin.opname.executions.create') }}?tool_id={{ $tool->id }}" class="btn btn-info w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.opname.executions.create') }}?tool_id={{ $tool->id }}" class="btn btn-info w-100 mb-2">
                         <i class="fas fa-clipboard-check"></i> Record Opname
                     </a>
 
                     <hr>
 
-                    <a href="{{ route('admin.tools.index') }}" class="btn btn-secondary w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.tools.index') }}" class="btn btn-secondary w-100 mb-2">
                         <i class="fas fa-arrow-left"></i> Back to List
                     </a>
 
-                    <form action="{{ route('admin.tools.destroy', $tool) }}" method="POST"
+                    <form action="{{ route($routePrefix.'.tools.destroy', $tool) }}" method="POST"
                         onsubmit="return confirm('Are you sure you want to delete this tool?')">
                         @csrf
                         @method('DELETE')
@@ -252,7 +252,7 @@
                     <p><strong>Current:</strong> {{ $tool->quantity }} {{ $tool->unit }}</p>
                     <p><strong>Minimum:</strong> {{ $tool->minimum_stock }} {{ $tool->unit }}</p>
                     <p><strong>Suggested Order:</strong> {{ max($tool->minimum_stock * 2 - $tool->quantity, 0) }} {{ $tool->unit }}</p>
-                    <a href="{{ route('admin.purchase-orders.create') }}?tool_id={{ $tool->id }}" class="btn btn-warning w-100">
+                    <a href="{{ route($routePrefix.'.purchase-orders.create') }}?tool_id={{ $tool->id }}" class="btn btn-warning w-100">
                         <i class="fas fa-shopping-cart"></i> Order Now
                     </a>
                 </div>

@@ -9,8 +9,8 @@
         <h2><i class="fas fa-file-alt"></i> Compliance Report - Closed Tickets</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.opname.dashboard') }}">Stock Opname</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.opname.dashboard') }}">Stock Opname</a></li>
                 <li class="breadcrumb-item active">Compliance Report</li>
             </ol>
         </nav>
@@ -58,7 +58,7 @@
             <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.opname.compliance.index') }}">
+            <form method="GET" action="{{ route($routePrefix.'.opname.compliance.index') }}">
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">Search Ticket</label>
@@ -87,7 +87,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.opname.compliance.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.opname.compliance.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-redo"></i> Reset
                             </a>
                         </div>
@@ -163,7 +163,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.opname.compliance.show', $ticket) }}" class="btn btn-sm btn-primary">
+                                    <a href="{{ route($routePrefix.'.opname.compliance.show', $ticket) }}" class="btn btn-sm btn-primary">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                 </td>

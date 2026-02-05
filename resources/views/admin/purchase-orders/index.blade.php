@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Purchase Orders</h2>
-        <a href="{{ route('admin.purchase-orders.create') }}" class="btn btn-primary">
+        <a href="{{ route($routePrefix.'.purchase-orders.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Create Purchase Order
         </a>
     </div>
@@ -14,7 +14,7 @@
     <!-- Filter Section -->
     <div class="card mb-3">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.purchase-orders.index') }}">
+            <form method="GET" action="{{ route($routePrefix.'.purchase-orders.index') }}">
                 <div class="row">
                     <div class="col-md-4">
                         <select name="status" class="form-select">
@@ -40,7 +40,7 @@
                         </button>
                     </div>
                     <div class="col-md-2">
-                        <a href="{{ route('admin.purchase-orders.index') }}" class="btn btn-secondary w-100">
+                        <a href="{{ route($routePrefix.'.purchase-orders.index') }}" class="btn btn-secondary w-100">
                             <i class="fas fa-redo"></i> Reset
                         </a>
                     </div>
@@ -160,7 +160,7 @@
                             </td>
                             <td>{{ $po->order_date->format('d M Y') }}</td>
                             <td>
-                                <a href="{{ route('admin.purchase-orders.show', $po) }}" class="btn btn-sm btn-info" title="View Details">
+                                <a href="{{ route($routePrefix.'.purchase-orders.show', $po) }}" class="btn btn-sm btn-info" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @if(auth()->user()->hasRole('admin'))
@@ -195,7 +195,7 @@
         <div class="modal fade" id="deleteModal{{ $po->id }}" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form action="{{ route('admin.purchase-orders.destroy', $po) }}" method="POST">
+                    <form action="{{ route($routePrefix.'.purchase-orders.destroy', $po) }}" method="POST">
                         @csrf
                         @method('DELETE')
                         <div class="modal-header bg-danger text-white">

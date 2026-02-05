@@ -8,7 +8,7 @@
         <h2><i class="fas fa-file-upload"></i> Import Tools from CSV</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.tools.index') }}">Tools</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.tools.index') }}">Tools</a></li>
                 <li class="breadcrumb-item active">Import CSV</li>
             </ol>
         </nav>
@@ -21,7 +21,7 @@
                     <h5 class="mb-0"><i class="fas fa-upload"></i> Upload CSV File</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.tools.import') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route($routePrefix.'.tools.import') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="mb-3">
@@ -46,7 +46,7 @@
                             <button type="submit" class="btn btn-success">
                                 <i class="fas fa-file-import"></i> Import Tools
                             </button>
-                            <a href="{{ route('admin.tools.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.tools.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                         </div>

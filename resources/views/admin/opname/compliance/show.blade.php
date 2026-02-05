@@ -11,8 +11,8 @@
                 <h2><i class="fas fa-file-alt"></i> Compliance Report Detail</h2>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('admin.opname.compliance.index') }}">Compliance Report</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.opname.compliance.index') }}">Compliance Report</a></li>
                         <li class="breadcrumb-item active">{{ $schedule->schedule_code }}</li>
                     </ol>
                 </nav>
@@ -229,7 +229,7 @@
 
     <!-- Back Button -->
     <div class="mt-4">
-        <a href="{{ route('admin.opname.compliance.index') }}" class="btn btn-secondary">
+        <a href="{{ route($routePrefix.'.opname.compliance.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Back to Compliance Report List
         </a>
     </div>

@@ -11,10 +11,10 @@
             <p class="text-muted mb-0">{!! $helpArticle->category_badge !!}</p>
         </div>
         <div>
-            <a href="{{ route('admin.help-articles.edit', $helpArticle) }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'.help-articles.edit', $helpArticle) }}" class="btn btn-primary">
                 <i class="fas fa-edit"></i> Edit Article
             </a>
-            <a href="{{ route('admin.help-articles.index') }}" class="btn btn-secondary">
+            <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
         </div>
@@ -85,11 +85,11 @@
                            target="_blank">
                             <i class="fas fa-external-link-alt"></i> View as User
                         </a>
-                        <a href="{{ route('admin.help-articles.edit', $helpArticle) }}"
+                        <a href="{{ route($routePrefix.'.help-articles.edit', $helpArticle) }}"
                            class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-edit"></i> Edit Article
                         </a>
-                        <form action="{{ route('admin.help-articles.toggle-publish', $helpArticle) }}"
+                        <form action="{{ route($routePrefix.'.help-articles.toggle-publish', $helpArticle) }}"
                               method="POST">
                             @csrf
                             @method('PATCH')
@@ -98,7 +98,7 @@
                                 {{ $helpArticle->is_published ? 'Unpublish' : 'Publish' }}
                             </button>
                         </form>
-                        <form action="{{ route('admin.help-articles.destroy', $helpArticle) }}"
+                        <form action="{{ route($routePrefix.'.help-articles.destroy', $helpArticle) }}"
                               method="POST"
                               onsubmit="return confirm('Are you sure you want to delete this article permanently?')">
                             @csrf

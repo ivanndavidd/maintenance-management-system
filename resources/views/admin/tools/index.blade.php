@@ -8,7 +8,7 @@
         <h2>Tools Management</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
                 <li class="breadcrumb-item active">Tools</li>
             </ol>
         </nav>
@@ -52,7 +52,7 @@
     <!-- Summary Cards -->
     <div class="row mb-3 g-2">
         <div class="col-6 col-md-3">
-            <a href="{{ route('admin.tools.index') }}" class="text-decoration-none">
+            <a href="{{ route($routePrefix.'.tools.index') }}" class="text-decoration-none">
                 <div class="card bg-primary text-white h-100 {{ !request('status') ? 'border-3 border-white' : '' }}" style="cursor: pointer;">
                     <div class="card-body text-center p-3">
                         <i class="fas fa-tools fa-3x mb-2"></i>
@@ -63,7 +63,7 @@
             </a>
         </div>
         <div class="col-6 col-md-3">
-            <a href="{{ route('admin.tools.index', ['status' => 'in_stock']) }}" class="text-decoration-none">
+            <a href="{{ route($routePrefix.'.tools.index', ['status' => 'in_stock']) }}" class="text-decoration-none">
                 <div class="card bg-success text-white h-100 {{ request('status') == 'in_stock' ? 'border-3 border-white' : '' }}" style="cursor: pointer;">
                     <div class="card-body text-center p-3">
                         <i class="fas fa-check-circle fa-3x mb-2"></i>
@@ -74,7 +74,7 @@
             </a>
         </div>
         <div class="col-6 col-md-3">
-            <a href="{{ route('admin.tools.index', ['status' => 'low_stock']) }}" class="text-decoration-none">
+            <a href="{{ route($routePrefix.'.tools.index', ['status' => 'low_stock']) }}" class="text-decoration-none">
                 <div class="card bg-warning text-white h-100 {{ request('status') == 'low_stock' ? 'border-3 border-white' : '' }}" style="cursor: pointer;">
                     <div class="card-body text-center p-3">
                         <i class="fas fa-exclamation-triangle fa-3x mb-2"></i>
@@ -85,7 +85,7 @@
             </a>
         </div>
         <div class="col-6 col-md-3">
-            <a href="{{ route('admin.tools.index', ['status' => 'out_of_stock']) }}" class="text-decoration-none">
+            <a href="{{ route($routePrefix.'.tools.index', ['status' => 'out_of_stock']) }}" class="text-decoration-none">
                 <div class="card bg-danger text-white h-100 {{ request('status') == 'out_of_stock' ? 'border-3 border-white' : '' }}" style="cursor: pointer;">
                     <div class="card-body text-center p-3">
                         <i class="fas fa-times-circle fa-3x mb-2"></i>
@@ -102,14 +102,14 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="fas fa-tools"></i> Tools List</h5>
             <div>
-                <a href="{{ route('admin.tools.create') }}" class="btn btn-primary">
+                <a href="{{ route($routePrefix.'.tools.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Add Tool
                 </a>
             </div>
         </div>
         <div class="card-body">
             <!-- Search & Filter -->
-            <form method="GET" action="{{ route('admin.tools.index') }}" class="mb-3">
+            <form method="GET" action="{{ route($routePrefix.'.tools.index') }}" class="mb-3">
                 <!-- Preserve status filter -->
                 @if(request('status'))
                     <input type="hidden" name="status" value="{{ request('status') }}">
@@ -143,19 +143,19 @@
                         @if(request('status'))
                             <span class="badge bg-info">
                                 Status: {{ ucwords(str_replace('_', ' ', request('status'))) }}
-                                <a href="{{ route('admin.tools.index', array_filter(request()->except('status'))) }}" class="text-white ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.tools.index', array_filter(request()->except('status'))) }}" class="text-white ms-1">×</a>
                             </span>
                         @endif
                         @if(request('search'))
                             <span class="badge bg-info">
                                 Search: "{{ request('search') }}"
-                                <a href="{{ route('admin.tools.index', array_filter(request()->except('search'))) }}" class="text-white ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.tools.index', array_filter(request()->except('search'))) }}" class="text-white ms-1">×</a>
                             </span>
                         @endif
                         @if(request('location'))
                             <span class="badge bg-info">
                                 Location: {{ request('location') }}
-                                <a href="{{ route('admin.tools.index', array_filter(request()->except('location'))) }}" class="text-white ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.tools.index', array_filter(request()->except('location'))) }}" class="text-white ms-1">×</a>
                             </span>
                         @endif
                     </div>
@@ -207,13 +207,13 @@
                             <td>{{ $tool->location ?? '-' }}</td>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('admin.tools.show', $tool) }}" class="btn btn-sm btn-info" title="View">
+                                    <a href="{{ route($routePrefix.'.tools.show', $tool) }}" class="btn btn-sm btn-info" title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('admin.tools.edit', $tool) }}" class="btn btn-sm btn-warning" title="Edit">
+                                    <a href="{{ route($routePrefix.'.tools.edit', $tool) }}" class="btn btn-sm btn-warning" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('admin.tools.destroy', $tool) }}" method="POST" class="d-inline"
+                                    <form action="{{ route($routePrefix.'.tools.destroy', $tool) }}" method="POST" class="d-inline"
                                         onsubmit="return confirm('Are you sure you want to delete this tool?')">
                                         @csrf
                                         @method('DELETE')

@@ -9,8 +9,8 @@
         <h2><i class="fas fa-user-edit"></i> Edit User</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}">Users</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.users.index') }}">Users</a></li>
                 <li class="breadcrumb-item active">Edit: {{ $user->name }}</li>
             </ol>
         </nav>
@@ -26,7 +26,7 @@
                     <h5 class="mb-0"><i class="fas fa-user"></i> Edit User Information</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.users.update', $user) }}">
+                    <form method="POST" action="{{ route($routePrefix.'.users.update', $user) }}">
                         @csrf
                         @method('PUT')
 
@@ -190,7 +190,7 @@
 
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.users.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-warning text-dark">
@@ -235,12 +235,12 @@
                     <h6 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h6>
                 </div>
                 <div class="card-body">
-                    <a href="{{ route('admin.users.show', $user) }}" class="btn btn-info btn-sm w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.users.show', $user) }}" class="btn btn-info btn-sm w-100 mb-2">
                         <i class="fas fa-eye"></i> View Full Profile
                     </a>
                     
                     @if($user->id !== auth()->id() && !false)
-                        <form action="{{ route('admin.users.toggle-status', $user) }}" method="POST" class="mb-2">
+                        <form action="{{ route($routePrefix.'.users.toggle-status', $user) }}" method="POST" class="mb-2">
                             @csrf
                             @method('PATCH')
                             <button type="submit" 
@@ -258,7 +258,7 @@
                             <i class="fas fa-key"></i> Reset Password
                         </button>
                         
-                        <form action="{{ route('admin.users.destroy', $user) }}" method="POST">
+                        <form action="{{ route($routePrefix.'.users.destroy', $user) }}" method="POST">
                             @csrf
                             @method('DELETE')
                             <button type="submit" 
@@ -299,7 +299,7 @@
 <div class="modal fade" id="resetPasswordModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.users.reset-password', $user) }}" method="POST">
+            <form action="{{ route($routePrefix.'.users.reset-password', $user) }}" method="POST">
                 @csrf
                 <div class="modal-header bg-warning text-dark">
                     <h5 class="modal-title"><i class="fas fa-key"></i> Reset Password</h5>

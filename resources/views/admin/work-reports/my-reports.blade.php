@@ -10,17 +10,17 @@
             <h2><i class="fas fa-user-edit"></i> My Work Reports</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.work-reports.index') }}">Work Reports</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.work-reports.index') }}">Work Reports</a></li>
                     <li class="breadcrumb-item active">My Reports</li>
                 </ol>
             </nav>
         </div>
         <div>
-            <a href="{{ route('admin.work-reports.index') }}" class="btn btn-secondary">
+            <a href="{{ route($routePrefix.'.work-reports.index') }}" class="btn btn-secondary">
                 <i class="fas fa-list"></i> All Reports
             </a>
-            <a href="{{ route('admin.work-reports.create') }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'.work-reports.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Submit New Report
             </a>
         </div>
@@ -30,7 +30,7 @@
     <!-- Quick Filter -->
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.work-reports.my-reports') }}">
+            <form method="GET" action="{{ route($routePrefix.'.work-reports.my-reports') }}">
                 <div class="row g-3 align-items-end">
                     <div class="col-md-3">
                         <label class="form-label">Filter by Status</label>
@@ -47,7 +47,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-filter"></i> Apply Filter
                         </button>
-                        <a href="{{ route('admin.work-reports.my-reports') }}" class="btn btn-secondary">
+                        <a href="{{ route($routePrefix.'.work-reports.my-reports') }}" class="btn btn-secondary">
                             <i class="fas fa-redo"></i> Reset
                         </a>
                     </div>
@@ -195,14 +195,14 @@
                             </td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('admin.work-reports.show', $report) }}" 
+                                    <a href="{{ route($routePrefix.'.work-reports.show', $report) }}" 
                                        class="btn btn-sm btn-info" 
                                        title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     
                                     @if(in_array($report->status, ['draft', 'pending']))
-                                    <a href="{{ route('admin.work-reports.edit', $report) }}" 
+                                    <a href="{{ route($routePrefix.'.work-reports.edit', $report) }}" 
                                        class="btn btn-sm btn-warning" 
                                        title="Edit">
                                         <i class="fas fa-edit"></i>
@@ -210,7 +210,7 @@
                                     @endif
                                     
                                     @if($report->status === 'draft')
-                                    <form action="{{ route('admin.work-reports.destroy', $report) }}" 
+                                    <form action="{{ route($routePrefix.'.work-reports.destroy', $report) }}" 
                                           method="POST" 
                                           onsubmit="return confirm('Are you sure you want to delete this draft report?')"
                                           style="display: inline;">
@@ -229,7 +229,7 @@
                             <td colspan="8" class="text-center py-4">
                                 <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
                                 <p class="text-muted mb-2">You haven't submitted any work reports yet</p>
-                                <a href="{{ route('admin.work-reports.create') }}" class="btn btn-primary">
+                                <a href="{{ route($routePrefix.'.work-reports.create') }}" class="btn btn-primary">
                                     <i class="fas fa-plus"></i> Submit Your First Report
                                 </a>
                             </td>

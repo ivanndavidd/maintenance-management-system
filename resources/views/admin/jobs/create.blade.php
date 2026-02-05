@@ -9,8 +9,8 @@
         <h2><i class="fas fa-plus-circle"></i> Create Maintenance Job</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.jobs.index') }}">Maintenance Jobs</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.jobs.index') }}">Maintenance Jobs</a></li>
                 <li class="breadcrumb-item active">Create</li>
             </ol>
         </nav>
@@ -23,7 +23,7 @@
                     <h5 class="mb-0"><i class="fas fa-tasks"></i> Job Information</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.jobs.store') }}">
+                    <form method="POST" action="{{ route($routePrefix.'.jobs.store') }}">
                         @csrf
 
                         <!-- Basic Information -->
@@ -362,7 +362,7 @@
 
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.jobs.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.jobs.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary">

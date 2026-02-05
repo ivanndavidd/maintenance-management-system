@@ -81,7 +81,7 @@
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
-            <form action="{{ route('admin.corrective-maintenance.index') }}" method="GET" class="row g-3">
+            <form action="{{ route($routePrefix . '.corrective-maintenance.index') }}" method="GET" class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label">Search</label>
                     <input type="text" name="search" class="form-control" placeholder="Ticket, name, email, location..." value="{{ request('search') }}">
@@ -150,7 +150,7 @@
                         {{-- Parent Ticket Row --}}
                         <tr @if($ticket->childTickets->count() > 0) class="parent-has-child" @endif>
                             <td>
-                                <a href="{{ route('admin.corrective-maintenance.show', $ticket) }}" class="fw-bold text-decoration-none">
+                                <a href="{{ route($routePrefix . '.corrective-maintenance.show', $ticket) }}" class="fw-bold text-decoration-none">
                                     {{ $ticket->ticket_number }}
                                 </a>
                                 @if($ticket->childTickets->count() > 0)
@@ -193,7 +193,7 @@
                                 <small class="text-muted">{{ $ticket->created_at->format('H:i') }}</small>
                             </td>
                             <td>
-                                <a href="{{ route('admin.corrective-maintenance.show', $ticket) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route($routePrefix . '.corrective-maintenance.show', $ticket) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i> View
                                 </a>
                             </td>
@@ -203,7 +203,7 @@
                         <tr class="child-ticket">
                             <td>
                                 <span class="text-muted ms-3"><i class="fas fa-level-up-alt fa-rotate-90 me-2"></i></span>
-                                <a href="{{ route('admin.corrective-maintenance.show', $childTicket) }}" class="text-decoration-none">
+                                <a href="{{ route($routePrefix . '.corrective-maintenance.show', $childTicket) }}" class="text-decoration-none">
                                     {{ $childTicket->ticket_number }}
                                 </a>
                             </td>
@@ -241,7 +241,7 @@
                                 <small class="text-muted">{{ $childTicket->created_at->format('H:i') }}</small>
                             </td>
                             <td>
-                                <a href="{{ route('admin.corrective-maintenance.show', $childTicket) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route($routePrefix . '.corrective-maintenance.show', $childTicket) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i> View
                                 </a>
                             </td>

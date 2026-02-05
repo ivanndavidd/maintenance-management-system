@@ -80,7 +80,7 @@
             </div>
 
             <p style="text-align: center; margin: 25px 0;">
-                <a href="{{ route('admin.opname.schedules.show', $schedule->id) }}" class="btn">
+                <a href="{{ route($routePrefix.'.opname.schedules.show', $schedule->id) }}" class="btn">
                     Review & Approve Items
                 </a>
             </p>

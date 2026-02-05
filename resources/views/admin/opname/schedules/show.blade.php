@@ -24,7 +24,7 @@
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h2><i class="fas fa-calendar-check"></i> Schedule Details</h2>
             <div class="btn-group">
-                <a href="{{ route('admin.opname.schedules.export', $schedule) }}" class="btn btn-success" id="exportBtn"  onclick="handleExport(event)">
+                <a href="{{ route($routePrefix.'.opname.schedules.export', $schedule) }}" class="btn btn-success" id="exportBtn"  onclick="handleExport(event)">
                     <i class="fas fa-file-excel"></i> Export to Excel
                 </a>
                 @if($schedule->canBeClosed())
@@ -32,7 +32,7 @@
                         <i class="fas fa-check-circle"></i> Close Ticket
                     </button>
                 @elseif($schedule->ticket_status === 'closed')
-                    <a href="{{ route('admin.opname.compliance.show', $schedule) }}" class="btn btn-info">
+                    <a href="{{ route($routePrefix.'.opname.compliance.show', $schedule) }}" class="btn btn-info">
                         <i class="fas fa-file-alt"></i> View Compliance Report
                     </a>
                 @endif
@@ -40,7 +40,7 @@
         </div>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.opname.schedules.index') }}">Schedules</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.opname.schedules.index') }}">Schedules</a></li>
                 <li class="breadcrumb-item active">{{ $schedule->schedule_code }}</li>
             </ol>
         </nav>
@@ -402,7 +402,7 @@
                 </div>
                 <div class="card-body">
                     {{-- Filter Form --}}
-                    <form method="GET" action="{{ route('admin.opname.schedules.show', $schedule) }}" class="mb-3">
+                    <form method="GET" action="{{ route($routePrefix.'.opname.schedules.show', $schedule) }}" class="mb-3">
                         <div class="row g-3">
                             <div class="col-md-3">
                                 <label class="form-label">Search</label>
@@ -441,7 +441,7 @@
                                 <button type="submit" class="btn btn-primary btn-sm me-2">
                                     <i class="fas fa-filter"></i> Filter
                                 </button>
-                                <a href="{{ route('admin.opname.schedules.show', $schedule) }}" class="btn btn-secondary btn-sm">
+                                <a href="{{ route($routePrefix.'.opname.schedules.show', $schedule) }}" class="btn btn-secondary btn-sm">
                                     <i class="fas fa-redo"></i> Reset
                                 </a>
                             </div>
@@ -473,7 +473,7 @@
                                 <strong>Stock Sync Status:</strong>
                                 {{ $syncedCount }} synced, {{ $pendingSyncCount }} pending sync
                                 @if($syncedCount > 0)
-                                    | <a href="{{ route('admin.adjustments.index') }}" target="_blank" class="alert-link">View Adjustments <i class="fas fa-external-link-alt"></i></a>
+                                    | <a href="{{ route($routePrefix.'.adjustments.index') }}" target="_blank" class="alert-link">View Adjustments <i class="fas fa-external-link-alt"></i></a>
                                 @endif
                             </div>
                             @if($pendingSyncCount > 0)
@@ -586,7 +586,7 @@
                                                     </button>
                                                 </div>
                                             @elseif($scheduleItem->isApproved() && $scheduleItem->hasDiscrepancy() && !$scheduleItem->isSynced())
-                                                <form action="{{ route('admin.opname.items.sync-to-stock', $scheduleItem) }}" method="POST" class="d-inline">
+                                                <form action="{{ route($routePrefix.'.opname.items.sync-to-stock', $scheduleItem) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-primary btn-sm" title="Sync to Stock">
                                                         <i class="fas fa-sync"></i> Sync
@@ -594,7 +594,7 @@
                                                 </form>
                                             @elseif($scheduleItem->isSynced())
                                                 @php $adjustment = $scheduleItem->stockAdjustment(); @endphp
-                                                <a href="{{ route('admin.adjustments.show', $adjustment) }}" class="btn btn-info btn-sm" title="View Adjustment" target="_blank">
+                                                <a href="{{ route($routePrefix.'.adjustments.show', $adjustment) }}" class="btn btn-info btn-sm" title="View Adjustment" target="_blank">
                                                     <i class="fas fa-external-link-alt"></i>
                                                 </a>
                                             @elseif($scheduleItem->isReviewed())
@@ -645,11 +645,11 @@
                 </div>
                 <div class="card-body">
                     @if($schedule->ticket_status !== 'closed')
-                        <a href="{{ route('admin.opname.schedules.edit', $schedule) }}" class="btn btn-warning w-100 mb-2">
+                        <a href="{{ route($routePrefix.'.opname.schedules.edit', $schedule) }}" class="btn btn-warning w-100 mb-2">
                             <i class="fas fa-edit"></i> Edit Schedule
                         </a>
                     @endif
-                    <a href="{{ route('admin.opname.schedules.index') }}" class="btn btn-secondary w-100">
+                    <a href="{{ route($routePrefix.'.opname.schedules.index') }}" class="btn btn-secondary w-100">
                         <i class="fas fa-arrow-left"></i> Back to List
                     </a>
                 </div>
@@ -713,7 +713,7 @@
         <div class="modal fade" id="approveModal{{ $item->id }}" tabindex="-1" data-bs-backdrop="false">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form action="{{ route('admin.opname.items.approve', $item) }}" method="POST" data-no-loading="true">
+                    <form action="{{ route($routePrefix.'.opname.items.approve', $item) }}" method="POST" data-no-loading="true">
                         @csrf
                         <div class="modal-header bg-success text-white">
                             <h5 class="modal-title"><i class="fas fa-check-circle"></i> Approve Discrepancy</h5>
@@ -756,7 +756,7 @@
         <div class="modal fade" id="rejectModal{{ $item->id }}" tabindex="-1" data-bs-backdrop="false">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form action="{{ route('admin.opname.items.reject', $item) }}" method="POST" data-no-loading="true">
+                    <form action="{{ route($routePrefix.'.opname.items.reject', $item) }}" method="POST" data-no-loading="true">
                         @csrf
                         <div class="modal-header bg-danger text-white">
                             <h5 class="modal-title"><i class="fas fa-times-circle"></i> Reject Discrepancy</h5>
@@ -813,7 +813,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('admin.opname.schedules.sync-to-stock', $schedule) }}" method="POST">
+            <form action="{{ route($routePrefix.'.opname.schedules.sync-to-stock', $schedule) }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="alert alert-warning">
@@ -864,7 +864,7 @@
 <div class="modal fade" id="closeTicketModal" tabindex="-1" data-bs-backdrop="false">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.opname.schedules.close-ticket', $schedule) }}" method="POST" data-no-loading="true">
+            <form action="{{ route($routePrefix.'.opname.schedules.close-ticket', $schedule) }}" method="POST" data-no-loading="true">
                 @csrf
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">

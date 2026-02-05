@@ -8,7 +8,7 @@
         <h2>Stock Adjustments - Spareparts</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.spareparts.index') }}">Spareparts</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'Prefix.'.spareparts.index') }}">Spareparts</a></li>
                 <li class="breadcrumb-item active">Stock Adjustments</li>
             </ol>
         </nav>
@@ -17,7 +17,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Adjustment History</h5>
-            <a href="{{ route('admin.spareparts.adjustments.create') }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'Prefix.'.spareparts.adjustments.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Create Adjustment
             </a>
         </div>

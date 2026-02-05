@@ -8,7 +8,7 @@
         <h2>Assets Management</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
                 <li class="breadcrumb-item active">Assets</li>
             </ol>
         </nav>
@@ -31,17 +31,17 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Master Data Assets</h5>
             <div class="btn-group">
-                <a href="{{ route('admin.assets.import') }}" class="btn btn-success">
+                <a href="{{ route($routePrefix.'.assets.import') }}" class="btn btn-success">
                     <i class="fas fa-file-excel"></i> Import Excel
                 </a>
-                <a href="{{ route('admin.assets.create') }}" class="btn btn-primary">
+                <a href="{{ route($routePrefix.'.assets.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Add New Asset
                 </a>
             </div>
         </div>
         <div class="card-body">
             <!-- Filter Section -->
-            <form method="GET" action="{{ route('admin.assets.index') }}">
+            <form method="GET" action="{{ route($routePrefix.'.assets.index') }}">
                 <div class="row mb-3 g-2">
                     <div class="col-12 col-md-4">
                         <input type="text" name="search" class="form-control form-control-sm" placeholder="Search Equipment ID, Name..." value="{{ request('search') }}">
@@ -91,28 +91,28 @@
                         @if(request('search'))
                             <span class="badge bg-info">
                                 Search: {{ request('search') }}
-                                <a href="{{ route('admin.assets.index', array_filter(request()->except('search'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.assets.index', array_filter(request()->except('search'))) }}" class="text-white text-decoration-none ms-1">×</a>
                             </span>
                         @endif
                         @if(request('equipment_type'))
                             <span class="badge bg-info">
                                 Type: {{ ucfirst(request('equipment_type')) }}
-                                <a href="{{ route('admin.assets.index', array_filter(request()->except('equipment_type'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.assets.index', array_filter(request()->except('equipment_type'))) }}" class="text-white text-decoration-none ms-1">×</a>
                             </span>
                         @endif
                         @if(request('location'))
                             <span class="badge bg-info">
                                 Location: {{ request('location') }}
-                                <a href="{{ route('admin.assets.index', array_filter(request()->except('location'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.assets.index', array_filter(request()->except('location'))) }}" class="text-white text-decoration-none ms-1">×</a>
                             </span>
                         @endif
                         @if(request('status'))
                             <span class="badge bg-info">
                                 Status: {{ ucfirst(request('status')) }}
-                                <a href="{{ route('admin.assets.index', array_filter(request()->except('status'))) }}" class="text-white text-decoration-none ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.assets.index', array_filter(request()->except('status'))) }}" class="text-white text-decoration-none ms-1">×</a>
                             </span>
                         @endif
-                        <a href="{{ route('admin.assets.index') }}" class="badge bg-secondary text-decoration-none">
+                        <a href="{{ route($routePrefix.'.assets.index') }}" class="badge bg-secondary text-decoration-none">
                             Clear All
                         </a>
                     </div>
@@ -151,13 +151,13 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route('admin.assets.show', $asset) }}" class="btn btn-sm btn-info" title="View">
+                                    <a href="{{ route($routePrefix.'.assets.show', $asset) }}" class="btn btn-sm btn-info" title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('admin.assets.edit', $asset) }}" class="btn btn-sm btn-warning" title="Edit">
+                                    <a href="{{ route($routePrefix.'.assets.edit', $asset) }}" class="btn btn-sm btn-warning" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('admin.assets.destroy', $asset) }}" method="POST" class="d-inline"
+                                    <form action="{{ route($routePrefix.'.assets.destroy', $asset) }}" method="POST" class="d-inline"
                                         onsubmit="return confirm('Are you sure you want to delete this asset?')">
                                         @csrf
                                         @method('DELETE')

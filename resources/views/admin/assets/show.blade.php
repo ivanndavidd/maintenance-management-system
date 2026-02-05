@@ -8,8 +8,8 @@
         <h2>Asset Details</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.assets.index') }}">Assets</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.assets.index') }}">Assets</a></li>
                 <li class="breadcrumb-item active">{{ $asset->asset_name }}</li>
             </ol>
         </nav>
@@ -19,10 +19,10 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Asset Information</h5>
             <div class="btn-group">
-                <a href="{{ route('admin.assets.edit', $asset) }}" class="btn btn-warning btn-sm">
+                <a href="{{ route($routePrefix.'.assets.edit', $asset) }}" class="btn btn-warning btn-sm">
                     <i class="fas fa-edit"></i> Edit
                 </a>
-                <form action="{{ route('admin.assets.destroy', $asset) }}" method="POST" class="d-inline"
+                <form action="{{ route($routePrefix.'.assets.destroy', $asset) }}" method="POST" class="d-inline"
                     onsubmit="return confirm('Are you sure you want to delete this asset?')">
                     @csrf
                     @method('DELETE')
@@ -108,7 +108,7 @@
             </div>
 
             <div class="mt-3">
-                <a href="{{ route('admin.assets.index') }}" class="btn btn-secondary">
+                <a href="{{ route($routePrefix.'.assets.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back to List
                 </a>
             </div>

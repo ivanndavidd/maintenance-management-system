@@ -31,7 +31,7 @@
                 </div>
                 <div class="col-md-3 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary me-2"><i class="fas fa-filter me-1"></i>Filter</button>
-                    <a href="{{ route('admin.corrective-maintenance.reports') }}" class="btn btn-secondary">Reset</a>
+                    <a href="{{ route($routePrefix.'.corrective-maintenance.reports') }}" class="btn btn-secondary">Reset</a>
                 </div>
             </form>
         </div>
@@ -76,7 +76,7 @@
                             <td>{{ $report->submitted_at?->format('d M Y, H:i') }}</td>
                             <td>
                                 @if($report->cmRequest)
-                                <a href="{{ route('admin.corrective-maintenance.show', $report->cmRequest) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route($routePrefix.'.corrective-maintenance.show', $report->cmRequest) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @endif

@@ -512,7 +512,7 @@
  </a>
 
  @if(auth()->user()->hasRole('admin'))
- <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+ <a href="{{ route($routePrefix.'.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
  <i class="fas fa-users"></i><span class="menu-text"> User Management</span>
  </a>
  @elseif(auth()->user()->hasRole('supervisor_maintenance'))

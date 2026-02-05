@@ -8,7 +8,7 @@
         <h2>Stock Opname Compliance Report</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.opname.dashboard') }}">Opname Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.opname.dashboard') }}">Opname Dashboard</a></li>
                 <li class="breadcrumb-item active">Compliance Report</li>
             </ol>
         </nav>
@@ -76,7 +76,7 @@
         </div>
         <div class="card-body">
             <!-- Filter Section -->
-            <form method="GET" action="{{ route('admin.opname.reports.compliance') }}" class="mb-4">
+            <form method="GET" action="{{ route($routePrefix.'.opname.reports.compliance') }}" class="mb-4">
                 <div class="row">
                     <div class="col-md-2">
                         <label class="form-label">Item Type</label>
@@ -111,7 +111,7 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">&nbsp;</label>
-                        <a href="{{ route('admin.opname.reports.compliance') }}" class="btn btn-secondary w-100">
+                        <a href="{{ route($routePrefix.'.opname.reports.compliance') }}" class="btn btn-secondary w-100">
                             <i class="fas fa-redo"></i> Reset
                         </a>
                     </div>
@@ -126,25 +126,25 @@
                         @if(request('item_type'))
                             <span class="badge bg-info">
                                 Type: {{ ucfirst(request('item_type')) }}
-                                <a href="{{ route('admin.opname.reports.compliance', array_filter(request()->except('item_type'))) }}" class="text-white ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.opname.reports.compliance', array_filter(request()->except('item_type'))) }}" class="text-white ms-1">×</a>
                             </span>
                         @endif
                         @if(request('status'))
                             <span class="badge bg-info">
                                 Status: {{ ucwords(str_replace('_', ' ', request('status'))) }}
-                                <a href="{{ route('admin.opname.reports.compliance', array_filter(request()->except('status'))) }}" class="text-white ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.opname.reports.compliance', array_filter(request()->except('status'))) }}" class="text-white ms-1">×</a>
                             </span>
                         @endif
                         @if(request('date_from'))
                             <span class="badge bg-info">
                                 From: {{ request('date_from') }}
-                                <a href="{{ route('admin.opname.reports.compliance', array_filter(request()->except('date_from'))) }}" class="text-white ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.opname.reports.compliance', array_filter(request()->except('date_from'))) }}" class="text-white ms-1">×</a>
                             </span>
                         @endif
                         @if(request('date_to'))
                             <span class="badge bg-info">
                                 To: {{ request('date_to') }}
-                                <a href="{{ route('admin.opname.reports.compliance', array_filter(request()->except('date_to'))) }}" class="text-white ms-1">×</a>
+                                <a href="{{ route($routePrefix.'.opname.reports.compliance', array_filter(request()->except('date_to'))) }}" class="text-white ms-1">×</a>
                             </span>
                         @endif
                     </div>
@@ -189,7 +189,7 @@
                             </td>
                             <td>
                                 @if($execution->schedule)
-                                    <a href="{{ route('admin.opname.schedules.show', $execution->schedule) }}">
+                                    <a href="{{ route($routePrefix.'.opname.schedules.show', $execution->schedule) }}">
                                         {{ $execution->schedule->schedule_code }}
                                     </a>
                                 @else
@@ -226,7 +226,7 @@
                             </td>
                             <td>{{ $execution->executedByUser->name }}</td>
                             <td>
-                                <a href="{{ route('admin.opname.executions.show', $execution) }}" class="btn btn-sm btn-info">
+                                <a href="{{ route($routePrefix.'.opname.executions.show', $execution) }}" class="btn btn-sm btn-info">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </td>

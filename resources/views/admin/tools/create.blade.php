@@ -22,8 +22,8 @@
         <h2>Add New Tool</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.tools.index') }}">Tools</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.tools.index') }}">Tools</a></li>
                 <li class="breadcrumb-item active">Add New</li>
             </ol>
         </nav>
@@ -36,7 +36,7 @@
                     <h5 class="mb-0"><i class="fas fa-plus"></i> Tool Information</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.tools.store') }}" method="POST">
+                    <form action="{{ route($routePrefix.'.tools.store') }}" method="POST">
                         @csrf
 
                         <div class="row mb-3">
@@ -173,7 +173,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.tools.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.tools.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Back
                             </a>
                             <button type="submit" class="btn btn-primary">
@@ -238,7 +238,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('admin.tools.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
+            <form action="{{ route($routePrefix.'.tools.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
                 @csrf
                 <div class="modal-body">
                     <div class="alert alert-info">

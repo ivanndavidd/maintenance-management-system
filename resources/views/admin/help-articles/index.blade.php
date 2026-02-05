@@ -10,7 +10,7 @@
             <h2><i class="fas fa-question-circle"></i> Help Articles Management</h2>
             <p class="text-muted mb-0">Manage FAQ, SOP, Tutorials, and Documentation</p>
         </div>
-        <a href="{{ route('admin.help-articles.create') }}" class="btn btn-primary">
+        <a href="{{ route($routePrefix.'.help-articles.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Create New Article
         </a>
     </div>
@@ -18,7 +18,7 @@
     <!-- Search and Filter -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form action="{{ route('admin.help-articles.index') }}" method="GET">
+            <form action="{{ route($routePrefix.'.help-articles.index') }}" method="GET">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="input-group">
@@ -138,12 +138,12 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('admin.help-articles.edit', $article) }}"
+                                        <a href="{{ route($routePrefix.'.help-articles.edit', $article) }}"
                                            class="btn btn-sm btn-warning"
                                            title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('admin.help-articles.toggle-publish', $article) }}"
+                                        <form action="{{ route($routePrefix.'.help-articles.toggle-publish', $article) }}"
                                               method="POST"
                                               class="d-inline">
                                             @csrf
@@ -154,7 +154,7 @@
                                                 <i class="fas {{ $article->is_published ? 'fa-eye-slash' : 'fa-eye' }}"></i>
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.help-articles.destroy', $article) }}"
+                                        <form action="{{ route($routePrefix.'.help-articles.destroy', $article) }}"
                                               method="POST"
                                               class="d-inline"
                                               onsubmit="return confirm('Are you sure you want to delete this article?')">
@@ -188,11 +188,11 @@
                         @endif
                     </p>
                     @if($search || $category)
-                        <a href="{{ route('admin.help-articles.index') }}" class="btn btn-primary">
+                        <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-primary">
                             Clear Filters
                         </a>
                     @else
-                        <a href="{{ route('admin.help-articles.create') }}" class="btn btn-primary">
+                        <a href="{{ route($routePrefix.'.help-articles.create') }}" class="btn btn-primary">
                             <i class="fas fa-plus"></i> Create New Article
                         </a>
                     @endif

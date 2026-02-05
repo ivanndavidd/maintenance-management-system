@@ -9,8 +9,8 @@
         <h2><i class="fas fa-user-plus"></i> Add New User</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}">Users</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.users.index') }}">Users</a></li>
                 <li class="breadcrumb-item active">Create</li>
             </ol>
         </nav>
@@ -23,7 +23,7 @@
                     <h5 class="mb-0"><i class="fas fa-user"></i> User Information</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.users.store') }}">
+                    <form method="POST" action="{{ route($routePrefix.'.users.store') }}">
                         @csrf
 
                         <!-- Personal Information -->
@@ -184,7 +184,7 @@
 
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.users.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary">

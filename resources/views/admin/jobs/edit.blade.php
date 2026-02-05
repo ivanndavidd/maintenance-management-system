@@ -9,8 +9,8 @@
         <h2><i class="fas fa-edit"></i> Edit Maintenance Job</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.jobs.index') }}">Maintenance Jobs</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.jobs.index') }}">Maintenance Jobs</a></li>
                 <li class="breadcrumb-item active">Edit: {{ $job->job_code }}</li>
             </ol>
         </nav>
@@ -24,7 +24,7 @@
                     <h5 class="mb-0"><i class="fas fa-tasks"></i> Edit Job Information</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.jobs.update', $job) }}">
+                    <form method="POST" action="{{ route($routePrefix.'.jobs.update', $job) }}">
                         @csrf
                         @method('PUT')
 
@@ -300,7 +300,7 @@
 
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.jobs.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.jobs.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-warning text-dark">
@@ -355,7 +355,7 @@
                     <h6 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h6>
                 </div>
                 <div class="card-body">
-                    <a href="{{ route('admin.jobs.show', $job) }}" class="btn btn-info btn-sm w-100 mb-2">
+                    <a href="{{ route($routePrefix.'.jobs.show', $job) }}" class="btn btn-info btn-sm w-100 mb-2">
                         <i class="fas fa-eye"></i> View Full Details
                     </a>
                     
@@ -366,7 +366,7 @@
                         <i class="fas fa-exchange-alt"></i> Quick Status Change
                     </button>
                     
-                    <form action="{{ route('admin.jobs.destroy', $job) }}" method="POST">
+                    <form action="{{ route($routePrefix.'.jobs.destroy', $job) }}" method="POST">
                         @csrf
                         @method('DELETE')
                         <button type="submit" 
@@ -401,7 +401,7 @@
 <div class="modal fade" id="statusModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('admin.jobs.update-status', $job) }}" method="POST">
+            <form action="{{ route($routePrefix.'.jobs.update-status', $job) }}" method="POST">
                 @csrf
                 @method('PATCH')
                 <div class="modal-header bg-warning text-dark">

@@ -8,8 +8,8 @@
         <h2><i class="fas fa-calendar-edit"></i> Edit Stock Opname Schedule</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.opname.schedules.index') }}">Schedules</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('admin.opname.schedules.show', $schedule) }}">{{ $schedule->schedule_code }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.opname.schedules.index') }}">Schedules</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.opname.schedules.show', $schedule) }}">{{ $schedule->schedule_code }}</a></li>
                 <li class="breadcrumb-item active">Edit</li>
             </ol>
         </nav>
@@ -22,7 +22,7 @@
                     <h5 class="mb-0"><i class="fas fa-calendar-check"></i> Schedule Information</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.opname.schedules.update', $schedule) }}" method="POST" id="scheduleForm">
+                    <form action="{{ route($routePrefix.'.opname.schedules.update', $schedule) }}" method="POST" id="scheduleForm">
                         @csrf
                         @method('PUT')
 
@@ -205,7 +205,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Update Schedule
                             </button>
-                            <a href="{{ route('admin.opname.schedules.show', $schedule) }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.opname.schedules.show', $schedule) }}" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> Cancel
                             </a>
                         </div>
