@@ -13,18 +13,25 @@ use Spatie\Permission\Models\Role;
 class UserController extends Controller
 {
     /**
-     * Allowed roles that supervisor can manage
+     * Allowed roles that supervisor can manage (edit/delete)
      */
     protected array $allowedRoles = ['supervisor_maintenance', 'staff_maintenance'];
 
     /**
-     * Display a listing of users (only supervisor_maintenance and staff_maintenance)
+     * Roles that can be viewed but not edited by supervisor
+     */
+    protected array $viewOnlyRoles = ['admin'];
+
+    /**
+     * Display a listing of users (supervisor_maintenance, staff_maintenance, and admin - admin view only)
      */
     public function index(Request $request)
     {
+        $allVisibleRoles = array_merge($this->allowedRoles, $this->viewOnlyRoles);
+
         $query = User::with(['roles', 'department'])
-            ->whereHas('roles', function ($q) {
-                $q->whereIn('name', $this->allowedRoles);
+            ->whereHas('roles', function ($q) use ($allVisibleRoles) {
+                $q->whereIn('name', $allVisibleRoles);
             })
             ->orWhereDoesntHave('roles'); // Include users without roles (new registrations)
 
@@ -114,8 +121,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        // Verify user has allowed role or no role
-        if (!$this->canManageUser($user)) {
+        // Verify user has allowed role, view-only role, or no role
+        if (!$this->canViewUser($user)) {
             abort(403, 'You are not authorized to view this user.');
         }
 
@@ -282,7 +289,7 @@ class UserController extends Controller
     }
 
     /**
-     * Check if current supervisor can manage this user
+     * Check if current supervisor can manage (edit/delete) this user
      */
     private function canManageUser(User $user): bool
     {
@@ -292,6 +299,29 @@ class UserController extends Controller
         }
 
         // Can manage users without any role (new registrations)
+        if ($user->roles->isEmpty()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if current supervisor can view this user
+     */
+    private function canViewUser(User $user): bool
+    {
+        // Can view users with allowed roles (manageable)
+        if ($user->hasAnyRole($this->allowedRoles)) {
+            return true;
+        }
+
+        // Can view users with view-only roles (admin)
+        if ($user->hasAnyRole($this->viewOnlyRoles)) {
+            return true;
+        }
+
+        // Can view users without any role (new registrations)
         if ($user->roles->isEmpty()) {
             return true;
         }
