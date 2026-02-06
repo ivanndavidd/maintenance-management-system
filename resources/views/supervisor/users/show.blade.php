@@ -17,9 +17,11 @@
             </nav>
         </div>
         <div>
-            <a href="{{ route('supervisor.users.edit', $user) }}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit User
-            </a>
+            @if(!$user->hasRole('admin'))
+                <a href="{{ route('supervisor.users.edit', $user) }}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit User
+                </a>
+            @endif
             <a href="{{ route('supervisor.users.index') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
@@ -79,7 +81,7 @@
                         </p>
                     </div>
 
-                    @if($user->id !== auth()->id())
+                    @if($user->id !== auth()->id() && !$user->hasRole('admin'))
                     <hr>
                     <div class="d-grid gap-2">
                         <button type="button"

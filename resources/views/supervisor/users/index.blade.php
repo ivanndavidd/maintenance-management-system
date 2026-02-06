@@ -157,46 +157,53 @@
                                 <small class="text-muted">{{ $user->created_at->format('d M Y') }}</small>
                             </td>
                             <td>
+                                @php
+                                    $isAdmin = $user->hasRole('admin');
+                                    $canManage = !$isAdmin && $user->id !== auth()->id();
+                                @endphp
                                 <div class="btn-group" role="group">
                                     <a href="{{ route('supervisor.users.show', $user) }}"
                                        class="btn btn-sm btn-info"
                                        title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('supervisor.users.edit', $user) }}"
-                                       class="btn btn-sm btn-warning"
-                                       title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
 
-                                    @if($user->id !== auth()->id())
-                                        <!-- Toggle Status -->
-                                        <form action="{{ route('supervisor.users.toggle-status', $user) }}"
-                                              method="POST"
-                                              class="d-inline">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-{{ $user->is_active ? 'secondary' : 'success' }}"
-                                                    title="{{ $user->is_active ? 'Deactivate' : 'Activate' }}"
-                                                    onclick="return confirm('Are you sure?')">
-                                                <i class="fas fa-power-off"></i>
-                                            </button>
-                                        </form>
+                                    @if(!$isAdmin)
+                                        <a href="{{ route('supervisor.users.edit', $user) }}"
+                                           class="btn btn-sm btn-warning"
+                                           title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
 
-                                        <!-- Delete -->
-                                        <form action="{{ route('supervisor.users.destroy', $user) }}"
-                                              method="POST"
-                                              class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-danger"
-                                                    title="Delete"
-                                                    onclick="return confirm('Are you sure you want to delete this user?')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        @if($canManage)
+                                            <!-- Toggle Status -->
+                                            <form action="{{ route('supervisor.users.toggle-status', $user) }}"
+                                                  method="POST"
+                                                  class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-{{ $user->is_active ? 'secondary' : 'success' }}"
+                                                        title="{{ $user->is_active ? 'Deactivate' : 'Activate' }}"
+                                                        onclick="return confirm('Are you sure?')">
+                                                    <i class="fas fa-power-off"></i>
+                                                </button>
+                                            </form>
+
+                                            <!-- Delete -->
+                                            <form action="{{ route('supervisor.users.destroy', $user) }}"
+                                                  method="POST"
+                                                  class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-danger"
+                                                        title="Delete"
+                                                        onclick="return confirm('Are you sure you want to delete this user?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
