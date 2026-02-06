@@ -907,21 +907,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Force hide recurring options
         isRecurringCheckbox.checked = false;
+        isRecurringCheckbox.disabled = false; // Re-enable for next use
         recurringOptions.style.display = 'none';
         weeklyOptions.style.display = 'none';
         monthlyOptions.style.display = 'none';
 
-        // Reset all recurring fields to default values
+        // Reset all recurring fields to default values and re-enable them
         document.getElementById('recurrenceInterval').value = '1';
+        document.getElementById('recurrenceInterval').disabled = false;
         document.getElementById('recurrencePattern').value = 'weekly';
+        document.getElementById('recurrencePattern').disabled = false;
         document.getElementById('recurrenceDayOfMonth').value = '0';
+        document.getElementById('recurrenceDayOfMonth').disabled = false;
         document.getElementById('recurrenceStartDate').value = '';
+        document.getElementById('recurrenceStartDate').disabled = false;
         document.getElementById('recurrenceEndDate').value = '';
+        document.getElementById('recurrenceEndDate').disabled = false;
 
-        // Uncheck all weekly days
+        // Uncheck all weekly days and re-enable them
         document.querySelectorAll('input[name="recurrence_days[]"]').forEach(cb => {
             cb.checked = false;
+            cb.disabled = false;
         });
+
+        // Hide recurring edit info text
+        const recurringSection = document.querySelector('.form-check.form-switch');
+        const infoText = recurringSection?.querySelector('.recurring-edit-info');
+        if (infoText) {
+            infoText.style.display = 'none';
+        }
 
         // Reset task fields
         document.getElementById('taskId').value = '';
@@ -1159,6 +1173,10 @@ document.addEventListener('DOMContentLoaded', function() {
         eventForm.reset();
         document.getElementById('isEdit').value = event ? '1' : '0';
 
+        // Get recurring settings elements
+        const recurringSection = document.querySelector('.form-check.form-switch');
+        const recurringLabel = recurringSection.querySelector('.form-check-label');
+
         if (event) {
             // Edit mode
             document.getElementById('modalTitleText').textContent = 'Edit PM Task';
@@ -1176,9 +1194,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('equipmentType').value = event.extendedProps.equipment_type;
             }
 
-            // Load recurring settings if applicable
-            if (event.extendedProps.is_recurring) {
-                isRecurringCheckbox.checked = true;
+            // DISABLE recurring settings in edit mode
+            isRecurringCheckbox.disabled = true;
+            isRecurringCheckbox.checked = event.extendedProps.is_recurring || event.extendedProps.parent_task_id ? true : false;
+
+            // Show recurring options as read-only if it's a recurring task
+            if (event.extendedProps.is_recurring || event.extendedProps.parent_task_id) {
                 recurringOptions.style.display = 'block';
                 document.getElementById('recurrencePattern').value = event.extendedProps.recurrence_pattern || 'weekly';
                 document.getElementById('recurrenceInterval').value = event.extendedProps.recurrence_interval || 1;
@@ -1188,13 +1209,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (event.extendedProps.recurrence_end_date) {
                     document.getElementById('recurrenceEndDate').value = event.extendedProps.recurrence_end_date;
                 }
-                // ... load other recurring fields
+
+                // Disable all recurring option fields
+                document.getElementById('recurrencePattern').disabled = true;
+                document.getElementById('recurrenceInterval').disabled = true;
+                document.getElementById('recurrenceStartDate').disabled = true;
+                document.getElementById('recurrenceEndDate').disabled = true;
+                document.getElementById('recurrenceDayOfMonth').disabled = true;
+                document.querySelectorAll('input[name="recurrence_days[]"]').forEach(cb => {
+                    cb.disabled = true;
+                });
+            } else {
+                recurringOptions.style.display = 'none';
             }
+
+            // Add info text about recurring settings
+            let infoText = recurringSection.querySelector('.recurring-edit-info');
+            if (!infoText) {
+                infoText = document.createElement('small');
+                infoText.className = 'recurring-edit-info text-muted d-block mt-1';
+                infoText.innerHTML = '<i class="fas fa-info-circle me-1"></i>Recurring settings cannot be edited. Delete and create a new task to change recurrence.';
+                recurringSection.appendChild(infoText);
+            }
+            infoText.style.display = 'block';
+
         } else {
             // New mode
             document.getElementById('modalTitleText').textContent = 'New PM Task';
             if (dateStr) {
                 document.getElementById('taskDate').value = dateStr;
+            }
+
+            // Enable recurring settings in new mode
+            isRecurringCheckbox.disabled = false;
+            isRecurringCheckbox.checked = false;
+            recurringOptions.style.display = 'none';
+
+            // Re-enable all recurring option fields
+            document.getElementById('recurrencePattern').disabled = false;
+            document.getElementById('recurrenceInterval').disabled = false;
+            document.getElementById('recurrenceStartDate').disabled = false;
+            document.getElementById('recurrenceEndDate').disabled = false;
+            document.getElementById('recurrenceDayOfMonth').disabled = false;
+            document.querySelectorAll('input[name="recurrence_days[]"]').forEach(cb => {
+                cb.disabled = false;
+            });
+
+            // Hide info text
+            const infoText = recurringSection.querySelector('.recurring-edit-info');
+            if (infoText) {
+                infoText.style.display = 'none';
             }
         }
 
