@@ -10,7 +10,7 @@
                 <h2>Purchase Order: {{ $purchaseOrder->po_number }}</h2>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route($routePrefix.'Prefix.'.purchase-orders.index') }}">Purchase Orders</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route(($routePrefix ?? 'admin').'.purchase-orders.index') }}">Purchase Orders</a></li>
                         <li class="breadcrumb-item active">{{ $purchaseOrder->po_number }}</li>
                     </ol>
                 </nav>
@@ -275,7 +275,7 @@
                     @if(auth()->id() == $purchaseOrder->approver_id)
                         <p class="mb-3"><strong>You can approve or reject this PO:</strong></p>
                         <div class="d-flex gap-2">
-                            <form action="{{ route($routePrefix.'Prefix.'.purchase-orders.approve', $purchaseOrder) }}" method="POST" class="d-inline">
+                            <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.approve', $purchaseOrder) }}" method="POST" class="d-inline">
                                 @csrf
                                 <button type="submit" class="btn btn-success">
                                     <i class="fas fa-check"></i> Approve PO
@@ -304,7 +304,7 @@
                     <h6 class="alert-heading"><i class="fas fa-truck"></i> Ready to Receive Goods</h6>
                     <p class="mb-2">PO has been approved and ordered. Expected delivery: <strong>{{ $purchaseOrder->expected_delivery_date ? $purchaseOrder->expected_delivery_date->format('d M Y') : '-' }}</strong></p>
                     <p class="mb-3">When goods arrive, click the button below to start receiving process:</p>
-                    <a href="{{ route($routePrefix.'Prefix.'.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-primary">
+                    <a href="{{ route(($routePrefix ?? 'admin').'.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-primary">
                         <i class="fas fa-box-open"></i> Receive Goods
                     </a>
                 </div>
@@ -323,7 +323,7 @@
                     <h6 class="alert-heading"><i class="fas fa-box"></i> Partially Received</h6>
                     <p class="mb-2">Received: <strong>{{ $purchaseOrder->items->sum('quantity_received') }} / {{ $purchaseOrder->total_quantity }}</strong> items</p>
                     <p class="mb-3">Continue receiving remaining items:</p>
-                    <a href="{{ route($routePrefix.'Prefix.'.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-warning">
+                    <a href="{{ route(($routePrefix ?? 'admin').'.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-warning">
                         <i class="fas fa-box-open"></i> Continue Receiving
                     </a>
                 </div>
@@ -548,7 +548,7 @@
 
                     @if($purchaseOrder->approval_status === 'pending' && auth()->id() == $purchaseOrder->approver_id)
                         <div class="d-grid gap-2 mt-3">
-                            <form action="{{ route($routePrefix.'Prefix.'.purchase-orders.approve', $purchaseOrder) }}" method="POST">
+                            <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.approve', $purchaseOrder) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn btn-success w-100">
                                     <i class="fas fa-check"></i> Approve
@@ -560,7 +560,7 @@
                         </div>
                     @endif
 
-                    <a href="{{ route($routePrefix.'Prefix.'.purchase-orders.index') }}" class="btn btn-secondary w-100 mt-2">
+                    <a href="{{ route(($routePrefix ?? 'admin').'.purchase-orders.index') }}" class="btn btn-secondary w-100 mt-2">
                         <i class="fas fa-arrow-left"></i> Back to List
                     </a>
 
@@ -669,7 +669,7 @@
 <div class="modal fade" id="rejectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route($routePrefix.'Prefix.'.purchase-orders.reject', $purchaseOrder) }}" method="POST">
+            <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.reject', $purchaseOrder) }}" method="POST">
                 @csrf
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">Reject Purchase Order</h5>
@@ -698,7 +698,7 @@
     <div class="modal fade" id="complianceModal{{ $item->id }}" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route($routePrefix.'Prefix.'.purchase-orders.mark-compliant', [$purchaseOrder, $item]) }}" method="POST">
+                <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.mark-compliant', [$purchaseOrder, $item]) }}" method="POST">
                     @csrf
                     <div class="modal-header bg-success text-white">
                         <h5 class="modal-title">Mark Item as Compliant</h5>
@@ -727,7 +727,7 @@
     <div class="modal fade" id="nonComplianceModal{{ $item->id }}" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route($routePrefix.'Prefix.'.purchase-orders.mark-non-compliant', [$purchaseOrder, $item]) }}" method="POST">
+                <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.mark-non-compliant', [$purchaseOrder, $item]) }}" method="POST">
                     @csrf
                     <div class="modal-header bg-danger text-white">
                         <h5 class="modal-title">Mark Item as Non-Compliant</h5>
@@ -761,7 +761,7 @@
 <div class="modal fade" id="reverseComplianceModal{{ $item->id }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route($routePrefix.'Prefix.'.purchase-orders.reverse-compliance', [$purchaseOrder, $item]) }}" method="POST">
+            <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.reverse-compliance', [$purchaseOrder, $item]) }}" method="POST">
                 @csrf
                 <div class="modal-header bg-warning text-dark">
                     <h5 class="modal-title">Reverse Compliance Status</h5>
@@ -794,7 +794,7 @@
 <div class="modal fade" id="deletePOModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route($routePrefix.'Prefix.'.purchase-orders.destroy', $purchaseOrder) }}" method="POST">
+            <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.destroy', $purchaseOrder) }}" method="POST">
                 @csrf
                 @method('DELETE')
                 <div class="modal-header bg-danger text-white">
@@ -843,7 +843,7 @@
 <div class="modal fade" id="addAllToStockModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route($routePrefix.'Prefix.'.purchase-orders.add-all-to-stock', $purchaseOrder) }}" method="POST" data-loading-text="Adding items to stock...">
+            <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.add-all-to-stock', $purchaseOrder) }}" method="POST" data-loading-text="Adding items to stock...">
                 @csrf
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title"><i class="fas fa-warehouse"></i> Add All to Stock</h5>
@@ -874,7 +874,7 @@
 <div class="modal fade" id="addItemToStockModal{{ $item->id }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route($routePrefix.'Prefix.'.purchase-orders.add-item-to-stock', [$purchaseOrder, $item]) }}" method="POST" data-loading-text="Adding item to stock...">
+            <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.add-item-to-stock', [$purchaseOrder, $item]) }}" method="POST" data-loading-text="Adding item to stock...">
                 @csrf
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title"><i class="fas fa-plus-circle"></i> Add Item to Stock</h5>
@@ -907,7 +907,7 @@
 <div class="modal fade" id="cancelPOModal" tabindex="-1" aria-labelledby="cancelPOModalLabel" aria-hidden="true" data-bs-backdrop="false">
     <div class="modal-dialog">
         <div class="modal-content" style="z-index: 1060;">
-            <form action="{{ route($routePrefix.'Prefix.'.purchase-orders.cancel', $purchaseOrder) }}" method="POST">
+            <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.cancel', $purchaseOrder) }}" method="POST">
                 @csrf
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title"><i class="fas fa-ban"></i> Cancel Purchase Order</h5>
