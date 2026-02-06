@@ -512,6 +512,10 @@
  </a>
 
  @if(auth()->user()->hasRole('admin'))
+ <a href="{{ route('admin.sites.index') }}" class="{{ request()->routeIs('admin.sites.*') ? 'active' : '' }}">
+ <i class="fas fa-building"></i><span class="menu-text"> Site Management</span>
+ </a>
+
  <a href="{{ route($routePrefix.'.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
  <i class="fas fa-users"></i><span class="menu-text"> User Management</span>
  </a>
@@ -686,11 +690,25 @@
  <nav class="navbar navbar-top px-4 py-3">
  <div class="d-flex justify-content-between w-100">
  <h5 class="mb-0">@yield('page-title', 'Dashboard')</h5>
- <div>
- <span>Welcome, {{ auth()->user()->name }} 
+ <div class="d-flex align-items-center gap-3">
+ @if(session('current_site_code'))
+ <div class="d-flex align-items-center">
+ <span class="badge bg-info me-2">
+ <i class="fas fa-building me-1"></i>{{ session('current_site_name') }}
+ </span>
+ <form action="{{ route('site.switch') }}" method="POST" class="d-inline">
+ @csrf
+ <button type="submit" class="btn btn-sm btn-outline-secondary" title="Switch Site">
+ <i class="fas fa-exchange-alt"></i>
+ </button>
+ </form>
+ </div>
+ @endif
+ <span>Welcome, {{ auth()->user()->name }}
  <span class="badge bg-success ms-2">
  {{ auth()->user()->roles->first()->name ?? 'User' }}
- 
+ </span>
+ </span>
  </div>
  </div>
  </nav>
