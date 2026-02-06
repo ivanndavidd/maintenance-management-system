@@ -3,6 +3,16 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Middleware\RoleMiddleware;
+use App\Http\Controllers\SiteController;
+
+// ========================================
+// Site Selection Routes (Multi-tenancy)
+// ========================================
+// Root URL shows site selection page directly
+Route::get('/', [SiteController::class, 'select'])->name('site.select');
+Route::post('/site/choose', [SiteController::class, 'choose'])->name('site.choose');
+Route::post('/site/switch', [SiteController::class, 'switch'])->name('site.switch')->middleware('auth');
+Route::get('/site/current', [SiteController::class, 'current'])->name('site.current');
 
 // ========================================
 // Health Check Route (for Docker/monitoring)
@@ -66,30 +76,8 @@ Route::prefix('maintenance-request')
     });
 
 // ========================================
-// Root & Dashboard Redirects
+// Dashboard Redirects
 // ========================================
-
-// Redirect root based on auth status
-Route::get('/', function () {
-    if (Auth::check()) {
-        // If already logged in, redirect to dashboard
-        if (auth()->user()->hasRole('admin')) {
-            return redirect()->route('admin.dashboard');
-        } elseif (auth()->user()->hasRole('supervisor_maintenance')) {
-            return redirect()->route('supervisor.dashboard');
-        } elseif (auth()->user()->hasRole('staff_maintenance')) {
-            return redirect()->route('user.dashboard');
-        } else {
-            // User has no role assigned
-            Auth::logout();
-            return redirect()
-                ->route('login')
-                ->with('error', 'No role assigned to your account. Please contact administrator.');
-        }
-    }
-    // If not logged in, go to login page
-    return redirect()->route('login');
-});
 
 // After login redirect based on role
 Route::get('/dashboard', function () {
@@ -132,6 +120,20 @@ Route::middleware(['auth'])->group(function () {
                 App\Http\Controllers\Admin\DashboardController::class,
                 'index',
             ])->name('dashboard');
+
+            // Site Management (Admin Only)
+            Route::prefix('sites')
+                ->name('sites.')
+                ->middleware([RoleMiddleware::class . ':admin'])
+                ->group(function () {
+                    Route::get('/', [App\Http\Controllers\Admin\SiteManagementController::class, 'index'])->name('index');
+                    Route::get('/create', [App\Http\Controllers\Admin\SiteManagementController::class, 'create'])->name('create');
+                    Route::post('/', [App\Http\Controllers\Admin\SiteManagementController::class, 'store'])->name('store');
+                    Route::get('/{site}/edit', [App\Http\Controllers\Admin\SiteManagementController::class, 'edit'])->name('edit');
+                    Route::put('/{site}', [App\Http\Controllers\Admin\SiteManagementController::class, 'update'])->name('update');
+                    Route::patch('/{site}/toggle-status', [App\Http\Controllers\Admin\SiteManagementController::class, 'toggleStatus'])->name('toggle-status');
+                    Route::post('/{site}/migrate', [App\Http\Controllers\Admin\SiteManagementController::class, 'migrate'])->name('migrate');
+                });
 
             // User Management
             Route::resource('users', App\Http\Controllers\Admin\UserController::class);
