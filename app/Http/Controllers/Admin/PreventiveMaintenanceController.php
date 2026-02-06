@@ -21,8 +21,9 @@ class PreventiveMaintenanceController extends Controller
      */
     public function index(Request $request)
     {
-        // Redirect to calendar view as default
-        return redirect()->route('admin.preventive-maintenance.calendar');
+        // Redirect to calendar view as default - use dynamic route prefix for admin/supervisor
+        $routePrefix = auth()->user()->hasRole('supervisor_maintenance') ? 'supervisor' : 'admin';
+        return redirect()->route($routePrefix . '.preventive-maintenance.calendar');
     }
 
     /**
