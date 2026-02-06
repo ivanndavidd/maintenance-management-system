@@ -1237,12 +1237,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const url = isEdit
             ? `${baseUrl}/tasks/${taskId}`
-            : '${baseUrl}/tasks';
+            : `${baseUrl}/tasks`;
 
-        const method = isEdit ? 'PUT' : 'POST';
+        // Use POST for both create and update, add _method for Laravel
+        if (isEdit) {
+            formData.append('_method', 'PUT');
+        }
 
         fetch(url, {
-            method: method,
+            method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json',
