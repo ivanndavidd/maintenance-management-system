@@ -234,6 +234,31 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Disabled recurring fields styling */
+#recurringOptions .form-control:disabled,
+#recurringOptions .form-select:disabled,
+#recurringOptions .btn-check:disabled + .btn {
+    background-color: #e9ecef !important;
+    opacity: 0.7;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#isRecurring:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#isRecurring:disabled + .form-check-label {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.recurring-edit-info {
+    color: #6c757d;
+    font-size: 12px;
+}
+
 /* Outlook-style FullCalendar customization */
 :root {
   --fc-border-color: #e1dfdd;
