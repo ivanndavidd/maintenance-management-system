@@ -208,6 +208,10 @@
 
 @push('scripts')
 <script>
+const routePrefix = '{{ $routePrefix ?? "admin" }}';
+const assignUserUrl = '{{ route($routePrefix.".shifts.assign-user", $shift) }}';
+const removeUserUrl = '{{ route($routePrefix.".shifts.remove-user", $shift) }}';
+
 let selectedUser = null;
 
 // User selection
@@ -256,7 +260,7 @@ document.querySelectorAll('.shift-cell').forEach(cell => {
         }
 
         // Send AJAX request to assign user
-        fetch('{{ route("admin.shifts.assign-user", $shift) }}', {
+        fetch(assignUserUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -326,7 +330,7 @@ function removeUserFromShift(badge, day, shift) {
 
     const userId = badge.dataset.userId;
 
-    fetch('{{ route("admin.shifts.remove-user", $shift) }}', {
+    fetch(removeUserUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

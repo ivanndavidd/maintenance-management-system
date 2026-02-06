@@ -555,6 +555,8 @@
 <script>
 const scheduleId = {{ $schedule->id }};
 const csrfToken = '{{ csrf_token() }}';
+const routePrefix = '{{ $routePrefix ?? "admin" }}';
+const baseUrl = `/${routePrefix}/preventive-maintenance`;
 
 function filterDates() {
     const filterValue = document.getElementById('filterDateInput').value;
@@ -585,7 +587,7 @@ function addDate() {
     const btn = document.querySelector('.card-header .btn-primary');
     setSubmitting(btn, true);
 
-    fetch(`/admin/preventive-maintenance/${scheduleId}/date`, {
+    fetch(`${baseUrl}/${scheduleId}/date`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
         body: JSON.stringify({ schedule_date: date })
@@ -616,7 +618,7 @@ function showDeleteModal(message, onConfirm) {
 
 function deleteDate(id) {
     showDeleteModal('Delete this date and all its cleaning groups, SPR groups, and tasks?', function() {
-        fetch(`/admin/preventive-maintenance/date/${id}`, {
+        fetch(`${baseUrl}/date/${id}`, {
             method: 'DELETE',
             headers: { 'X-CSRF-TOKEN': csrfToken }
         })
@@ -649,7 +651,7 @@ function submitCleaningGroup() {
     const btn = event.target.closest('button') || document.querySelector('#addCleaningGroupModal .btn-primary');
     setSubmitting(btn, true);
 
-    fetch(`/admin/preventive-maintenance/date/${scheduleDateId}/cleaning-group`, {
+    fetch(`${baseUrl}/date/${scheduleDateId}/cleaning-group`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
         body: JSON.stringify({ name: name })
@@ -674,7 +676,7 @@ function submitSprGroup() {
     const btn = event.target.closest('button') || document.querySelector('#addSprGroupModal .btn-primary');
     setSubmitting(btn, true);
 
-    fetch(`/admin/preventive-maintenance/cleaning-group/${cleaningGroupId}/spr`, {
+    fetch(`${baseUrl}/cleaning-group/${cleaningGroupId}/spr`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
         body: JSON.stringify({ name: name })
@@ -703,7 +705,7 @@ function showAddStandaloneTaskModal(scheduleDateId, scheduleDate) {
 
     new bootstrap.Modal(document.getElementById('addTaskModal')).show();
 
-    fetch(`/admin/preventive-maintenance/shifts-for-date?date=${scheduleDate}`, {
+    fetch(`${baseUrl}/shifts-for-date?date=${scheduleDate}`, {
         headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
     })
     .then(response => response.json())
@@ -748,7 +750,7 @@ function showAddTaskModal(sprGroupId, sprGroupName, scheduleDate) {
     new bootstrap.Modal(document.getElementById('addTaskModal')).show();
 
     // Fetch shifts for this date
-    fetch(`/admin/preventive-maintenance/shifts-for-date?date=${scheduleDate}`, {
+    fetch(`${baseUrl}/shifts-for-date?date=${scheduleDate}`, {
         headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
     })
     .then(response => response.json())
@@ -790,10 +792,10 @@ function addTask() {
 
     let url;
     if (standaloneMode && standaloneScheduleDateId) {
-        url = `/admin/preventive-maintenance/date/${standaloneScheduleDateId}/standalone-task`;
+        url = `${baseUrl}/date/${standaloneScheduleDateId}/standalone-task`;
     } else {
         const sprGroupId = document.getElementById('taskModalSprId').value;
-        url = `/admin/preventive-maintenance/spr/${sprGroupId}/task`;
+        url = `${baseUrl}/spr/${sprGroupId}/task`;
     }
 
     fetch(url, {
@@ -821,7 +823,7 @@ function showEditTaskModal(taskId, taskData, scheduleDate) {
 
     new bootstrap.Modal(document.getElementById('editTaskModal')).show();
 
-    fetch(`/admin/preventive-maintenance/shifts-for-date?date=${scheduleDate}`, {
+    fetch(`${baseUrl}/shifts-for-date?date=${scheduleDate}`, {
         headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
     })
     .then(response => response.json())
@@ -861,7 +863,7 @@ function submitEditTask() {
     const btn = document.querySelector('#editTaskModal .btn-primary');
     setSubmitting(btn, true);
 
-    fetch(`/admin/preventive-maintenance/task/${taskId}`, {
+    fetch(`${baseUrl}/task/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
         body: JSON.stringify(data)
@@ -872,7 +874,7 @@ function submitEditTask() {
 }
 
 function updateTaskStatus(taskId, status) {
-    fetch(`/admin/preventive-maintenance/task/${taskId}/status`, {
+    fetch(`${baseUrl}/task/${taskId}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
         body: JSON.stringify({ status: status })
@@ -884,7 +886,7 @@ function updateTaskStatus(taskId, status) {
 
 function deleteCleaningGroup(id) {
     showDeleteModal('Delete this cleaning group and all its SPR groups and tasks?', function() {
-        fetch(`/admin/preventive-maintenance/cleaning-group/${id}`, {
+        fetch(`${baseUrl}/cleaning-group/${id}`, {
             method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrfToken }
         }).then(r => r.json()).then(data => { if (data.success) location.reload(); });
     });
@@ -892,7 +894,7 @@ function deleteCleaningGroup(id) {
 
 function deleteSprGroup(id) {
     showDeleteModal('Delete this SPR group and all its tasks?', function() {
-        fetch(`/admin/preventive-maintenance/spr/${id}`, {
+        fetch(`${baseUrl}/spr/${id}`, {
             method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrfToken }
         }).then(r => r.json()).then(data => { if (data.success) location.reload(); });
     });
@@ -900,7 +902,7 @@ function deleteSprGroup(id) {
 
 function deleteTask(id) {
     showDeleteModal('Delete this task?', function() {
-        fetch(`/admin/preventive-maintenance/task/${id}`, {
+        fetch(`${baseUrl}/task/${id}`, {
             method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrfToken }
         }).then(r => r.json()).then(data => { if (data.success) location.reload(); });
     });
