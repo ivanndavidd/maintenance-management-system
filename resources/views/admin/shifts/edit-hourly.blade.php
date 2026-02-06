@@ -770,6 +770,13 @@
 
 @push('scripts')
 <script>
+const routePrefix = '{{ $routePrefix ?? "admin" }}';
+const shiftsBaseUrl = `/${routePrefix}/shifts`;
+const assignUserHourlyUrl = '{{ route(($routePrefix ?? "admin").".shifts.assign-user-hourly", $shift) }}';
+const removeAssignmentsUrl = '{{ route(($routePrefix ?? "admin").".shifts.remove-assignments", $shift) }}';
+const removeAssignmentUrl = '{{ route(($routePrefix ?? "admin").".shifts.remove-assignment", $shift) }}';
+const clearAllAssignmentsUrl = '{{ route(($routePrefix ?? "admin").".shifts.clear-all-assignments", $shift) }}';
+
 let selectedUser = null;
 let isSelecting = false;
 let isRemovingMode = false;
@@ -1282,7 +1289,7 @@ function assignUserToCells(cells) {
     console.log('Assignment data:', assignments);
 
     // Send AJAX request
-    const url = '{{ route("admin.shifts.assign-user-hourly", $shift) }}';
+    const url = assignUserHourlyUrl;
     console.log('Sending to URL:', url);
 
     fetch(url, {
@@ -1426,7 +1433,7 @@ function confirmRemoveAssignments() {
     if (modal) modal.hide();
 
     // Send bulk remove request
-    const url = '{{ route("admin.shifts.remove-assignments", $shift) }}';
+    const url = removeAssignmentsUrl;
     console.log('Request URL:', url);
 
     fetch(url, {
@@ -1578,7 +1585,7 @@ function removeAssignment(cell) {
 
     console.log('Removing assignment:', assignmentId);
 
-    fetch('{{ route("admin.shifts.remove-assignment", $shift) }}', {
+    fetch(removeAssignmentUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1624,7 +1631,7 @@ function clearAllAssignments() {
         return;
     }
 
-    fetch('{{ route("admin.shifts.clear-all-assignments", $shift) }}', {
+    fetch(clearAllAssignmentsUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1749,7 +1756,7 @@ function submitShiftChange() {
     if (changeModal) changeModal.hide();
 
     // Submit
-    fetch('/admin/shifts/change-assignment', {
+    fetch(`${shiftsBaseUrl}/change-assignment`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
