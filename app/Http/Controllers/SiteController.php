@@ -77,10 +77,15 @@ class SiteController extends Controller
      */
     public function switch(Request $request)
     {
-        // Clear current site selection and logout
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Logout if authenticated
+        if (Auth::check()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        } else {
+            // Just clear site selection if not logged in
+            $request->session()->forget(['current_site_code', 'current_site_name']);
+        }
 
         return redirect()->route('site.select');
     }

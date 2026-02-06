@@ -261,6 +261,24 @@
             
             <!-- Body -->
             <div class="login-body">
+                <!-- Current Site Info with Switch Button -->
+                @if(session('current_site_code'))
+                    <div class="d-flex align-items-center justify-content-between mb-3 p-2 rounded" style="background: #e3f2fd;">
+                        <div>
+                            <small class="text-muted">Current Site</small>
+                            <div class="fw-bold text-primary">
+                                <i class="fas fa-building me-1"></i>{{ session('current_site_name') }}
+                            </div>
+                        </div>
+                        <form action="{{ route('site.switch') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-primary" title="Switch Site">
+                                <i class="fas fa-exchange-alt"></i> Switch
+                            </button>
+                        </form>
+                    </div>
+                @endif
+
                 <!-- Success/Error Messages -->
                 @if (session('success'))
                     <div class="alert alert-success alert-dismissible fade show">
