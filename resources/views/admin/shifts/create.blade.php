@@ -8,7 +8,7 @@
         <h2>Create New Shift Schedule</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'Prefix.'.shifts.index') }}">Shift Management</a></li>
+                <li class="breadcrumb-item"><a href="{{ route(($routePrefix ?? 'admin').'.shifts.index') }}">Shift Management</a></li>
                 <li class="breadcrumb-item active">Create Schedule</li>
             </ol>
         </nav>
@@ -21,7 +21,7 @@
                     <h5 class="mb-0">Schedule Information</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route($routePrefix.'Prefix.'.shifts.store') }}" method="POST">
+                    <form action="{{ route(($routePrefix ?? 'admin').'.shifts.store') }}" method="POST">
                         @csrf
 
                         <div class="row">
@@ -70,7 +70,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route($routePrefix.'Prefix.'.shifts.index') }}" class="btn btn-secondary">
+                            <a href="{{ route(($routePrefix ?? 'admin').'.shifts.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary">

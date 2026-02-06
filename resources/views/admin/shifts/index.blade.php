@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Shift Management</h2>
-        <a href="{{ route($routePrefix.'Prefix.'.shifts.create') }}" class="btn btn-primary">
+        <a href="{{ route(($routePrefix ?? 'admin').'.shifts.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Create New Schedule
         </a>
     </div>
@@ -51,7 +51,7 @@
                                 <td>{{ $schedule->assignments()->count() }} assignments</td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route($routePrefix.'Prefix.'.shifts.edit', $schedule) }}"
+                                        <a href="{{ route(($routePrefix ?? 'admin').'.shifts.edit', $schedule) }}"
                                            class="btn btn-sm btn-info"
                                            title="Edit">
                                             <i class="fas fa-edit"></i>
@@ -59,7 +59,7 @@
 
                                         @if($schedule->status === 'draft')
                                             <form id="activate-form-{{ $schedule->id }}"
-                                                  action="{{ route($routePrefix.'Prefix.'.shifts.activate', $schedule) }}"
+                                                  action="{{ route(($routePrefix ?? 'admin').'.shifts.activate', $schedule) }}"
                                                   method="POST"
                                                   class="d-inline">
                                                 @csrf
@@ -75,7 +75,7 @@
 
                                         @if($schedule->status !== 'active')
                                             <form id="delete-form-{{ $schedule->id }}"
-                                                  action="{{ route($routePrefix.'Prefix.'.shifts.destroy', $schedule) }}"
+                                                  action="{{ route(($routePrefix ?? 'admin').'.shifts.destroy', $schedule) }}"
                                                   method="POST"
                                                   class="d-inline">
                                                 @csrf

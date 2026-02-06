@@ -52,7 +52,7 @@
         </div>
         <div>
             @if($schedule->status === 'draft')
-                <form action="{{ route($routePrefix.'Prefix.'.preventive-maintenance.activate', $schedule) }}" method="POST" class="d-inline">
+                <form action="{{ route(($routePrefix ?? 'admin').'.preventive-maintenance.activate', $schedule) }}" method="POST" class="d-inline">
                     @csrf
                     @method('PATCH')
                     <button type="submit" class="btn btn-success">
@@ -60,10 +60,10 @@
                     </button>
                 </form>
             @endif
-            <a href="{{ route($routePrefix.'Prefix.'.preventive-maintenance.edit', $schedule) }}" class="btn btn-warning">
+            <a href="{{ route(($routePrefix ?? 'admin').'.preventive-maintenance.edit', $schedule) }}" class="btn btn-warning">
                 <i class="fas fa-edit me-1"></i> Edit Info
             </a>
-            <a href="{{ route($routePrefix.'Prefix.'.preventive-maintenance.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route(($routePrefix ?? 'admin').'.preventive-maintenance.index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Back
             </a>
         </div>

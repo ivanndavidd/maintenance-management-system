@@ -12,6 +12,14 @@ use Carbon\Carbon;
 class ShiftController extends Controller
 {
     /**
+     * Get route prefix based on user role
+     */
+    private function getRoutePrefix(): string
+    {
+        return auth()->user()->hasRole('supervisor_maintenance') ? 'supervisor' : 'admin';
+    }
+
+    /**
      * Display a listing of shift schedules
      */
     public function index(Request $request)
@@ -105,7 +113,7 @@ class ShiftController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.shifts.edit', $schedule)
+            ->route($this->getRoutePrefix() . '.shifts.edit', $schedule)
             ->with(
                 'success',
                 'Shift schedule created successfully. Please assign users to shifts.',
@@ -156,7 +164,7 @@ class ShiftController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.shifts.edit', $shift)
+            ->route($this->getRoutePrefix() . '.shifts.edit', $shift)
             ->with('success', 'Shift schedule updated successfully.');
     }
 
@@ -279,7 +287,7 @@ class ShiftController extends Controller
         $shift->activate();
 
         return redirect()
-            ->route('admin.shifts.index')
+            ->route($this->getRoutePrefix() . '.shifts.index')
             ->with('success', 'Shift schedule activated successfully.');
     }
 
@@ -295,7 +303,7 @@ class ShiftController extends Controller
         $shift->delete();
 
         return redirect()
-            ->route('admin.shifts.index')
+            ->route($this->getRoutePrefix() . '.shifts.index')
             ->with('success', 'Shift schedule deleted successfully.');
     }
 
