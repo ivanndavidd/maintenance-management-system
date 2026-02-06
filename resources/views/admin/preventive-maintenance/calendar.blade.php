@@ -1246,18 +1246,31 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: formData
         })
-        .then(response => {
+        .then(async response => {
+            const data = await response.json().catch(() => ({}));
+
             if (!response.ok) {
-                return response.json().then(err => {
-                    throw err;
-                }).catch(() => {
-                    // If response is not JSON, throw generic error
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                });
+                // Handle error response (422, 500, etc.)
+                let errorMessage = '';
+
+                // Check for validation errors from Laravel
+                if (data.errors) {
+                    errorMessage = '<strong>Validation errors:</strong><ul class="mb-0">';
+                    Object.keys(data.errors).forEach(field => {
+                        const fieldName = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        errorMessage += `<li>${fieldName}: ${data.errors[field].join(', ')}</li>`;
+                    });
+                    errorMessage += '</ul>';
+                } else if (data.message) {
+                    errorMessage = data.message;
+                } else {
+                    errorMessage = `Error ${response.status}: ${response.statusText}`;
+                }
+
+                showAlert(errorMessage, 'danger');
+                return;
             }
-            return response.json();
-        })
-        .then(data => {
+
             if (data.success) {
                 // Close modal after success
                 eventModal.hide();
@@ -1294,29 +1307,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            let errorMessage = '';
-
-            // Check if error has a message from server response
-            if (error.message) {
-                errorMessage = error.message;
-            }
-
-            // Check for validation errors
-            if (error.errors) {
-                errorMessage += '<br><strong>Validation errors:</strong><ul class="mb-0">';
-                Object.keys(error.errors).forEach(field => {
-                    const fieldName = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    errorMessage += `<li>${fieldName}: ${error.errors[field].join(', ')}</li>`;
-                });
-                errorMessage += '</ul>';
-            }
-
-            // Fallback if no message found
-            if (!errorMessage) {
-                errorMessage = 'Error saving task. Please try again.';
-            }
-
-            showAlert(errorMessage, 'danger');
+            showAlert('Network error. Please check your connection and try again.', 'danger');
         });
     });
 
