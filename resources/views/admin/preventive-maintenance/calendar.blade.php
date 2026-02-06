@@ -589,6 +589,9 @@ body.fc-loading::after {
 @push('scripts')
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 <script>
+// Dynamic route prefix for admin/supervisor compatibility
+const routePrefix = '{{ $routePrefix ?? "admin" }}';
+const baseUrl = `/${routePrefix}/preventive-maintenance/calendar`;
 
 document.addEventListener('DOMContentLoaded', function() {
     // CRITICAL: Override global loading functions to do nothing on this page
@@ -845,7 +848,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const startDate = new Date(today.getFullYear(), 0, 1); // Jan 1 this year
     const endDate = new Date(today.getFullYear() + 1, 11, 31); // Dec 31 next year
 
-    fetch(`/admin/preventive-maintenance/calendar/events?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`)
+    fetch(`${baseUrl}/events?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
@@ -1233,8 +1236,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const url = isEdit
-            ? `/admin/preventive-maintenance/calendar/tasks/${taskId}`
-            : '/admin/preventive-maintenance/calendar/tasks';
+            ? `${baseUrl}/tasks/${taskId}`
+            : '${baseUrl}/tasks';
 
         const method = isEdit ? 'PUT' : 'POST';
 
@@ -1289,7 +1292,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const startDate = new Date(today.getFullYear(), 0, 1);
                 const endDate = new Date(today.getFullYear() + 1, 11, 31);
 
-                fetch(`/admin/preventive-maintenance/calendar/events?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`)
+                fetch(`${baseUrl}/events?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`)
                     .then(response => response.json())
                     .then(events => {
                         if (Array.isArray(events)) {
@@ -1314,7 +1317,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update event date via drag/drop
     function updateEventDate(event) {
         const oldDate = event.start;
-        fetch(`/admin/preventive-maintenance/calendar/tasks/${event.id}/move`, {
+        fetch(`${baseUrl}/tasks/${event.id}/move`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -1338,7 +1341,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update event duration via resize
     function updateEventDuration(event) {
         const oldEnd = event.end;
-        fetch(`/admin/preventive-maintenance/calendar/tasks/${event.id}/resize`, {
+        fetch(`${baseUrl}/tasks/${event.id}/resize`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -1362,7 +1365,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function deleteTask(taskId, deleteType) {
         eventActionPopover.style.display = 'none';
 
-        fetch(`/admin/preventive-maintenance/calendar/tasks/${taskId}`, {
+        fetch(`${baseUrl}/tasks/${taskId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -1394,7 +1397,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const startDate = new Date(today.getFullYear(), 0, 1);
                     const endDate = new Date(today.getFullYear() + 1, 11, 31);
 
-                    fetch(`/admin/preventive-maintenance/calendar/events?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`)
+                    fetch(`${baseUrl}/events?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`)
                         .then(response => response.json())
                         .then(events => {
                             if (Array.isArray(events)) {
