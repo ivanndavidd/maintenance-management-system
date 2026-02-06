@@ -11,7 +11,7 @@ use App\Http\Controllers\SiteController;
 // Root URL shows site selection page directly
 Route::get('/', [SiteController::class, 'select'])->name('site.select');
 Route::post('/site/choose', [SiteController::class, 'choose'])->name('site.choose');
-Route::post('/site/switch', [SiteController::class, 'switch'])->name('site.switch')->middleware('auth');
+Route::post('/site/switch', [SiteController::class, 'switch'])->name('site.switch');
 Route::get('/site/current', [SiteController::class, 'current'])->name('site.current');
 
 // ========================================

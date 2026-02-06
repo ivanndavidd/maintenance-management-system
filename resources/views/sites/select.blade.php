@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Site - Warehouse Maintenance</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/Blibli_Logo_Symbol_FC_RGB.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -18,286 +19,461 @@
             --blibli-pink: #ff31ab;
         }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             background: url('{{ asset('assets/maxresdefault.jpg') }}') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            position: relative;
-            overflow-x: hidden;
         }
 
-        /* Overlay for background image */
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: 0;
-        }
-
-        .site-selection-container {
-            max-width: 1100px;
+        /* Main Container */
+        .main-container {
             width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
             position: relative;
             z-index: 1;
         }
 
-        .main-title {
-            color: white;
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .main-title .logo-wrapper {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .main-title .logo-wrapper img {
-            width: 50px;
-            height: auto;
-        }
-
-        .main-title h1 {
-            font-weight: 700;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .main-title p {
-            opacity: 0.9;
-            font-size: 1.1rem;
-        }
-
+        /* Site Card */
         .site-card {
             background: white;
             border-radius: 20px;
-            padding: 30px 25px;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 3px solid transparent;
-            height: 100%;
-            position: relative;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
             overflow: hidden;
-        }
-
-        .site-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--blibli-blue), var(--blibli-cyan));
+            /* HIDDEN BY DEFAULT */
             opacity: 0;
-            transition: opacity 0.3s ease;
+            visibility: hidden;
+            transform: translateY(30px) scale(0.95);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none;
         }
 
-        .site-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 114, 255, 0.3);
-            border-color: var(--blibli-blue);
-        }
-
-        .site-card:hover::before {
+        /* Show card on container hover (when NOT permanently shown) */
+        .main-container:hover .site-card:not(.permanent-show) {
             opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
         }
 
-        /* Different colors for each card */
-        .site-card:nth-child(1) .site-logo { background: linear-gradient(135deg, var(--blibli-blue) 0%, var(--blibli-cyan) 100%); }
-        .site-card:nth-child(2) .site-logo { background: linear-gradient(135deg, var(--blibli-green) 0%, var(--blibli-teal) 100%); }
-        .site-card:nth-child(3) .site-logo { background: linear-gradient(135deg, var(--blibli-orange) 0%, var(--blibli-yellow) 100%); }
-        .site-card:nth-child(4) .site-logo { background: linear-gradient(135deg, var(--blibli-pink) 0%, var(--blibli-red) 100%); }
-        .site-card:nth-child(5) .site-logo { background: linear-gradient(135deg, var(--blibli-cyan) 0%, var(--blibli-teal) 100%); }
-        .site-card:nth-child(6) .site-logo { background: linear-gradient(135deg, var(--blibli-yellow) 0%, var(--blibli-orange) 100%); }
-
-        .card-wrapper:nth-child(1) .site-card .site-logo { background: linear-gradient(135deg, var(--blibli-blue) 0%, var(--blibli-cyan) 100%); }
-        .card-wrapper:nth-child(2) .site-card .site-logo { background: linear-gradient(135deg, var(--blibli-green) 0%, var(--blibli-teal) 100%); }
-        .card-wrapper:nth-child(3) .site-card .site-logo { background: linear-gradient(135deg, var(--blibli-orange) 0%, var(--blibli-yellow) 100%); }
-        .card-wrapper:nth-child(4) .site-card .site-logo { background: linear-gradient(135deg, var(--blibli-pink) 0%, var(--blibli-red) 100%); }
-        .card-wrapper:nth-child(5) .site-card .site-logo { background: linear-gradient(135deg, var(--blibli-cyan) 0%, var(--blibli-teal) 100%); }
-        .card-wrapper:nth-child(6) .site-card .site-logo { background: linear-gradient(135deg, var(--blibli-yellow) 0%, var(--blibli-orange) 100%); }
-
-        .card-wrapper:nth-child(1) .site-card:hover { border-color: var(--blibli-blue); }
-        .card-wrapper:nth-child(2) .site-card:hover { border-color: var(--blibli-green); }
-        .card-wrapper:nth-child(3) .site-card:hover { border-color: var(--blibli-orange); }
-        .card-wrapper:nth-child(4) .site-card:hover { border-color: var(--blibli-pink); }
-        .card-wrapper:nth-child(5) .site-card:hover { border-color: var(--blibli-cyan); }
-        .card-wrapper:nth-child(6) .site-card:hover { border-color: var(--blibli-yellow); }
-
-        .site-card .site-logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        /* Show card permanently when has .permanent-show class */
+        .site-card.permanent-show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
         }
 
-        .site-card .site-logo i {
-            font-size: 36px;
+        /* Hover hint */
+        .hover-hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             color: white;
-        }
-
-        .site-card .site-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .site-card h4 {
-            color: #1a1a2e;
-            margin-bottom: 10px;
-            font-weight: 700;
-            font-size: 1.25rem;
-        }
-
-        .site-card p {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 0;
-            line-height: 1.5;
-        }
-
-        .site-card .site-code {
-            display: inline-block;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: #666;
-            margin-top: 15px;
-            font-weight: 500;
-        }
-
-        .no-sites {
-            background: white;
-            border-radius: 20px;
-            padding: 60px;
+            font-size: 28px;
+            font-weight: 600;
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.8);
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            z-index: 0;
+            pointer-events: none;
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        .no-sites i {
-            font-size: 70px;
-            color: #dee2e6;
+        @keyframes pulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+        }
+
+        .main-container:hover .hover-hint {
+            opacity: 0;
+        }
+
+        .site-card.permanent-show ~ .hover-hint {
+            opacity: 0;
+            display: none;
+        }
+
+        .main-container {
+            cursor: pointer;
+        }
+
+        .site-card * {
+            cursor: default;
+        }
+
+        /* Header */
+        .site-header {
+            background: white;
+            padding: 40px 35px 30px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .site-header .logo {
+            margin-bottom: 25px;
+        }
+
+        .site-header .logo img {
+            height: 55px;
+        }
+
+        .site-header h3 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 28px;
+            color: #333;
+        }
+
+        .site-header p {
+            margin: 12px 0 0 0;
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* Body */
+        .site-body {
+            padding: 30px;
+        }
+
+        /* Search Box */
+        .search-box {
+            position: relative;
             margin-bottom: 20px;
         }
 
-        .no-sites h4 {
-            color: #1a1a2e;
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--blibli-blue);
+            box-shadow: 0 0 0 3px rgba(0, 114, 255, 0.15);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        /* Site List */
+        .site-list {
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .site-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 15px;
+            border: 1px solid #f0f0f0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .site-item:hover {
+            border-color: var(--blibli-blue);
+            background: #f8fbff;
+            transform: translateX(5px);
+        }
+
+        .site-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .site-item-content {
+            flex: 1;
+        }
+
+        .site-item-name {
+            font-size: 15px;
+            color: #333;
             font-weight: 600;
         }
 
+        .site-item-code {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .site-item-arrow {
+            color: #ccc;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .site-item:hover .site-item-arrow {
+            color: var(--blibli-blue);
+            transform: translateX(3px);
+        }
+
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 30px 20px;
+            color: #999;
+        }
+
+        .no-results i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            color: #ddd;
+        }
+
+        .no-results p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* Alert Messages */
         .alert {
-            border-radius: 15px;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 13px;
             border: none;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
         }
 
         .alert-danger {
-            background: linear-gradient(135deg, var(--blibli-red) 0%, #ff6b6b 100%);
-            color: white;
+            background: #ffebee;
+            color: #c62828;
         }
 
         .alert-success {
-            background: linear-gradient(135deg, var(--blibli-green) 0%, var(--blibli-teal) 100%);
-            color: white;
+            background: #e8f5e9;
+            color: #2e7d32;
         }
 
-        /* Footer branding */
-        .footer-brand {
+        /* Scrollbar styling - only show when needed */
+        .site-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .site-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .site-list::-webkit-scrollbar-thumb {
+            background: transparent;
+            border-radius: 3px;
+        }
+
+        .site-list:hover::-webkit-scrollbar-thumb {
+            background: #ccc;
+        }
+
+        .site-list::-webkit-scrollbar-thumb:hover {
+            background: #aaa;
+        }
+
+        /* Footer */
+        .site-footer {
             text-align: center;
-            margin-top: 40px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
-        }
-
-        .footer-brand span {
-            color: var(--blibli-yellow);
-            font-weight: 600;
+            padding: 15px 25px 20px;
+            border-top: 1px solid #f0f0f0;
+            color: #999;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-    <div class="site-selection-container">
-        <div class="main-title">
-            <div class="logo-wrapper">
-                <img src="{{ asset('assets/Blibli_Logo_Symbol_FC_RGB.svg') }}" alt="Blibli Logo">
-            </div>
-            <h1>Warehouse Maintenance</h1>
-            <p>Select a site to continue</p>
+    <div class="main-container">
+        <div class="hover-hint">
+            <i class="fas fa-hand-pointer mb-3"></i><br>
+            Hover to select site
         </div>
 
-        @if(session('error'))
-            <div class="alert alert-danger mb-4">
-                <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+        <div class="site-card">
+            <!-- Header -->
+            <div class="site-header">
+                <div class="logo">
+                    <img src="{{ asset('assets/Blibli_Logo_Horizontal_FC_RGB.svg') }}" alt="Blibli Logo">
+                </div>
+                <h3>Warehouse Maintenance</h3>
+                <p>Select a warehouse to continue</p>
             </div>
-        @endif
 
-        @if(session('success'))
-            <div class="alert alert-success mb-4">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-            </div>
-        @endif
-
-        @if($sites->count() > 0)
-            <div class="row g-4 justify-content-center">
-                @foreach($sites as $index => $site)
-                    <div class="col-lg-4 col-md-6 card-wrapper">
-                        <form action="{{ route('site.choose') }}" method="POST" class="h-100">
-                            @csrf
-                            <input type="hidden" name="site_code" value="{{ $site->code }}">
-                            <button type="submit" class="site-card w-100 border-0">
-                                <div class="site-logo">
-                                    @if($site->logo)
-                                        <img src="{{ asset('storage/' . $site->logo) }}" alt="{{ $site->name }}">
-                                    @else
-                                        <i class="fas fa-warehouse"></i>
-                                    @endif
-                                </div>
-                                <h4>{{ $site->name }}</h4>
-                                @if($site->description)
-                                    <p>{{ $site->description }}</p>
-                                @endif
-                                <span class="site-code">{{ $site->code }}</span>
-                            </button>
-                        </form>
+            <!-- Body -->
+            <div class="site-body">
+                @if(session('error'))
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
                     </div>
-                @endforeach
-            </div>
-        @else
-            <div class="no-sites">
-                <i class="fas fa-building"></i>
-                <h4>No Sites Available</h4>
-                <p class="text-muted">Please contact your administrator to set up sites.</p>
-            </div>
-        @endif
+                @endif
 
-        <div class="footer-brand">
-            Powered by <span>Blibli</span> Warehouse Management
+                @if(session('success'))
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                    </div>
+                @endif
+
+                <!-- Search Box -->
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Cari gudang..." autocomplete="off">
+                </div>
+
+                <!-- Site List -->
+                <div class="site-list" id="siteList">
+                    @if($sites->count() > 0)
+                        @foreach($sites as $site)
+                            <form action="{{ route('site.choose') }}" method="POST" class="site-form">
+                                @csrf
+                                <input type="hidden" name="site_code" value="{{ $site->code }}">
+                                <div class="site-item" onclick="this.closest('form').submit();" data-name="{{ strtolower($site->name) }}" data-code="{{ strtolower($site->code) }}">
+                                    <div class="site-item-content">
+                                        <div class="site-item-name">{{ $site->name }}</div>
+                                        <div class="site-item-code">
+                                            @if($site->description)
+                                                {{ $site->description }}
+                                            @else
+                                                {{ $site->code }}
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right site-item-arrow"></i>
+                                </div>
+                            </form>
+                        @endforeach
+                    @else
+                        <div class="no-results">
+                            <i class="fas fa-warehouse"></i>
+                            <p>Tidak ada gudang tersedia</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="site-footer">
+                &copy; {{ date('Y') }} Blibli | Warehouse Management System
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const siteCard = document.querySelector('.site-card');
+            const mainContainer = document.querySelector('.main-container');
+            const hoverHint = document.querySelector('.hover-hint');
+            let hasInteracted = false;
+
+            // Show card permanently if there are errors or messages
+            @if(session('error') || session('success'))
+                siteCard.classList.add('permanent-show');
+                hasInteracted = true;
+            @endif
+
+            // Make card visible on click inside
+            siteCard.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!hasInteracted) {
+                    hasInteracted = true;
+                    this.classList.add('permanent-show');
+                }
+            });
+
+            // Close card when clicking outside (on body)
+            document.body.addEventListener('click', function(e) {
+                // Check if click is outside the card and container
+                if (!siteCard.contains(e.target) && !mainContainer.contains(e.target)) {
+                    if (hasInteracted) {
+                        hasInteracted = false;
+                        siteCard.classList.remove('permanent-show');
+                        // Reset search input
+                        const searchInput = document.getElementById('searchInput');
+                        if (searchInput.value !== '') {
+                            searchInput.value = '';
+                            // Reset all site items to visible
+                            document.querySelectorAll('.site-form').forEach(function(form) {
+                                form.style.display = 'block';
+                            });
+                            // Hide no results message if exists
+                            const noResults = document.querySelector('.no-results-search');
+                            if (noResults) {
+                                noResults.style.display = 'none';
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Make card visible when search input is focused
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('focus', function() {
+                if (!hasInteracted) {
+                    hasInteracted = true;
+                    siteCard.classList.add('permanent-show');
+                }
+            });
+
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const siteItems = document.querySelectorAll('.site-form');
+                let hasResults = false;
+
+                siteItems.forEach(function(form) {
+                    const item = form.querySelector('.site-item');
+                    const name = item.getAttribute('data-name');
+                    const code = item.getAttribute('data-code');
+
+                    if (name.includes(searchTerm) || code.includes(searchTerm)) {
+                        form.style.display = 'block';
+                        hasResults = true;
+                    } else {
+                        form.style.display = 'none';
+                    }
+                });
+
+                // Show/hide no results message
+                let noResults = document.querySelector('.no-results-search');
+                if (!hasResults && searchTerm !== '') {
+                    if (!noResults) {
+                        noResults = document.createElement('div');
+                        noResults.className = 'no-results no-results-search';
+                        noResults.innerHTML = '<i class="fas fa-search"></i><p>No warehouse found</p>';
+                        document.getElementById('siteList').appendChild(noResults);
+                    }
+                    noResults.style.display = 'block';
+                } else if (noResults) {
+                    noResults.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
