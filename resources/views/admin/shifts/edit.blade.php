@@ -209,8 +209,8 @@
 @push('scripts')
 <script>
 const routePrefix = '{{ $routePrefix ?? "admin" }}';
-const assignUserUrl = '{{ route($routePrefix.".shifts.assign-user", $shift) }}';
-const removeUserUrl = '{{ route($routePrefix.".shifts.remove-user", $shift) }}';
+const assignUserUrl = '{{ route(($routePrefix ?? "admin").".shifts.assign-user", $shift) }}';
+const removeUserUrl = '{{ route(($routePrefix ?? "admin").".shifts.remove-user", $shift) }}';
 
 let selectedUser = null;
 
