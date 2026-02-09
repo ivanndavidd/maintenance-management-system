@@ -33,7 +33,7 @@
  }
 
  .sidebar:hover {
- width: 260px;
+ width: 280px;
  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
  }
 
@@ -64,22 +64,15 @@
  overflow: hidden;
  display: flex;
  align-items: center;
- gap: 0;
- justify-content: center;
- transition: padding 0.3s ease, justify-content 0.3s ease, gap 0.3s ease;
  box-sizing: border-box;
- }
-
- .sidebar:hover .sidebar-header {
- padding: 15px 10px !important;
- justify-content: flex-start;
- gap: 12px;
  }
 
  .sidebar-header .logo {
  width: 36px;
  height: 48px;
+ min-width: 36px;
  flex-shrink: 0;
+ margin-left: 17px;
  }
 
  .sidebar-header .logo img {
@@ -90,14 +83,16 @@
 
  .sidebar-header .text-content {
  opacity: 0;
- max-width: 0;
+ width: 0;
  overflow: hidden;
- transition: opacity 0.3s ease, max-width 0.3s ease;
+ transition: opacity 0.3s ease, width 0.3s ease, margin-left 0.3s ease;
+ margin-left: 0;
  }
 
  .sidebar:hover .sidebar-header .text-content {
  opacity: 1;
- max-width: 500px;
+ width: 200px;
+ margin-left: 12px;
  }
 
  .sidebar-header h4 {
@@ -123,43 +118,34 @@
  .sidebar a {
  color: #2d3748;
  text-decoration: none;
- padding: 12px 15px;
- display: block;
- transition: all 0.3s ease;
+ padding: 12px 0;
+ padding-left: 22px;
+ display: flex;
+ align-items: center;
  border-left: 3px solid transparent;
  font-size: 14px;
  white-space: nowrap;
  overflow: hidden;
- text-align: center;
  position: relative;
- }
-
- .sidebar:hover a {
- padding: 12px 20px;
- text-align: left;
  }
 
  .sidebar a .menu-text {
  opacity: 0;
- max-width: 0;
- display: inline-block;
- transition: opacity 0.3s ease, max-width 0.3s ease;
+ width: 0;
  overflow: hidden;
- vertical-align: middle;
+ transition: opacity 0.3s ease, width 0.3s ease margin-left 0.3s ease;
+ margin-left: 0;
  }
 
  .sidebar:hover a .menu-text {
  opacity: 1;
- max-width: 200px;
+ width: 180px;
+ margin-left: 12px;
  }
 
  .sidebar a:hover {
  background: rgba(0, 0, 0, 0.05);
  border-left-color: #0072FF;
- }
-
- .sidebar:hover a:hover {
- padding: 12px 20px 12px 25px;
  }
 
  .sidebar a.active {
@@ -171,13 +157,9 @@
 
  .sidebar a i {
  width: 25px;
+ min-width: 25px;
  text-align: center;
- display: inline-block;
- vertical-align: middle;
- }
-
- .sidebar:hover a i {
- margin-right: 10px;
+ flex-shrink: 0;
  }
 
  .sidebar hr {
@@ -234,19 +216,17 @@
  }
 
  .sidebar-submenu a {
- padding: 10px 15px;
+ padding: 10px 0;
+ padding-left: 35px;
  font-size: 13px;
  border-left: none;
- text-align: center;
  }
 
  .sidebar:hover .sidebar-submenu a {
- padding: 10px 20px 10px 55px;
- text-align: left;
+ padding-left: 55px;
  }
 
- .sidebar:hover .sidebar-submenu a:hover {
- padding: 10px 20px 10px 60px;
+ .sidebar-submenu a:hover {
  background: rgba(255, 255, 255, 0.15);
  }
 
@@ -256,7 +236,9 @@
 
  .sidebar-submenu a i {
  width: 20px;
+ min-width: 20px;
  font-size: 12px;
+ flex-shrink: 0;
  }
 
  /* Sidebar Hover Indicator */
@@ -290,8 +272,8 @@
 
  /* Push content when sidebar is hovered */
  .sidebar:hover ~ .main-content {
- margin-left: 260px;
- width: calc(100% - 260px);
+ margin-left: 280px;
+ width: calc(100% - 280px);
  }
 
  /* Ensure container takes full width */
@@ -309,17 +291,19 @@
  z-index: 999;
  }
 
- /* Badge alignment when sidebar not hovered */
+ /* Badge alignment when sidebar collapsed - hide badge */
  .sidebar .badge {
- opacity: 0;
- transition: opacity 0.3s ease;
- position: absolute;
+ display: none;
  }
 
+ /* Badge alignment when sidebar expanded - show badge */
  .sidebar:hover .badge {
- opacity: 1;
- position: static;
- transform: none;
+ display: inline-block;
+ font-size: 11px;
+ padding: 2px 6px;
+ margin-left: auto;
+ margin-right: 45px;
+ flex-shrink: 0;
  }
 
  /* Compact Table Styles */
