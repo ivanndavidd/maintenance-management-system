@@ -318,7 +318,7 @@
                 <i class="fas fa-question-circle"></i><span class="menu-text"> Help & Support</span>
             </a>
 
-            <a href="{{ route('user.profile.index') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
+            <a href="{{ route('profile.index') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
                 <i class="fas fa-user"></i><span class="menu-text"> My Profile</span>
             </a>
 
