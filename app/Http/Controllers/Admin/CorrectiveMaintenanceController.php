@@ -87,8 +87,8 @@ class CorrectiveMaintenanceController extends Controller
     {
         $ticket->load(['assignedUser', 'handler', 'technicians', 'report.asset', 'report.submitter', 'parentTicket.report', 'childTickets']);
 
-        // Get maintenance staff for manual assignment (if needed as backup)
-        $maintenanceStaff = User::role('staff_maintenance')
+        // Get maintenance staff and supervisors for manual assignment
+        $maintenanceStaff = User::role(['staff_maintenance', 'supervisor_maintenance'])
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
