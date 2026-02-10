@@ -322,7 +322,7 @@ class CorrectiveMaintenanceController extends Controller
         ]);
 
         $ticket->status = 'cancelled';
-        $ticket->resolution = $request->resolution ?? 'Cancelled by admin';
+        $ticket->resolution = $request->resolution ?? 'Cancelled by ' . auth()->user()->name;
         $ticket->handled_by = auth()->id();
         $ticket->save();
 

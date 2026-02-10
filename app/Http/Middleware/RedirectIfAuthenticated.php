@@ -19,6 +19,8 @@ class RedirectIfAuthenticated
                 // Redirect based on role
                 if ($user->hasRole('admin')) {
                     return redirect()->route('admin.dashboard');
+                } elseif ($user->hasRole('supervisor_maintenance')) {
+                    return redirect()->route('supervisor.dashboard');
                 } elseif ($user->hasRole('staff_maintenance')) {
                     return redirect()->route('user.dashboard');
                 } elseif ($user->hasRole('pic')) {
