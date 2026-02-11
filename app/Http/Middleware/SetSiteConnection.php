@@ -80,28 +80,35 @@ class SetSiteConnection
         // After switching DB, check if current auth session is valid for this site
         if ($hasAuthSession) {
             $sessionUserId = $request->session()->get($authSessionKey);
+            $this->debug("[{$path}] route={$routeName} hasAuth=1 user_id={$sessionUserId}");
             try {
                 $userExists = DB::connection('site')->table('users')->where('id', $sessionUserId)->exists();
+                $this->debug("[{$path}] user exists in site DB: " . ($userExists ? 'YES' : 'NO'));
                 if (!$userExists) {
                     Auth::guard('web')->forgetUser();
                     $request->session()->forget($authSessionKey);
                     $request->session()->save();
                 }
             } catch (\Exception $e) {
+                $this->debug("[{$path}] auth check error: " . $e->getMessage());
                 Auth::guard('web')->forgetUser();
                 $request->session()->forget($authSessionKey);
                 $request->session()->save();
             }
+        } else {
+            $this->debug("[{$path}] route={$routeName} hasAuth=0");
         }
 
         // If user is authenticated and on login page, redirect to correct dashboard
-        // This prevents redirect loops since Laravel's default guest middleware may not work
         if ($hasAuthSession && $request->session()->has($authSessionKey)) {
             if ($request->routeIs('login') || $request->routeIs('register')) {
                 try {
                     $user = Auth::user();
                     if ($user) {
+                        $roles = $user->getRoleNames()->toArray();
+                        $this->debug("[{$path}] LOGIN PAGE: user={$user->id} roles=" . json_encode($roles));
                         if ($user->hasRole('admin')) {
+                            $this->debug("[{$path}] -> redirect admin.dashboard");
                             return redirect()->route('admin.dashboard');
                         } elseif ($user->hasRole('supervisor_maintenance')) {
                             return redirect()->route('supervisor.dashboard');
@@ -110,14 +117,16 @@ class SetSiteConnection
                         } elseif ($user->hasRole('pic')) {
                             return redirect()->route('pic.dashboard');
                         } else {
-                            // User has no role - clear auth and let them see login page
+                            $this->debug("[{$path}] NO ROLE -> clearing auth");
                             Auth::guard('web')->forgetUser();
                             $request->session()->forget($authSessionKey);
                             $request->session()->save();
                         }
+                    } else {
+                        $this->debug("[{$path}] Auth::user() returned null");
                     }
                 } catch (\Exception $e) {
-                    // Role check failed, clear auth
+                    $this->debug("[{$path}] role check EXCEPTION: " . $e->getMessage());
                     Auth::guard('web')->forgetUser();
                     $request->session()->forget($authSessionKey);
                     $request->session()->save();
