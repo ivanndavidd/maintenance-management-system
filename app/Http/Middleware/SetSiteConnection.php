@@ -9,11 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetSiteConnection
 {
+    protected function debug(string $msg): void
+    {
+        file_put_contents(storage_path('logs/debug-redirect.log'), date('H:i:s') . ' ' . $msg . "\n", FILE_APPEND);
+    }
+
     /**
      * Handle an incoming request.
      *
@@ -39,16 +43,16 @@ class SetSiteConnection
         $authSessionKey = 'login_web_' . sha1('Illuminate\Auth\SessionGuard');
         $hasAuthSession = $request->session()->has($authSessionKey);
 
-        Log::info("SetSiteConnection [{$path}] route={$routeName} siteCode={$siteCode} hasAuthSession={$hasAuthSession}");
+        $this->debug("[{$path}] route={$routeName} siteCode={$siteCode} hasAuth={$hasAuthSession}");
 
         // Skip for auth routes when no site selected
         if (!$siteCode && ($request->routeIs('login') || $request->routeIs('register') || $request->routeIs('password.*'))) {
-            Log::info("SetSiteConnection [{$path}] SKIP: auth route, no site code");
+            $this->debug("[{$path}] SKIP: auth route, no site code");
             return $next($request);
         }
 
         if (!$siteCode) {
-            Log::info("SetSiteConnection [{$path}] REDIRECT: no site code -> site.select");
+            $this->debug("[{$path}] REDIRECT -> site.select (no site code)");
             return redirect()->route('site.select');
         }
 
@@ -56,14 +60,14 @@ class SetSiteConnection
         try {
             $site = Site::on('central')->where('code', $siteCode)->where('is_active', true)->first();
         } catch (\Exception $e) {
-            Log::error("SetSiteConnection [{$path}] Central DB error: " . $e->getMessage());
+            $this->debug("[{$path}] ERROR central DB: " . $e->getMessage());
             $request->session()->forget(['current_site_code', 'current_site_name']);
             $request->session()->save();
             return redirect()->route('site.select');
         }
 
         if (!$site) {
-            Log::warning("SetSiteConnection [{$path}] Site not found for code: {$siteCode}");
+            $this->debug("[{$path}] Site not found: {$siteCode}");
             $request->session()->forget(['current_site_code', 'current_site_name']);
             $request->session()->save();
             return redirect()->route('site.select')->with('error', 'Site not found or inactive.');
@@ -73,9 +77,9 @@ class SetSiteConnection
         try {
             $this->configureSiteConnection($site);
             DB::connection('site')->getPdo();
-            Log::info("SetSiteConnection [{$path}] DB connected: {$site->database_name}");
+            $this->debug("[{$path}] DB OK: {$site->database_name}");
         } catch (\Exception $e) {
-            Log::error("SetSiteConnection [{$path}] DB connection failed for {$site->database_name}: " . $e->getMessage());
+            $this->debug("[{$path}] DB FAIL {$site->database_name}: " . $e->getMessage());
             $request->session()->forget(['current_site_code', 'current_site_name']);
             $request->session()->save();
             return redirect()->route('site.select')->with('error', "Site '{$site->name}' database is not available. Please contact administrator.");
@@ -84,17 +88,17 @@ class SetSiteConnection
         // After switching DB, check if current auth session is valid for this site
         if ($hasAuthSession) {
             $sessionUserId = $request->session()->get($authSessionKey);
-            Log::info("SetSiteConnection [{$path}] Auth session found, user_id={$sessionUserId}");
+            $this->debug("[{$path}] Auth session user_id={$sessionUserId}");
             try {
                 $userExists = DB::connection('site')->table('users')->where('id', $sessionUserId)->exists();
                 if (!$userExists) {
-                    Log::warning("SetSiteConnection [{$path}] User {$sessionUserId} NOT found in {$site->database_name}, clearing auth");
+                    $this->debug("[{$path}] User {$sessionUserId} NOT in {$site->database_name}, clearing");
                     Auth::guard('web')->forgetUser();
                     $request->session()->forget($authSessionKey);
                     $request->session()->regenerateToken();
                 }
             } catch (\Exception $e) {
-                Log::error("SetSiteConnection [{$path}] Auth check error: " . $e->getMessage());
+                $this->debug("[{$path}] Auth check error: " . $e->getMessage());
                 Auth::guard('web')->forgetUser();
                 $request->session()->forget($authSessionKey);
                 $request->session()->regenerateToken();
