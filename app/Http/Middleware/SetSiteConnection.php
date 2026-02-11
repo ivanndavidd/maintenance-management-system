@@ -43,16 +43,12 @@ class SetSiteConnection
         $authSessionKey = 'login_web_' . sha1('Illuminate\Auth\SessionGuard');
         $hasAuthSession = $request->session()->has($authSessionKey);
 
-        $this->debug("[{$path}] route={$routeName} siteCode={$siteCode} hasAuth={$hasAuthSession}");
-
         // Skip for auth routes when no site selected
         if (!$siteCode && ($request->routeIs('login') || $request->routeIs('register') || $request->routeIs('password.*'))) {
-            $this->debug("[{$path}] SKIP: auth route, no site code");
             return $next($request);
         }
 
         if (!$siteCode) {
-            $this->debug("[{$path}] REDIRECT -> site.select (no site code)");
             return redirect()->route('site.select');
         }
 
@@ -60,14 +56,12 @@ class SetSiteConnection
         try {
             $site = Site::on('central')->where('code', $siteCode)->where('is_active', true)->first();
         } catch (\Exception $e) {
-            $this->debug("[{$path}] ERROR central DB: " . $e->getMessage());
             $request->session()->forget(['current_site_code', 'current_site_name']);
             $request->session()->save();
             return redirect()->route('site.select');
         }
 
         if (!$site) {
-            $this->debug("[{$path}] Site not found: {$siteCode}");
             $request->session()->forget(['current_site_code', 'current_site_name']);
             $request->session()->save();
             return redirect()->route('site.select')->with('error', 'Site not found or inactive.');
@@ -77,9 +71,7 @@ class SetSiteConnection
         try {
             $this->configureSiteConnection($site);
             DB::connection('site')->getPdo();
-            $this->debug("[{$path}] DB OK: {$site->database_name}");
         } catch (\Exception $e) {
-            $this->debug("[{$path}] DB FAIL {$site->database_name}: " . $e->getMessage());
             $request->session()->forget(['current_site_code', 'current_site_name']);
             $request->session()->save();
             return redirect()->route('site.select')->with('error', "Site '{$site->name}' database is not available. Please contact administrator.");
@@ -88,20 +80,48 @@ class SetSiteConnection
         // After switching DB, check if current auth session is valid for this site
         if ($hasAuthSession) {
             $sessionUserId = $request->session()->get($authSessionKey);
-            $this->debug("[{$path}] Auth session user_id={$sessionUserId}");
             try {
                 $userExists = DB::connection('site')->table('users')->where('id', $sessionUserId)->exists();
                 if (!$userExists) {
-                    $this->debug("[{$path}] User {$sessionUserId} NOT in {$site->database_name}, clearing");
                     Auth::guard('web')->forgetUser();
                     $request->session()->forget($authSessionKey);
-                    $request->session()->regenerateToken();
+                    $request->session()->save();
                 }
             } catch (\Exception $e) {
-                $this->debug("[{$path}] Auth check error: " . $e->getMessage());
                 Auth::guard('web')->forgetUser();
                 $request->session()->forget($authSessionKey);
-                $request->session()->regenerateToken();
+                $request->session()->save();
+            }
+        }
+
+        // If user is authenticated and on login page, redirect to correct dashboard
+        // This prevents redirect loops since Laravel's default guest middleware may not work
+        if ($hasAuthSession && $request->session()->has($authSessionKey)) {
+            if ($request->routeIs('login') || $request->routeIs('register')) {
+                try {
+                    $user = Auth::user();
+                    if ($user) {
+                        if ($user->hasRole('admin')) {
+                            return redirect()->route('admin.dashboard');
+                        } elseif ($user->hasRole('supervisor_maintenance')) {
+                            return redirect()->route('supervisor.dashboard');
+                        } elseif ($user->hasRole('staff_maintenance')) {
+                            return redirect()->route('user.dashboard');
+                        } elseif ($user->hasRole('pic')) {
+                            return redirect()->route('pic.dashboard');
+                        } else {
+                            // User has no role - clear auth and let them see login page
+                            Auth::guard('web')->forgetUser();
+                            $request->session()->forget($authSessionKey);
+                            $request->session()->save();
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Role check failed, clear auth
+                    Auth::guard('web')->forgetUser();
+                    $request->session()->forget($authSessionKey);
+                    $request->session()->save();
+                }
             }
         }
 
