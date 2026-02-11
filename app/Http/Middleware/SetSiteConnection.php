@@ -29,7 +29,7 @@ class SetSiteConnection
         }
 
         // Skip for login/register routes when no site selected (allow central DB auth for admins)
-        if (!$siteCode && ($request->routeIs('login') || $request->routeIs('password.*'))) {
+        if (!$siteCode && ($request->routeIs('login') || $request->routeIs('password.*') || $request->routeIs('register'))) {
             return $next($request);
         }
 
@@ -48,7 +48,16 @@ class SetSiteConnection
         }
 
         // Configure the site connection dynamically
-        $this->configureSiteConnection($site);
+        try {
+            $this->configureSiteConnection($site);
+
+            // Verify the database is accessible
+            DB::connection('site')->getPdo();
+        } catch (\Exception $e) {
+            // Database not accessible — clear site selection and redirect
+            session()->forget(['current_site_code', 'current_site_name']);
+            return redirect()->route('site.select')->with('error', "Site '{$site->name}' database is not available. Please contact administrator.");
+        }
 
         // Store site info in session for easy access
         session(['current_site_name' => $site->name]);
