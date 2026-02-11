@@ -74,10 +74,15 @@ class SetSiteConnection
                 $userId = Auth::id();
                 $userExists = DB::connection('site')->table('users')->where('id', $userId)->exists();
                 if (!$userExists) {
-                    Auth::logout();
+                    // Clear auth WITHOUT destroying entire session (preserve current_site_code)
+                    Auth::guard('web')->forgetUser();
+                    $request->session()->forget('login_web_' . sha1('Illuminate\Auth\SessionGuard'));
+                    $request->session()->regenerateToken();
                 }
             } catch (\Exception $e) {
-                Auth::logout();
+                Auth::guard('web')->forgetUser();
+                $request->session()->forget('login_web_' . sha1('Illuminate\Auth\SessionGuard'));
+                $request->session()->regenerateToken();
             }
         }
 

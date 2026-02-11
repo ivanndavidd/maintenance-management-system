@@ -93,9 +93,13 @@ Route::get('/dashboard', function () {
         return redirect()->route('supervisor.dashboard');
     } elseif (auth()->user()->hasRole('staff_maintenance')) {
         return redirect()->route('user.dashboard');
+    } elseif (auth()->user()->hasRole('pic')) {
+        return redirect()->route('pic.dashboard');
     } else {
-        // User has no role, logout and redirect to login
-        Auth::logout();
+        // User has no role — clear auth without destroying session (preserve site code)
+        Auth::guard('web')->forgetUser();
+        request()->session()->forget('login_web_' . sha1('Illuminate\Auth\SessionGuard'));
+        request()->session()->regenerateToken();
         return redirect()
             ->route('login')
             ->with('error', 'Your account has no assigned role. Please contact administrator.');
