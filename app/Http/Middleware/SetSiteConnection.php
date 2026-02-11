@@ -28,8 +28,11 @@ class SetSiteConnection
         $routeName = $request->route()?->getName() ?? 'unknown';
         $path = $request->path();
 
+        $this->debug(">>> [{$path}] route={$routeName} method={$request->method()}");
+
         // Skip middleware for site selection routes
         if ($request->routeIs('site.*') || $request->routeIs('sites.*')) {
+            $this->debug("[{$path}] SKIP: site route");
             return $next($request);
         }
 
