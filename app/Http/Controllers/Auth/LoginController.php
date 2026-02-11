@@ -78,16 +78,20 @@ class LoginController extends Controller
         }
 
         // If site login fails, check if user exists in central database as admin
-        $centralUser = $this->getCentralAdminUser($email, $password);
+        try {
+            $centralUser = $this->getCentralAdminUser($email, $password);
 
-        if ($centralUser) {
-            // Sync central admin to current site database
-            $siteUser = $this->syncCentralAdminToSite($centralUser);
+            if ($centralUser) {
+                // Sync central admin to current site database
+                $siteUser = $this->syncCentralAdminToSite($centralUser);
 
-            if ($siteUser) {
-                Auth::login($siteUser, $request->boolean('remember'));
-                return true;
+                if ($siteUser) {
+                    Auth::login($siteUser, $request->boolean('remember'));
+                    return true;
+                }
             }
+        } catch (\Exception $e) {
+            // Central DB not available, skip central login fallback
         }
 
         return false;
