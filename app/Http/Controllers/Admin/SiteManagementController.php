@@ -44,24 +44,16 @@ class SiteManagementController extends Controller
         $databaseName = 'warehouse_' . $validated['code'];
 
         try {
-            DB::beginTransaction();
-
-            // Create site record in central database
-            $site = Site::on('central')->create([
-                'code' => $validated['code'],
-                'name' => $validated['name'],
-                'database_name' => $databaseName,
-                'description' => $validated['description'],
-                'is_active' => true,
-            ]);
-
-            // Create the database
-            DB::statement("CREATE DATABASE IF NOT EXISTS `{$databaseName}`");
+            // Create the database first (before creating site record)
+            DB::connection('central')->statement("CREATE DATABASE IF NOT EXISTS `{$databaseName}`");
 
             // Configure site connection
             Config::set('database.connections.site.database', $databaseName);
             DB::purge('site');
             DB::reconnect('site');
+
+            // Verify database is accessible
+            DB::connection('site')->getPdo();
 
             // Run migrations on the new database
             Artisan::call('migrate', [
@@ -72,18 +64,23 @@ class SiteManagementController extends Controller
             // Create roles in the new database
             $this->createRolesInSiteDatabase();
 
-            DB::commit();
+            // Only create site record after everything succeeds
+            $site = Site::on('central')->create([
+                'code' => $validated['code'],
+                'name' => $validated['name'],
+                'database_name' => $databaseName,
+                'description' => $validated['description'],
+                'is_active' => true,
+            ]);
 
             return redirect()
                 ->route('admin.sites.index')
                 ->with('success', "Site '{$site->name}' created successfully with database '{$databaseName}'! Central admins can now access this site.");
 
         } catch (\Exception $e) {
-            DB::rollBack();
-
             // Try to clean up the database if it was created
             try {
-                DB::statement("DROP DATABASE IF EXISTS `{$databaseName}`");
+                DB::connection('central')->statement("DROP DATABASE IF EXISTS `{$databaseName}`");
             } catch (\Exception $cleanupException) {
                 // Ignore cleanup errors
             }
