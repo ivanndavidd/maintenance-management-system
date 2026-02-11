@@ -20,42 +20,51 @@ class SetSiteConnection
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Check if site is selected in session
-        $siteCode = session('current_site_code');
-
-        // Skip middleware for site selection routes and auth routes
+        // Skip middleware for site selection routes
         if ($request->routeIs('site.*') || $request->routeIs('sites.*')) {
             return $next($request);
         }
 
-        // Skip for login/register routes when no site selected (allow central DB auth for admins)
-        if (!$siteCode && ($request->routeIs('login') || $request->routeIs('password.*') || $request->routeIs('register'))) {
+        // Skip for health check, force-logout
+        if ($request->routeIs('force-logout') || $request->is('health') || $request->is('up')) {
+            return $next($request);
+        }
+
+        // Check if site is selected in session
+        $siteCode = session('current_site_code');
+
+        // Skip for auth routes when no site selected
+        if (!$siteCode && ($request->routeIs('login') || $request->routeIs('register') || $request->routeIs('password.*'))) {
             return $next($request);
         }
 
         if (!$siteCode) {
-            // Redirect to site selection page if not on it already
             return redirect()->route('site.select');
         }
 
         // Get site from central database
-        $site = Site::on('central')->where('code', $siteCode)->where('is_active', true)->first();
+        try {
+            $site = Site::on('central')->where('code', $siteCode)->where('is_active', true)->first();
+        } catch (\Exception $e) {
+            // Central DB not available — clear and redirect
+            $request->session()->forget(['current_site_code', 'current_site_name']);
+            $request->session()->save();
+            return redirect()->route('site.select');
+        }
 
         if (!$site) {
-            // Clear invalid session and redirect to site selection
-            session()->forget(['current_site_code', 'current_site_name']);
+            $request->session()->forget(['current_site_code', 'current_site_name']);
+            $request->session()->save();
             return redirect()->route('site.select')->with('error', 'Site not found or inactive.');
         }
 
-        // Configure the site connection dynamically
+        // Configure and verify site database connection
         try {
             $this->configureSiteConnection($site);
-
-            // Verify the database is accessible
             DB::connection('site')->getPdo();
         } catch (\Exception $e) {
-            // Database not accessible — clear site selection and redirect
-            session()->forget(['current_site_code', 'current_site_name']);
+            $request->session()->forget(['current_site_code', 'current_site_name']);
+            $request->session()->save();
             return redirect()->route('site.select')->with('error', "Site '{$site->name}' database is not available. Please contact administrator.");
         }
 
