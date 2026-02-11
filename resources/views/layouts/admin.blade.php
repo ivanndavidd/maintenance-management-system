@@ -553,7 +553,7 @@
  <a href="{{ route($routePrefix . '.opname.schedules.index') }}" class="{{ (request()->routeIs('admin.opname.schedules.*') || request()->routeIs('supervisor.opname.schedules.*')) && !request()->routeIs('*.opname.compliance.*') ? 'active' : '' }}">
  <i class="fas fa-calendar-alt"></i><span class="menu-text"> Schedules</span>
  </a>
- <a href="{{ route($routePrefix . '.opname.compliance.index') }}" class="{{ request()->routeIs('admin.opname.compliance.*') || request()->routeIs('supervisor.opname.compliance.*') ? 'active' : '' }}">
+ <a href="{{ route($routePrefix . '.opname.reports.compliance') }}" class="{{ request()->routeIs('*.opname.reports.compliance') ? 'active' : '' }}">
  <i class="fas fa-file-alt"></i><span class="menu-text"> Compliance Report</span>
  </a>
  <a href="{{ route($routePrefix . '.opname.reports.accuracy') }}" class="{{ request()->routeIs('admin.opname.reports.accuracy') || request()->routeIs('supervisor.opname.reports.accuracy') ? 'active' : '' }}">
