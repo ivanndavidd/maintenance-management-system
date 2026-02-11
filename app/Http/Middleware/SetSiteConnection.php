@@ -151,5 +151,6 @@ class SetSiteConnection
 
         DB::purge('site');
         DB::reconnect('site');
+        Config::set('database.default', 'site');
     }
 }
