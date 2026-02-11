@@ -35,6 +35,8 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+
+    protected $connection = 'site';
     protected $hidden = ['password', 'remember_token'];
 
     /**
@@ -77,8 +79,12 @@ class User extends Authenticatable
      */
     public function cmrAsTechnician()
     {
-        return $this->belongsToMany(CorrectiveMaintenanceRequest::class, 'corrective_maintenance_technicians', 'user_id', 'cm_request_id')
-            ->withTimestamps();
+        return $this->belongsToMany(
+            CorrectiveMaintenanceRequest::class,
+            'corrective_maintenance_technicians',
+            'user_id',
+            'cm_request_id',
+        )->withTimestamps();
     }
 
     /**
