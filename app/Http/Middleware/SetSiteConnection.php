@@ -68,6 +68,19 @@ class SetSiteConnection
             return redirect()->route('site.select')->with('error', "Site '{$site->name}' database is not available. Please contact administrator.");
         }
 
+        // After switching DB, check if current auth session is valid for this site
+        if (Auth::check()) {
+            try {
+                $userId = Auth::id();
+                $userExists = DB::connection('site')->table('users')->where('id', $userId)->exists();
+                if (!$userExists) {
+                    Auth::logout();
+                }
+            } catch (\Exception $e) {
+                Auth::logout();
+            }
+        }
+
         // Store site info in session for easy access
         session(['current_site_name' => $site->name]);
 
