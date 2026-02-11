@@ -80,6 +80,7 @@
 
     <div class="row">
         <!-- Recent Executions -->
+        @if($routePrefix === 'admin')
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -133,6 +134,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Upcoming Schedules -->
         <div class="col-md-6">
@@ -208,11 +210,13 @@
                                 <i class="fas fa-calendar-plus"></i> Create Schedule
                             </a>
                         </div>
+                        @if($routePrefix === 'admin')
                         <div class="col-md-3">
                             <a href="{{ route($routePrefix.'.opname.executions.create') }}" class="btn btn-success w-100 mb-2">
                                 <i class="fas fa-clipboard-check"></i> Record Execution
                             </a>
                         </div>
+                        @endif
                         <div class="col-md-3">
                             <a href="{{ route($routePrefix.'.opname.reports.compliance') }}" class="btn btn-info w-100 mb-2">
                                 <i class="fas fa-chart-bar"></i> Compliance Report
