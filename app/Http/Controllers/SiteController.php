@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class SiteController extends Controller
 {
@@ -26,8 +27,18 @@ class SiteController extends Controller
             }
         }
 
-        // Always query from central database
-        $sites = Site::on('central')->active()->get();
+        // Skip site selection if sites table doesn't exist yet
+        try {
+            $sites = Site::on('central')->active()->get();
+        } catch (\Exception $e) {
+            // Sites table not available, skip to login
+            return redirect()->route('login');
+        }
+
+        // If no sites configured, skip to login
+        if ($sites->isEmpty()) {
+            return redirect()->route('login');
+        }
 
         return view('sites.select', compact('sites'));
     }
