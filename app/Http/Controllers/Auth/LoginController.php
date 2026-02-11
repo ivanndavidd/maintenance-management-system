@@ -69,20 +69,12 @@ class LoginController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
 
-        // First, try to login from the current site database (default connection)
-        $siteUser = User::where('email', $email)->where('is_active', true)->first();
-
-        if ($siteUser && Hash::check($password, $siteUser->password)) {
-            Auth::login($siteUser, $request->boolean('remember'));
-            return true;
-        }
-
-        // If site login fails, check if user exists in central database as admin
+        // First, check if user is a central admin and sync their role to site DB
         try {
             $centralUser = $this->getCentralAdminUser($email, $password);
 
             if ($centralUser) {
-                // Sync central admin to current site database
+                // Sync central admin to current site database (creates or updates user + assigns admin role)
                 $siteUser = $this->syncCentralAdminToSite($centralUser);
 
                 if ($siteUser) {
@@ -91,7 +83,15 @@ class LoginController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            // Central DB not available, skip central login fallback
+            // Central DB not available, skip central login check
+        }
+
+        // If not a central admin, try normal site database login
+        $siteUser = User::where('email', $email)->where('is_active', true)->first();
+
+        if ($siteUser && Hash::check($password, $siteUser->password)) {
+            Auth::login($siteUser, $request->boolean('remember'));
+            return true;
         }
 
         return false;
