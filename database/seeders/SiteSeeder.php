@@ -14,17 +14,10 @@ class SiteSeeder extends Seeder
     {
         $sites = [
             [
-                'code' => 'site_a',
-                'name' => 'Warehouse Site A',
-                'database_name' => 'warehouse_site_a',
-                'description' => 'Main warehouse facility',
-                'is_active' => true,
-            ],
-            [
-                'code' => 'site_b',
-                'name' => 'Warehouse Site B',
-                'database_name' => 'warehouse_site_b',
-                'description' => 'Secondary warehouse facility',
+                'code' => 'marunda',
+                'name' => 'Warehouse Marunda',
+                'database_name' => 'warehouse_maintenance',
+                'description' => 'Warehouse Marunda Facility',
                 'is_active' => true,
             ],
         ];
