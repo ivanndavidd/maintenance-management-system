@@ -19,7 +19,7 @@ class RedirectIfAuthenticated
 
                     // User session exists but user not found in current site DB
                     if (!$user) {
-                        Auth::guard($guard)->logout();
+                        $this->clearAuthWithoutDestroyingSession($request, $guard);
                         return $next($request);
                     }
 
@@ -33,7 +33,7 @@ class RedirectIfAuthenticated
                     } elseif ($user->hasRole('pic')) {
                         return redirect()->route('pic.dashboard');
                     } else {
-                        Auth::logout();
+                        $this->clearAuthWithoutDestroyingSession($request, $guard);
                         return redirect()
                             ->route('login')
                             ->with('error', 'No role assigned to your account.');
@@ -41,11 +41,23 @@ class RedirectIfAuthenticated
                 }
             } catch (\Exception $e) {
                 // Auth check failed (e.g. user table not accessible in site DB)
-                Auth::guard($guard)->logout();
+                $this->clearAuthWithoutDestroyingSession($request, $guard);
                 return $next($request);
             }
         }
 
         return $next($request);
+    }
+
+    /**
+     * Clear auth session data without destroying the entire session.
+     * This preserves current_site_code and other session data.
+     */
+    protected function clearAuthWithoutDestroyingSession(Request $request, ?string $guard): void
+    {
+        $guardName = $guard ?? 'web';
+        Auth::guard($guardName)->forgetUser();
+        $request->session()->forget('login_' . $guardName . '_' . sha1('Illuminate\Auth\SessionGuard'));
+        $request->session()->regenerateToken();
     }
 }
