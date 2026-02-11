@@ -5,25 +5,33 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class RedirectIfAuthenticated
 {
     public function handle(Request $request, Closure $next, string ...$guards)
     {
         $guards = empty($guards) ? [null] : $guards;
+        $path = $request->path();
 
         foreach ($guards as $guard) {
             try {
-                if (Auth::guard($guard)->check()) {
-                    $user = Auth::guard($guard)->user();
+                $guardName = $guard ?? 'web';
+                $isAuthenticated = Auth::guard($guardName)->check();
+                Log::info("RedirectIfAuthenticated [{$path}] guard={$guardName} authenticated=" . ($isAuthenticated ? 'true' : 'false'));
 
-                    // User session exists but user not found in current site DB
+                if ($isAuthenticated) {
+                    $user = Auth::guard($guardName)->user();
+
                     if (!$user) {
+                        Log::warning("RedirectIfAuthenticated [{$path}] Auth check true but user() returned null, clearing auth");
                         $this->clearAuthWithoutDestroyingSession($request, $guard);
                         return $next($request);
                     }
 
-                    // Redirect based on role
+                    $roles = $user->getRoleNames()->toArray();
+                    Log::info("RedirectIfAuthenticated [{$path}] User: id={$user->id} email={$user->email} roles=" . json_encode($roles));
+
                     if ($user->hasRole('admin')) {
                         return redirect()->route('admin.dashboard');
                     } elseif ($user->hasRole('supervisor_maintenance')) {
@@ -33,6 +41,7 @@ class RedirectIfAuthenticated
                     } elseif ($user->hasRole('pic')) {
                         return redirect()->route('pic.dashboard');
                     } else {
+                        Log::warning("RedirectIfAuthenticated [{$path}] User {$user->id} has no recognized role, clearing auth");
                         $this->clearAuthWithoutDestroyingSession($request, $guard);
                         return redirect()
                             ->route('login')
@@ -40,7 +49,7 @@ class RedirectIfAuthenticated
                     }
                 }
             } catch (\Exception $e) {
-                // Auth check failed (e.g. user table not accessible in site DB)
+                Log::error("RedirectIfAuthenticated [{$path}] Exception: " . $e->getMessage());
                 $this->clearAuthWithoutDestroyingSession($request, $guard);
                 return $next($request);
             }
@@ -49,10 +58,6 @@ class RedirectIfAuthenticated
         return $next($request);
     }
 
-    /**
-     * Clear auth session data without destroying the entire session.
-     * This preserves current_site_code and other session data.
-     */
     protected function clearAuthWithoutDestroyingSession(Request $request, ?string $guard): void
     {
         $guardName = $guard ?? 'web';
