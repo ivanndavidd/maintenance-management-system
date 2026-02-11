@@ -226,9 +226,11 @@
                             </td>
                             <td>{{ $execution->executedByUser->name }}</td>
                             <td>
+                                @if($routePrefix === 'admin')
                                 <a href="{{ route($routePrefix.'.opname.executions.show', $execution) }}" class="btn btn-sm btn-info">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @endif
                             </td>
                         </tr>
                         @empty

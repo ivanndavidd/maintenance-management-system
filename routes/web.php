@@ -315,8 +315,9 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/opname/executions', [App\Http\Controllers\Admin\SparepartController::class, 'opnameExecutions'])->name('opname.executions');
                 Route::get('/opname/executions/create', [App\Http\Controllers\Admin\SparepartController::class, 'createOpnameExecution'])->name('opname.executions.create');
                 Route::post('/opname/executions', [App\Http\Controllers\Admin\SparepartController::class, 'storeOpnameExecution'])->name('opname.executions.store');
-                Route::get('/opname/reports/compliance', [App\Http\Controllers\Admin\SparepartController::class, 'opnameComplianceReport'])->name('opname.compliance-report');
-                Route::get('/opname/reports/accuracy', [App\Http\Controllers\Admin\SparepartController::class, 'opnameAccuracyReport'])->name('opname.accuracy-report');
+                Route::get('/opname/reports/compliance', [App\Http\Controllers\Admin\SparepartController::class, 'opnameComplianceReport'])->name('opname.reports.compliance');
+                Route::get('/opname/reports/accuracy', [App\Http\Controllers\Admin\SparepartController::class, 'opnameAccuracyReport'])->name('opname.reports.accuracy');
+                Route::get('/opname/executions/{execution}', [App\Http\Controllers\Admin\SparepartController::class, 'opnameExecutions'])->name('opname.executions.show');
 
                 // Stock Adjustments
                 Route::get('/adjustments', [App\Http\Controllers\Admin\SparepartController::class, 'adjustments'])->name('adjustments');
@@ -809,7 +810,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/items/{item}/approve', [App\Http\Controllers\Admin\StockOpnameController::class, 'approveItem'])->name('items.approve');
                 Route::post('/items/{item}/reject', [App\Http\Controllers\Admin\StockOpnameController::class, 'rejectItem'])->name('items.reject');
                 Route::post('/items/{item}/sync-to-stock', [App\Http\Controllers\Admin\StockOpnameController::class, 'syncItemToStock'])->name('items.sync-to-stock');
-                Route::get('/compliance', [App\Http\Controllers\Admin\StockOpnameController::class, 'complianceReport'])->name('compliance.index');
+                Route::get('/compliance', [App\Http\Controllers\Admin\StockOpnameController::class, 'complianceReport'])->name('reports.compliance');
                 Route::get('/reports/accuracy', [App\Http\Controllers\Admin\StockOpnameController::class, 'accuracyReport'])->name('reports.accuracy');
             });
 

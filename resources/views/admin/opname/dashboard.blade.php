@@ -218,12 +218,12 @@
                         </div>
                         @endif
                         <div class="col-md-3">
-                            <a href="{{ route($routePrefix === 'admin' ? 'admin.opname.compliance-report' : 'supervisor.opname.compliance.index') }}" class="btn btn-info w-100 mb-2">
+                            <a href="{{ route($routePrefix.'.opname.reports.compliance') }}" class="btn btn-info w-100 mb-2">
                                 <i class="fas fa-chart-bar"></i> Compliance Report
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{{ route($routePrefix === 'admin' ? 'admin.opname.accuracy-report' : 'supervisor.opname.reports.accuracy') }}" class="btn btn-warning w-100 mb-2">
+                            <a href="{{ route($routePrefix.'.opname.reports.accuracy') }}" class="btn btn-warning w-100 mb-2">
                                 <i class="fas fa-chart-pie"></i> Accuracy Report
                             </a>
                         </div>
