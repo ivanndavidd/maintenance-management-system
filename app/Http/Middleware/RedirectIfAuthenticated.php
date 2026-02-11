@@ -5,10 +5,14 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class RedirectIfAuthenticated
 {
+    protected function debug(string $msg): void
+    {
+        file_put_contents(storage_path('logs/debug-redirect.log'), date('H:i:s') . ' ' . $msg . "\n", FILE_APPEND);
+    }
+
     public function handle(Request $request, Closure $next, string ...$guards)
     {
         $guards = empty($guards) ? [null] : $guards;
@@ -18,30 +22,34 @@ class RedirectIfAuthenticated
             try {
                 $guardName = $guard ?? 'web';
                 $isAuthenticated = Auth::guard($guardName)->check();
-                Log::info("RedirectIfAuthenticated [{$path}] guard={$guardName} authenticated=" . ($isAuthenticated ? 'true' : 'false'));
+                $this->debug("RedirectIfAuth [{$path}] authenticated=" . ($isAuthenticated ? 'true' : 'false'));
 
                 if ($isAuthenticated) {
                     $user = Auth::guard($guardName)->user();
 
                     if (!$user) {
-                        Log::warning("RedirectIfAuthenticated [{$path}] Auth check true but user() returned null, clearing auth");
+                        $this->debug("RedirectIfAuth [{$path}] user() returned null, clearing");
                         $this->clearAuthWithoutDestroyingSession($request, $guard);
                         return $next($request);
                     }
 
                     $roles = $user->getRoleNames()->toArray();
-                    Log::info("RedirectIfAuthenticated [{$path}] User: id={$user->id} email={$user->email} roles=" . json_encode($roles));
+                    $this->debug("RedirectIfAuth [{$path}] user={$user->id} email={$user->email} roles=" . json_encode($roles));
 
                     if ($user->hasRole('admin')) {
+                        $this->debug("RedirectIfAuth [{$path}] -> admin.dashboard");
                         return redirect()->route('admin.dashboard');
                     } elseif ($user->hasRole('supervisor_maintenance')) {
+                        $this->debug("RedirectIfAuth [{$path}] -> supervisor.dashboard");
                         return redirect()->route('supervisor.dashboard');
                     } elseif ($user->hasRole('staff_maintenance')) {
+                        $this->debug("RedirectIfAuth [{$path}] -> user.dashboard");
                         return redirect()->route('user.dashboard');
                     } elseif ($user->hasRole('pic')) {
+                        $this->debug("RedirectIfAuth [{$path}] -> pic.dashboard");
                         return redirect()->route('pic.dashboard');
                     } else {
-                        Log::warning("RedirectIfAuthenticated [{$path}] User {$user->id} has no recognized role, clearing auth");
+                        $this->debug("RedirectIfAuth [{$path}] NO ROLE! clearing auth -> login");
                         $this->clearAuthWithoutDestroyingSession($request, $guard);
                         return redirect()
                             ->route('login')
@@ -49,7 +57,7 @@ class RedirectIfAuthenticated
                     }
                 }
             } catch (\Exception $e) {
-                Log::error("RedirectIfAuthenticated [{$path}] Exception: " . $e->getMessage());
+                $this->debug("RedirectIfAuth [{$path}] EXCEPTION: " . $e->getMessage());
                 $this->clearAuthWithoutDestroyingSession($request, $guard);
                 return $next($request);
             }
