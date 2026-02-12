@@ -40,6 +40,7 @@ class SetupCentralDatabase extends Command
         $this->call('migrate', [
             '--path' => 'database/migrations/central',
             '--database' => 'central',
+            '--force' => true,
         ]);
 
         // Step 3: Optionally seed
@@ -47,6 +48,7 @@ class SetupCentralDatabase extends Command
             $this->info('Seeding central database...');
             $this->call('db:seed', [
                 '--class' => 'Database\\Seeders\\CentralDatabaseSeeder',
+                '--force' => true,
             ]);
         }
 
