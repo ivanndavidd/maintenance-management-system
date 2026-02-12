@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Site extends Model
+class Site extends TenantModels
 {
     /**
      * The database connection that should be used by the model.
@@ -12,14 +12,7 @@ class Site extends Model
      */
     protected $connection = 'central';
 
-    protected $fillable = [
-        'code',
-        'name',
-        'database_name',
-        'description',
-        'logo',
-        'is_active',
-    ];
+    protected $fillable = ['code', 'name', 'database_name', 'description', 'logo', 'is_active'];
 
     protected $casts = [
         'is_active' => 'boolean',

@@ -5,15 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class EmailVerificationCode extends Model
+class EmailVerificationCode extends TenantModels
 {
-    protected $fillable = [
-        'email',
-        'code',
-        'registration_data',
-        'expires_at',
-        'verified_at',
-    ];
+    protected $fillable = ['email', 'code', 'registration_data', 'expires_at', 'verified_at'];
 
     protected $casts = [
         'registration_data' => 'array',

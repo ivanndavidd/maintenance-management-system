@@ -6,16 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PmTaskLog extends Model
+class PmTaskLog extends TenantModels
 {
     use HasFactory;
 
-    protected $fillable = [
-        'pm_task_id',
-        'user_id',
-        'action',
-        'notes',
-    ];
+    protected $fillable = ['pm_task_id', 'user_id', 'action', 'notes'];
 
     // Relationships
     public function task(): BelongsTo

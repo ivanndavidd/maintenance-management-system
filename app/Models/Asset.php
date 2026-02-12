@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Asset extends Model
+class Asset extends TenantModels
 {
     use HasFactory, SoftDeletes;
 
@@ -75,7 +75,7 @@ class Asset extends Model
 
             if ($latest) {
                 // Extract the sequence number and increment
-                $sequence = (int)substr($latest->asset_id, -3);
+                $sequence = (int) substr($latest->asset_id, -3);
                 $newSequence = str_pad($sequence + 1, 3, '0', STR_PAD_LEFT);
             } else {
                 // First asset of the day

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class StockAdjustment extends Model
+class StockAdjustment extends TenantModels
 {
     protected $fillable = [
         'adjustment_code',
@@ -152,9 +152,11 @@ class StockAdjustment extends Model
             'adjustment_qty' => $opnameItem->discrepancy_qty,
             'adjustment_type' => 'correction',
             'reason_category' => 'opname_result',
-            'reason' => 'Stock Opname Result - Schedule: ' . $opnameItem->schedule->schedule_code .
-                        ($opnameItem->notes ? ' | Notes: ' . $opnameItem->notes : '') .
-                        ($opnameItem->review_notes ? ' | Review: ' . $opnameItem->review_notes : ''),
+            'reason' =>
+                'Stock Opname Result - Schedule: ' .
+                $opnameItem->schedule->schedule_code .
+                ($opnameItem->notes ? ' | Notes: ' . $opnameItem->notes : '') .
+                ($opnameItem->review_notes ? ' | Review: ' . $opnameItem->review_notes : ''),
             'value_impact' => $opnameItem->discrepancy_value,
             'adjusted_by' => $opnameItem->executed_by,
             'approved_by' => $opnameItem->reviewed_by,

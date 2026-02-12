@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SparepartPurchaseOrder extends Model
+class SparepartPurchaseOrder extends TenantModels
 {
     protected $fillable = [
         'po_number',

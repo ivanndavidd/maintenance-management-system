@@ -20,8 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         ]);
 
-        // Add site connection middleware BEFORE other web middleware
-        // so DB is configured before auth checks
+        // Add site connection middleware to web group
+        // Must use append (not prepend) because it needs session access from StartSession
         $middleware->web(append: [\App\Http\Middleware\SetSiteConnection::class]);
 
         // Configure Authenticate middleware redirect

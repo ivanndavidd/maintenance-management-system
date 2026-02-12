@@ -7,15 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PmScheduleDate extends Model
+class PmScheduleDate extends TenantModels
 {
     use HasFactory;
 
-    protected $fillable = [
-        'pm_schedule_id',
-        'schedule_date',
-        'sort_order',
-    ];
+    protected $fillable = ['pm_schedule_id', 'schedule_date', 'sort_order'];
 
     protected $casts = [
         'schedule_date' => 'date',
@@ -33,7 +29,9 @@ class PmScheduleDate extends Model
 
     public function standaloneTasks(): HasMany
     {
-        return $this->hasMany(PmTask::class, 'pm_schedule_date_id')->whereNull('pm_spr_group_id')->orderBy('sort_order');
+        return $this->hasMany(PmTask::class, 'pm_schedule_date_id')
+            ->whereNull('pm_spr_group_id')
+            ->orderBy('sort_order');
     }
 
     public function getTasksCountAttribute(): int

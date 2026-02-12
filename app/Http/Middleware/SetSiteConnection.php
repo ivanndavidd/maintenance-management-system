@@ -12,22 +12,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SetSiteConnection
 {
-    protected function debug(string $msg): void
-    {
-        file_put_contents(
-            storage_path('logs/debug-redirect.log'),
-            date('H:i:s') . ' ' . $msg . "\n",
-            FILE_APPEND,
-        );
-    }
-
     public function handle(Request $request, Closure $next): Response
     {
-        $routeName = $request->route()?->getName() ?? 'unknown';
-        $path = $request->path();
-
-        $this->debug(">>> [{$path}] route={$routeName} method={$request->method()}");
-
         // Skip middleware for site selection routes
         if ($request->routeIs('site.*') || $request->routeIs('sites.*')) {
             return $next($request);
@@ -81,37 +67,41 @@ class SetSiteConnection
                 ->with('error', "Site '{$site->name}' database is not available.");
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | SAFE AUTH VALIDATION (NO SESSION HACKING)
-        |--------------------------------------------------------------------------
-        */
-
+        // Validate auth session matches current site
         if (Auth::check()) {
             try {
+                $authSite = session('auth_site');
+                $currentSite = session('current_site_code');
+
+                if ($authSite !== $currentSite) {
+                    Auth::logout();
+                    session()->invalidate();
+                    session()->regenerateToken();
+                    return redirect()->route('login');
+                }
+
+                // Validate user exists in site DB
                 $userExists = DB::connection('site')
                     ->table('users')
                     ->where('id', Auth::id())
+                    ->where('email', Auth::user()->email)
                     ->exists();
 
                 if (!$userExists) {
-                    $this->debug("[{$path}] User not found in site DB → logout");
                     Auth::logout();
+                    session()->invalidate();
+                    session()->regenerateToken();
                     return redirect()->route('login');
                 }
             } catch (\Exception $e) {
-                $this->debug("[{$path}] Auth validation error: " . $e->getMessage());
                 Auth::logout();
+                session()->invalidate();
+                session()->regenerateToken();
                 return redirect()->route('login');
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Redirect authenticated user away from login page
-        |--------------------------------------------------------------------------
-        */
-
+        // Redirect authenticated user away from login page
         if (Auth::check() && ($request->routeIs('login') || $request->routeIs('register'))) {
             $user = Auth::user();
 
@@ -131,15 +121,12 @@ class SetSiteConnection
                 return redirect()->route('pic.dashboard');
             }
 
-            // If no valid role
             Auth::logout();
             return redirect()->route('login');
         }
 
-        // Store site name in session
+        // Store site name in session & share to views
         session(['current_site_name' => $site->name]);
-
-        // Share to views
         view()->share('currentSite', $site);
 
         return $next($request);
@@ -151,6 +138,16 @@ class SetSiteConnection
 
         DB::purge('site');
         DB::reconnect('site');
+
+        // Set 'site' as the default connection so that all models
+        // (including Spatie Permission) use the correct site database
         Config::set('database.default', 'site');
+
+        // Force Auth guard to forget any cached user so it re-resolves
+        // from the newly configured site connection
+        Auth::guard('web')->forgetUser();
+
+        // Clear Spatie permission cache for fresh role/permission checks
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }

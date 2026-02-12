@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Sparepart extends Model
+class Sparepart extends TenantModels
 {
     protected $fillable = [
         'equipment_type',

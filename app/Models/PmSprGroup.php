@@ -7,15 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PmSprGroup extends Model
+class PmSprGroup extends TenantModels
 {
     use HasFactory;
 
-    protected $fillable = [
-        'pm_cleaning_group_id',
-        'name',
-        'sort_order',
-    ];
+    protected $fillable = ['pm_cleaning_group_id', 'name', 'sort_order'];
 
     // Relationships
     public function cleaningGroup(): BelongsTo

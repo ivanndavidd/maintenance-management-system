@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class HelpArticle extends Model
+class HelpArticle extends TenantModels
 {
     protected $fillable = [
         'title',
@@ -80,7 +80,8 @@ class HelpArticle extends Model
             'documentation' => '<span class="badge bg-secondary">Documentation</span>',
         ];
 
-        return $badges[$this->category] ?? '<span class="badge bg-secondary">' . ucfirst($this->category) . '</span>';
+        return $badges[$this->category] ??
+            '<span class="badge bg-secondary">' . ucfirst($this->category) . '</span>';
     }
 
     /**

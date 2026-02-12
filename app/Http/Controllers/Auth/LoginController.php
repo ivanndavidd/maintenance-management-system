@@ -34,14 +34,17 @@ class LoginController extends Controller
      * Handle a login request to the application.
      * Override to support central admin authentication across all sites.
      */
+
     public function login(Request $request)
     {
         $this->validateLogin($request);
 
         // If the class is using the ThrottlesLogins trait, we can automatically throttle
         // the login attempts for this application.
-        if (method_exists($this, 'hasTooManyLoginAttempts') &&
-            $this->hasTooManyLoginAttempts($request)) {
+        if (
+            method_exists($this, 'hasTooManyLoginAttempts') &&
+            $this->hasTooManyLoginAttempts($request)
+        ) {
             $this->fireLockoutEvent($request);
             return $this->sendLockoutResponse($request);
         }
@@ -64,6 +67,7 @@ class LoginController extends Controller
     /**
      * Attempt login with fallback to central database for admins.
      */
+
     protected function attemptLoginWithFallback(Request $request): bool
     {
         $email = $request->input('email');
@@ -179,9 +183,10 @@ class LoginController extends Controller
         $roles = ['admin', 'supervisor_maintenance', 'staff_maintenance'];
 
         foreach ($roles as $roleName) {
-            \Spatie\Permission\Models\Role::firstOrCreate(
-                ['name' => $roleName, 'guard_name' => 'web']
-            );
+            \Spatie\Permission\Models\Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => 'web',
+            ]);
         }
     }
 
@@ -205,5 +210,30 @@ class LoginController extends Controller
         throw ValidationException::withMessages([
             $this->username() => [trans('auth.failed')],
         ]);
+    }
+
+    protected function sendLoginResponse(Request $request)
+    {
+        $request->session()->regenerate();
+
+        // Store the site where the user authenticated
+        $request->session()->put('auth_site', session('current_site_code'));
+
+        $request->session()->put('auth.password_confirmed_at', time());
+
+        return redirect()->intended($this->redirectPath());
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        // ✅ Hapus auth_site
+        $request->session()->forget('auth_site');
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
     }
 }

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PurchaseOrderItem extends Model
+class PurchaseOrderItem extends TenantModels
 {
     protected $fillable = [
         'purchase_order_id',
@@ -53,15 +53,13 @@ class PurchaseOrderItem extends Model
     // Sparepart relationship helper
     public function sparepart()
     {
-        return $this->belongsTo(Sparepart::class, 'item_id')
-            ->where('item_type', Sparepart::class);
+        return $this->belongsTo(Sparepart::class, 'item_id')->where('item_type', Sparepart::class);
     }
 
     // Tool relationship helper
     public function tool()
     {
-        return $this->belongsTo(Tool::class, 'item_id')
-            ->where('item_type', Tool::class);
+        return $this->belongsTo(Tool::class, 'item_id')->where('item_type', Tool::class);
     }
 
     // Calculate remaining quantity to receive
@@ -144,7 +142,9 @@ class PurchaseOrderItem extends Model
     public function addToStock()
     {
         if ($this->is_unlisted) {
-            throw new \Exception('Cannot add unlisted item to stock. Please add to master data first.');
+            throw new \Exception(
+                'Cannot add unlisted item to stock. Please add to master data first.',
+            );
         }
 
         if ($this->compliance_status !== 'compliant') {
@@ -201,10 +201,10 @@ class PurchaseOrderItem extends Model
     // Check if can add to stock
     public function canAddToStock()
     {
-        return !$this->is_unlisted
-            && $this->status === 'received'
-            && $this->compliance_status === 'compliant'
-            && !$this->added_to_stock;
+        return !$this->is_unlisted &&
+            $this->status === 'received' &&
+            $this->compliance_status === 'compliant' &&
+            !$this->added_to_stock;
     }
 
     // Update status based on quantity received
