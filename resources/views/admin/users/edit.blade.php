@@ -271,6 +271,44 @@
                 </div>
             </div>
 
+            <!-- Site Access -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-globe"></i> Site Access</h6>
+                </div>
+                <div class="card-body">
+                    @php
+                        $isSupervisor = ($userRole && $userRole->name === 'supervisor_maintenance');
+                    @endphp
+                    @if($isSupervisor)
+                        <p class="text-muted small mb-0">Site access management is not available for Supervisor role.</p>
+                    @elseif($sites->isEmpty())
+                        <p class="text-muted small mb-0">No sites available from central database.</p>
+                    @else
+                        <form action="{{ route($routePrefix.'.users.site-access', $user) }}" method="POST">
+                            @csrf
+                            <p class="text-muted small mb-2">Select sites this user can access:</p>
+                            @foreach($sites as $site)
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="site_ids[]"
+                                           value="{{ $site->id }}"
+                                           id="edit_site_{{ $site->id }}"
+                                           {{ in_array($site->id, $userSiteIds ?? []) ? 'checked' : '' }}>
+                                    <label class="form-check-label small" for="edit_site_{{ $site->id }}">
+                                        {{ $site->name }}
+                                        <span class="text-muted">({{ $site->code }})</span>
+                                    </label>
+                                </div>
+                            @endforeach
+                            <button type="submit" class="btn btn-primary btn-sm w-100 mt-2">
+                                <i class="fas fa-save"></i> Save Site Access
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+
             <!-- Warning Notes -->
             <div class="card shadow-sm">
                 <div class="card-header bg-warning text-dark">

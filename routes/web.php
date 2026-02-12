@@ -149,6 +149,10 @@ Route::middleware(['auth'])->group(function () {
                 App\Http\Controllers\Admin\UserController::class,
                 'resetPassword',
             ])->name('users.reset-password');
+            Route::post('users/{user}/site-access', [
+                App\Http\Controllers\Admin\UserController::class,
+                'updateSiteAccess',
+            ])->name('users.site-access');
 
             // Shift Management
             Route::resource('shifts', App\Http\Controllers\Admin\ShiftController::class);
