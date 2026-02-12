@@ -24,6 +24,24 @@ return Application::configure(basePath: dirname(__DIR__))
         // Must use append (not prepend) because it needs session access from StartSession
         $middleware->web(append: [\App\Http\Middleware\SetSiteConnection::class]);
 
+        // Ensure SetSiteConnection runs BEFORE auth middleware
+        // Laravel sorts combined middleware (web group + route middleware) by priority.
+        // Without this, auth (priority 5) runs before SetSiteConnection (no priority),
+        // causing auth to check the wrong database before the site connection is configured.
+        $middleware->priority([
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \App\Http\Middleware\SetSiteConnection::class,
+            \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
+            \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \Illuminate\Auth\Middleware\Authorize::class,
+        ]);
+
         // Configure Authenticate middleware redirect
         $middleware->redirectGuestsTo('/login');
     })
