@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class StockOpnameSchedule extends Model
+class StockOpnameSchedule extends TenantModels
 {
     protected $fillable = [
         'schedule_code',
@@ -63,7 +63,12 @@ class StockOpnameSchedule extends Model
 
     public function assignedUsers()
     {
-        return $this->belongsToMany(User::class, 'stock_opname_user_assignments', 'schedule_id', 'user_id')
+        return $this->belongsToMany(
+            User::class,
+            'stock_opname_user_assignments',
+            'schedule_id',
+            'user_id',
+        )
             ->withPivot('assignment_date', 'shift_type', 'is_active')
             ->withTimestamps();
     }
@@ -89,9 +94,10 @@ class StockOpnameSchedule extends Model
             'schedule_id',
             'id',
             'id',
-            'item_id'
-        )->where('stock_opname_schedule_items.item_type', 'sparepart')
-         ->where('stock_opname_schedule_items.is_active', true);
+            'item_id',
+        )
+            ->where('stock_opname_schedule_items.item_type', 'sparepart')
+            ->where('stock_opname_schedule_items.is_active', true);
     }
 
     // Get tools in this schedule
@@ -103,9 +109,10 @@ class StockOpnameSchedule extends Model
             'schedule_id',
             'id',
             'id',
-            'item_id'
-        )->where('stock_opname_schedule_items.item_type', 'tool')
-         ->where('stock_opname_schedule_items.is_active', true);
+            'item_id',
+        )
+            ->where('stock_opname_schedule_items.item_type', 'tool')
+            ->where('stock_opname_schedule_items.is_active', true);
     }
 
     // Get assets in this schedule
@@ -117,9 +124,10 @@ class StockOpnameSchedule extends Model
             'schedule_id',
             'id',
             'id',
-            'item_id'
-        )->where('stock_opname_schedule_items.item_type', 'asset')
-         ->where('stock_opname_schedule_items.is_active', true);
+            'item_id',
+        )
+            ->where('stock_opname_schedule_items.item_type', 'asset')
+            ->where('stock_opname_schedule_items.is_active', true);
     }
 
     // Get pending items
@@ -160,7 +168,8 @@ class StockOpnameSchedule extends Model
     // Check if schedule is overdue
     public function isOverdue()
     {
-        return now()->toDateString() > $this->execution_date->toDateString() && $this->status !== 'completed';
+        return now()->toDateString() > $this->execution_date->toDateString() &&
+            $this->status !== 'completed';
     }
 
     // Check if schedule is due soon (within 2 days)
@@ -257,7 +266,9 @@ class StockOpnameSchedule extends Model
             'pending_review' => $completedItems->where('review_status', 'pending_review')->count(),
             'approved' => $completedItems->where('review_status', 'approved')->count(),
             'rejected' => $completedItems->where('review_status', 'rejected')->count(),
-            'no_review_needed' => $completedItems->where('review_status', 'no_review_needed')->count(),
+            'no_review_needed' => $completedItems
+                ->where('review_status', 'no_review_needed')
+                ->count(),
         ];
     }
 
@@ -267,22 +278,33 @@ class StockOpnameSchedule extends Model
         $completedItems = $this->items()->where('execution_status', 'completed')->get();
         $itemsWithDiscrepancy = $completedItems->filter(fn($item) => $item->hasDiscrepancy());
 
-        $positiveDiscrepancy = $itemsWithDiscrepancy->filter(fn($item) => $item->discrepancy_qty > 0);
-        $negativeDiscrepancy = $itemsWithDiscrepancy->filter(fn($item) => $item->discrepancy_qty < 0);
+        $positiveDiscrepancy = $itemsWithDiscrepancy->filter(
+            fn($item) => $item->discrepancy_qty > 0,
+        );
+        $negativeDiscrepancy = $itemsWithDiscrepancy->filter(
+            fn($item) => $item->discrepancy_qty < 0,
+        );
 
         return [
             'total_items' => $completedItems->count(),
             'items_with_discrepancy' => $itemsWithDiscrepancy->count(),
-            'items_without_discrepancy' => $completedItems->count() - $itemsWithDiscrepancy->count(),
+            'items_without_discrepancy' =>
+                $completedItems->count() - $itemsWithDiscrepancy->count(),
             'positive_discrepancy_count' => $positiveDiscrepancy->count(),
             'negative_discrepancy_count' => $negativeDiscrepancy->count(),
             'total_positive_qty' => $positiveDiscrepancy->sum('discrepancy_qty'),
             'total_negative_qty' => abs($negativeDiscrepancy->sum('discrepancy_qty')),
             'total_positive_value' => $positiveDiscrepancy->sum('discrepancy_value'),
             'total_negative_value' => abs($negativeDiscrepancy->sum('discrepancy_value')),
-            'accuracy_rate' => $completedItems->count() > 0
-                ? round((($completedItems->count() - $itemsWithDiscrepancy->count()) / $completedItems->count()) * 100, 2)
-                : 0,
+            'accuracy_rate' =>
+                $completedItems->count() > 0
+                    ? round(
+                        (($completedItems->count() - $itemsWithDiscrepancy->count()) /
+                            $completedItems->count()) *
+                            100,
+                        2,
+                    )
+                    : 0,
         ];
     }
 
@@ -300,9 +322,10 @@ class StockOpnameSchedule extends Model
             'total_approved_with_discrepancy' => $approvedItems->count(),
             'synced' => $syncedItems->count(),
             'pending_sync' => $approvedItems->count() - $syncedItems->count(),
-            'sync_rate' => $approvedItems->count() > 0
-                ? round(($syncedItems->count() / $approvedItems->count()) * 100, 2)
-                : 0,
+            'sync_rate' =>
+                $approvedItems->count() > 0
+                    ? round(($syncedItems->count() / $approvedItems->count()) * 100, 2)
+                    : 0,
         ];
     }
 
@@ -312,18 +335,36 @@ class StockOpnameSchedule extends Model
         return [
             'spareparts' => [
                 'total' => $this->items()->where('item_type', 'sparepart')->count(),
-                'completed' => $this->items()->where('item_type', 'sparepart')->where('execution_status', 'completed')->count(),
-                'pending' => $this->items()->where('item_type', 'sparepart')->where('execution_status', 'pending')->count(),
+                'completed' => $this->items()
+                    ->where('item_type', 'sparepart')
+                    ->where('execution_status', 'completed')
+                    ->count(),
+                'pending' => $this->items()
+                    ->where('item_type', 'sparepart')
+                    ->where('execution_status', 'pending')
+                    ->count(),
             ],
             'tools' => [
                 'total' => $this->items()->where('item_type', 'tool')->count(),
-                'completed' => $this->items()->where('item_type', 'tool')->where('execution_status', 'completed')->count(),
-                'pending' => $this->items()->where('item_type', 'tool')->where('execution_status', 'pending')->count(),
+                'completed' => $this->items()
+                    ->where('item_type', 'tool')
+                    ->where('execution_status', 'completed')
+                    ->count(),
+                'pending' => $this->items()
+                    ->where('item_type', 'tool')
+                    ->where('execution_status', 'pending')
+                    ->count(),
             ],
             'assets' => [
                 'total' => $this->items()->where('item_type', 'asset')->count(),
-                'completed' => $this->items()->where('item_type', 'asset')->where('execution_status', 'completed')->count(),
-                'pending' => $this->items()->where('item_type', 'asset')->where('execution_status', 'pending')->count(),
+                'completed' => $this->items()
+                    ->where('item_type', 'asset')
+                    ->where('execution_status', 'completed')
+                    ->count(),
+                'pending' => $this->items()
+                    ->where('item_type', 'asset')
+                    ->where('execution_status', 'pending')
+                    ->count(),
             ],
         ];
     }
@@ -355,7 +396,11 @@ class StockOpnameSchedule extends Model
                     'user_name' => $user->name,
                     'total_items' => $items->count(),
                     'items_with_discrepancy' => $itemsWithDiscrepancy->count(),
-                    'accuracy_rate' => round((($items->count() - $itemsWithDiscrepancy->count()) / $items->count()) * 100, 2),
+                    'accuracy_rate' => round(
+                        (($items->count() - $itemsWithDiscrepancy->count()) / $items->count()) *
+                            100,
+                        2,
+                    ),
                 ];
             }
         }
@@ -370,7 +415,8 @@ class StockOpnameSchedule extends Model
             'overview' => [
                 'total_items' => $this->total_items,
                 'completed_items' => $this->completed_items,
-                'pending_items' => $this->total_items - $this->completed_items - $this->cancelled_items,
+                'pending_items' =>
+                    $this->total_items - $this->completed_items - $this->cancelled_items,
                 'cancelled_items' => $this->cancelled_items,
                 'progress_percentage' => $this->getProgressPercentage(),
             ],
@@ -388,8 +434,7 @@ class StockOpnameSchedule extends Model
     public function canBeClosed()
     {
         // Can be closed if all items are completed
-        return $this->ticket_status === 'open' &&
-               $this->completed_items === $this->total_items;
+        return $this->ticket_status === 'open' && $this->completed_items === $this->total_items;
     }
 
     /**
@@ -437,9 +482,15 @@ class StockOpnameSchedule extends Model
     public function getItemTypes()
     {
         $types = [];
-        if ($this->include_spareparts) $types[] = 'Spareparts';
-        if ($this->include_tools) $types[] = 'Tools';
-        if ($this->include_assets) $types[] = 'Assets';
+        if ($this->include_spareparts) {
+            $types[] = 'Spareparts';
+        }
+        if ($this->include_tools) {
+            $types[] = 'Tools';
+        }
+        if ($this->include_assets) {
+            $types[] = 'Assets';
+        }
         return implode(', ', $types);
     }
 

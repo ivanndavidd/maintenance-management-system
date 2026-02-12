@@ -5,18 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ShiftSchedule extends Model
+class ShiftSchedule extends TenantModels
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'start_date',
-        'end_date',
-        'status',
-        'notes',
-        'created_by',
-    ];
+    protected $fillable = ['name', 'start_date', 'end_date', 'status', 'notes', 'created_by'];
 
     protected $casts = [
         'start_date' => 'date',
@@ -67,9 +60,7 @@ class ShiftSchedule extends Model
      */
     public function getUserTotalHours($userId)
     {
-        return $this->assignments()
-            ->where('user_id', $userId)
-            ->sum('working_hours');
+        return $this->assignments()->where('user_id', $userId)->sum('working_hours');
     }
 
     /**
@@ -101,11 +92,15 @@ class ShiftSchedule extends Model
         // Deactivate other schedules that overlap
         self::where('status', 'active')
             ->where(function ($query) {
-                $query->whereBetween('start_date', [$this->start_date, $this->end_date])
+                $query
+                    ->whereBetween('start_date', [$this->start_date, $this->end_date])
                     ->orWhereBetween('end_date', [$this->start_date, $this->end_date])
                     ->orWhere(function ($q) {
-                        $q->where('start_date', '<=', $this->start_date)
-                          ->where('end_date', '>=', $this->end_date);
+                        $q->where('start_date', '<=', $this->start_date)->where(
+                            'end_date',
+                            '>=',
+                            $this->end_date,
+                        );
                     });
             })
             ->update(['status' => 'completed']);

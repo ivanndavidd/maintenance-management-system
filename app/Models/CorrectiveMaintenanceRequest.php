@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-class CorrectiveMaintenanceRequest extends Model
+class CorrectiveMaintenanceRequest extends TenantModels
 {
     use HasFactory;
 
@@ -82,7 +82,7 @@ class CorrectiveMaintenanceRequest extends Model
      */
     public function getPriorityBadgeClass(): string
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'low' => 'bg-secondary',
             'medium' => 'bg-info',
             'high' => 'bg-warning',
@@ -96,7 +96,7 @@ class CorrectiveMaintenanceRequest extends Model
      */
     public function getProblemCategoryLabel(): string
     {
-        return match($this->problem_category) {
+        return match ($this->problem_category) {
             'conveyor_totebox' => 'Conveyor Totebox',
             'conveyor_paket' => 'Conveyor Paket',
             'lift_merah' => 'Lift Merah',
@@ -112,7 +112,7 @@ class CorrectiveMaintenanceRequest extends Model
      */
     public function getProblemCategoryIcon(): string
     {
-        return match($this->problem_category) {
+        return match ($this->problem_category) {
             'conveyor_totebox' => 'fa-box',
             'conveyor_paket' => 'fa-boxes-stacked',
             'lift_merah' => 'fa-elevator',
@@ -128,7 +128,7 @@ class CorrectiveMaintenanceRequest extends Model
      */
     public function getProblemCategoryBadgeClass(): string
     {
-        return match($this->problem_category) {
+        return match ($this->problem_category) {
             'conveyor_totebox' => 'bg-primary',
             'conveyor_paket' => 'bg-info',
             'lift_merah' => 'bg-danger',
@@ -144,7 +144,7 @@ class CorrectiveMaintenanceRequest extends Model
      */
     public function getStatusBadgeClass(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'bg-secondary',
             'received' => 'bg-info',
             'in_progress' => 'bg-primary',
@@ -178,7 +178,12 @@ class CorrectiveMaintenanceRequest extends Model
      */
     public function technicians()
     {
-        return $this->belongsToMany(User::class, 'corrective_maintenance_technicians', 'cm_request_id', 'user_id')
+        return $this->belongsToMany(
+            User::class,
+            'corrective_maintenance_technicians',
+            'cm_request_id',
+            'user_id',
+        )
             ->withPivot(['shift_info', 'notified_at', 'acknowledged_at'])
             ->withTimestamps();
     }

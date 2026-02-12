@@ -7,17 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PmSchedule extends Model
+class PmSchedule extends TenantModels
 {
     use HasFactory;
 
-    protected $fillable = [
-        'scheduled_month',
-        'title',
-        'description',
-        'status',
-        'created_by',
-    ];
+    protected $fillable = ['scheduled_month', 'title', 'description', 'status', 'created_by'];
 
     protected $casts = [
         'scheduled_month' => 'date',

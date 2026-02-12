@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ShiftChangeLog extends Model
+class ShiftChangeLog extends TenantModels
 {
     use HasFactory;
 
@@ -65,18 +65,12 @@ class ShiftChangeLog extends Model
                 return sprintf(
                     '%s replaced by %s',
                     $this->originalUser->name ?? 'Unknown',
-                    $this->newUser->name ?? 'Unknown'
+                    $this->newUser->name ?? 'Unknown',
                 );
             case 'cancellation':
-                return sprintf(
-                    '%s shift cancelled',
-                    $this->originalUser->name ?? 'Unknown'
-                );
+                return sprintf('%s shift cancelled', $this->originalUser->name ?? 'Unknown');
             case 'restoration':
-                return sprintf(
-                    'Cancelled shift restored to %s',
-                    $this->newUser->name ?? 'Unknown'
-                );
+                return sprintf('Cancelled shift restored to %s', $this->newUser->name ?? 'Unknown');
             default:
                 return 'Unknown change';
         }

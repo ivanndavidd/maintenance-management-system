@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ShiftAssignment extends Model
+class ShiftAssignment extends TenantModels
 {
     use HasFactory;
 
@@ -109,8 +109,8 @@ class ShiftAssignment extends Model
     {
         $shifts = [
             1 => array_merge(range(22, 23), range(0, 5)), // 22, 23, 0, 1, 2, 3, 4, 5
-            2 => range(6, 13),   // 6-13
-            3 => range(14, 21),  // 14-21
+            2 => range(6, 13), // 6-13
+            3 => range(14, 21), // 14-21
         ];
 
         return $shifts[$shiftId] ?? [];
@@ -187,9 +187,21 @@ class ShiftAssignment extends Model
     public static function generateColorForUser($userId)
     {
         $colors = [
-            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-            '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788',
-            '#FF8B94', '#A8E6CF', '#FFD3B6', '#FFAAA5', '#FF8C94',
+            '#FF6B6B',
+            '#4ECDC4',
+            '#45B7D1',
+            '#FFA07A',
+            '#98D8C8',
+            '#F7DC6F',
+            '#BB8FCE',
+            '#85C1E2',
+            '#F8B739',
+            '#52B788',
+            '#FF8B94',
+            '#A8E6CF',
+            '#FFD3B6',
+            '#FFAAA5',
+            '#FF8C94',
         ];
 
         return $colors[$userId % count($colors)];

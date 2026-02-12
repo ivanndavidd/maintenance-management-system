@@ -7,15 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PmCleaningGroup extends Model
+class PmCleaningGroup extends TenantModels
 {
     use HasFactory;
 
-    protected $fillable = [
-        'pm_schedule_date_id',
-        'name',
-        'sort_order',
-    ];
+    protected $fillable = ['pm_schedule_date_id', 'name', 'sort_order'];
 
     // Relationships
     public function scheduleDate(): BelongsTo

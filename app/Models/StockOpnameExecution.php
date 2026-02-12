@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
-class StockOpnameExecution extends Model
+class StockOpnameExecution extends TenantModels
 {
     protected $fillable = [
         'execution_code',
@@ -109,10 +109,10 @@ class StockOpnameExecution extends Model
     {
         if ($this->item_type === 'sparepart') {
             $sparepart = Sparepart::find($this->item_id);
-            return $sparepart ? ($sparepart->sparepart_id ?? '-') : '-';
+            return $sparepart ? $sparepart->sparepart_id ?? '-' : '-';
         } elseif ($this->item_type === 'tool') {
             $tool = Tool::find($this->item_id);
-            return $tool ? ($tool->tool_id ?? '-') : '-';
+            return $tool ? $tool->tool_id ?? '-' : '-';
         }
 
         return '-';

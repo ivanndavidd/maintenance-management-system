@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Tool extends Model
+class Tool extends TenantModels
 {
     protected $fillable = [
         'tool_id',
@@ -98,9 +98,7 @@ class Tool extends Model
 
         // Get last tool with tool_id that matches today's date pattern
         $pattern = $prefix . $dateFormat . '%';
-        $lastTool = self::where('tool_id', 'LIKE', $pattern)
-            ->orderBy('tool_id', 'desc')
-            ->first();
+        $lastTool = self::where('tool_id', 'LIKE', $pattern)->orderBy('tool_id', 'desc')->first();
 
         if ($lastTool && $lastTool->tool_id) {
             // Extract the increment number from the last tool_id

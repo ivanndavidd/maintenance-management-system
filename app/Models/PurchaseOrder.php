@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PurchaseOrder extends Model
+class PurchaseOrder extends TenantModels
 {
     protected $fillable = [
         'po_number',
@@ -123,9 +123,7 @@ class PurchaseOrder extends Model
 
         // Get last PO with po_number that matches today's date pattern
         $pattern = $prefix . $dateFormat . '%';
-        $lastPO = self::where('po_number', 'LIKE', $pattern)
-            ->orderBy('po_number', 'desc')
-            ->first();
+        $lastPO = self::where('po_number', 'LIKE', $pattern)->orderBy('po_number', 'desc')->first();
 
         if ($lastPO && $lastPO->po_number) {
             $lastCode = $lastPO->po_number;
@@ -275,7 +273,7 @@ class PurchaseOrder extends Model
 
     public function getApprovalStatusBadge()
     {
-        return match($this->approval_status) {
+        return match ($this->approval_status) {
             'pending' => '<span class="badge bg-warning">Pending Approval</span>',
             'approved' => '<span class="badge bg-success">Approved</span>',
             'rejected' => '<span class="badge bg-danger">Rejected</span>',
@@ -294,65 +292,99 @@ class PurchaseOrder extends Model
                 'status' => 'completed',
                 'date' => $this->created_at,
                 'user' => $this->orderedByUser,
-                'description' => 'Purchase order created with ' . $this->total_items . ' item(s)'
+                'description' => 'Purchase order created with ' . $this->total_items . ' item(s)',
             ],
             [
                 'id' => 2,
                 'name' => 'Approval',
                 'icon' => 'fa-user-check',
-                'status' => $this->approval_status === 'pending' ? 'active' :
-                           ($this->approval_status === 'approved' ? 'completed' : 'rejected'),
+                'status' =>
+                    $this->approval_status === 'pending'
+                        ? 'active'
+                        : ($this->approval_status === 'approved'
+                            ? 'completed'
+                            : 'rejected'),
                 'date' => $this->approved_at,
                 'user' => $this->approvedByUser,
-                'description' => $this->approval_status === 'pending' ? 'Waiting for approval' :
-                                ($this->approval_status === 'approved' ? 'Order approved' : 'Order rejected'),
-                'rejection_reason' => $this->rejection_reason
+                'description' =>
+                    $this->approval_status === 'pending'
+                        ? 'Waiting for approval'
+                        : ($this->approval_status === 'approved'
+                            ? 'Order approved'
+                            : 'Order rejected'),
+                'rejection_reason' => $this->rejection_reason,
             ],
             [
                 'id' => 3,
                 'name' => 'Ordered',
                 'icon' => 'fa-shopping-cart',
-                'status' => $this->approval_status === 'approved' ? 'completed' :
-                           ($this->approval_status === 'pending' ? 'pending' : 'cancelled'),
+                'status' =>
+                    $this->approval_status === 'approved'
+                        ? 'completed'
+                        : ($this->approval_status === 'pending'
+                            ? 'pending'
+                            : 'cancelled'),
                 'date' => $this->approval_status === 'approved' ? $this->approved_at : null,
                 'user' => null,
-                'description' => 'Order sent to supplier'
+                'description' => 'Order sent to supplier',
             ],
             [
                 'id' => 4,
                 'name' => 'Goods Received',
                 'icon' => 'fa-truck',
-                'status' => $this->status === 'received' ? 'completed' :
-                           ($this->status === 'partial_received' ? 'active' :
-                           ($this->approval_status === 'approved' && $this->status === 'pending' ? 'active' : 'pending')),
+                'status' =>
+                    $this->status === 'received'
+                        ? 'completed'
+                        : ($this->status === 'partial_received'
+                            ? 'active'
+                            : ($this->approval_status === 'approved' && $this->status === 'pending'
+                                ? 'active'
+                                : 'pending')),
                 'date' => $this->actual_delivery_date,
                 'user' => $this->receivedByUser,
-                'description' => $this->status === 'received' ? 'All items received' :
-                                ($this->status === 'partial_received' ? 'Partially received' : 'Awaiting delivery')
+                'description' =>
+                    $this->status === 'received'
+                        ? 'All items received'
+                        : ($this->status === 'partial_received'
+                            ? 'Partially received'
+                            : 'Awaiting delivery'),
             ],
             [
                 'id' => 5,
                 'name' => 'Quality Check',
                 'icon' => 'fa-clipboard-check',
-                'status' => $this->allItemsCompliant() ? 'completed' :
-                           ($this->hasNonCompliantItems() ? 'rejected' :
-                           (($this->status === 'received' || $this->status === 'partial_received') ? 'active' : 'pending')),
+                'status' => $this->allItemsCompliant()
+                    ? 'completed'
+                    : ($this->hasNonCompliantItems()
+                        ? 'rejected'
+                        : ($this->status === 'received' || $this->status === 'partial_received'
+                            ? 'active'
+                            : 'pending')),
                 'date' => null, // Item-level timestamps now
                 'user' => null,
-                'description' => $this->allItemsCompliant() ? 'All items verified - compliant' :
-                                ($this->hasNonCompliantItems() ? 'Some items non-compliant' : 'Awaiting inspection')
+                'description' => $this->allItemsCompliant()
+                    ? 'All items verified - compliant'
+                    : ($this->hasNonCompliantItems()
+                        ? 'Some items non-compliant'
+                        : 'Awaiting inspection'),
             ],
             [
                 'id' => 6,
                 'name' => 'Stock Added',
                 'icon' => 'fa-warehouse',
-                'status' => $this->allCompliantItemsAddedToStock() ? 'completed' :
-                           ($this->allItemsCompliant() ? 'active' : 'pending'),
+                'status' => $this->allCompliantItemsAddedToStock()
+                    ? 'completed'
+                    : ($this->allItemsCompliant()
+                        ? 'active'
+                        : 'pending'),
                 'date' => null, // Item-level timestamps now
                 'user' => null,
-                'description' => $this->allCompliantItemsAddedToStock() ? 'All compliant items added to stock' :
-                                ($this->allItemsCompliant() ? 'Ready to add to stock' : 'Waiting for compliance')
-            ]
+                'description' => $this->allCompliantItemsAddedToStock()
+                    ? 'All compliant items added to stock'
+                    : ($this->allItemsCompliant()
+                        ? 'Ready to add to stock'
+                        : 'Waiting for compliance'),
+            ],
         ];
 
         // Add return/reorder step if any item is non-compliant
@@ -364,9 +396,11 @@ class PurchaseOrder extends Model
                 'status' => $this->returned_at ? 'completed' : 'active',
                 'date' => $this->returned_at,
                 'user' => $this->returnedByUser,
-                'description' => $this->returned_at ? 'Items returned, new PO created' : 'Processing return',
+                'description' => $this->returned_at
+                    ? 'Items returned, new PO created'
+                    : 'Processing return',
                 'return_reason' => $this->return_reason,
-                'is_warning' => true
+                'is_warning' => true,
             ];
         }
 
@@ -403,9 +437,19 @@ class PurchaseOrder extends Model
         $this->save();
 
         // Create new PO with same details but marked as reorder
-        $newPO = $this->replicate(['po_number', 'approved_at', 'approved_by', 'received_by',
-                                   'actual_delivery_date', 'returned_at', 'returned_by',
-                                   'total_items', 'total_quantity', 'has_unlisted_items', 'total_price']);
+        $newPO = $this->replicate([
+            'po_number',
+            'approved_at',
+            'approved_by',
+            'received_by',
+            'actual_delivery_date',
+            'returned_at',
+            'returned_by',
+            'total_items',
+            'total_quantity',
+            'has_unlisted_items',
+            'total_price',
+        ]);
 
         $newPO->po_number = self::generatePONumber();
         $newPO->is_reorder = true;
@@ -424,7 +468,7 @@ class PurchaseOrder extends Model
                 'compliance_status',
                 'compliance_notes',
                 'added_to_stock',
-                'stock_added_at'
+                'stock_added_at',
             ]);
 
             $newItem->purchase_order_id = $newPO->id;
@@ -461,7 +505,9 @@ class PurchaseOrder extends Model
         // Prevent cancellation if items already added to stock
         $hasStockItems = $this->items()->where('added_to_stock', true)->exists();
         if ($hasStockItems) {
-            throw new \Exception('Cannot cancel PO: Some items have already been added to stock. Please reverse the stock first.');
+            throw new \Exception(
+                'Cannot cancel PO: Some items have already been added to stock. Please reverse the stock first.',
+            );
         }
 
         // Update cancellation fields
@@ -524,8 +570,9 @@ class PurchaseOrder extends Model
             return '';
         }
 
-        return match($this->cancellation_type) {
-            'cancelled_by_vendor' => '<span class="badge bg-warning text-dark">Cancelled by Vendor</span>',
+        return match ($this->cancellation_type) {
+            'cancelled_by_vendor'
+                => '<span class="badge bg-warning text-dark">Cancelled by Vendor</span>',
             'cancelled_by_user' => '<span class="badge bg-info">Cancelled by User</span>',
             'internal_issue' => '<span class="badge bg-danger">Internal Issue</span>',
             'budget_constraint' => '<span class="badge bg-warning">Budget Constraint</span>',
@@ -547,7 +594,7 @@ class PurchaseOrder extends Model
             return '-';
         }
 
-        return match($this->cancellation_type) {
+        return match ($this->cancellation_type) {
             'cancelled_by_vendor' => 'Cancelled by Vendor',
             'cancelled_by_user' => 'Cancelled by User',
             'internal_issue' => 'Internal Issue',

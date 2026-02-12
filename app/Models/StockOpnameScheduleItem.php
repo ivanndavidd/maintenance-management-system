@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class StockOpnameScheduleItem extends Model
+class StockOpnameScheduleItem extends TenantModels
 {
     protected $fillable = [
         'schedule_id',
@@ -104,13 +104,13 @@ class StockOpnameScheduleItem extends Model
     {
         if ($this->item_type === 'sparepart') {
             $sparepart = Sparepart::find($this->item_id);
-            return $sparepart ? ($sparepart->material_code ?? 'N/A') : 'N/A';
+            return $sparepart ? $sparepart->material_code ?? 'N/A' : 'N/A';
         } elseif ($this->item_type === 'tool') {
             $tool = Tool::find($this->item_id);
-            return $tool ? ($tool->material_code ?? 'N/A') : 'N/A';
+            return $tool ? $tool->material_code ?? 'N/A' : 'N/A';
         } elseif ($this->item_type === 'asset') {
             $asset = Asset::find($this->item_id);
-            return $asset ? ($asset->equipment_id ?? 'N/A') : 'N/A';
+            return $asset ? $asset->equipment_id ?? 'N/A' : 'N/A';
         }
 
         return 'N/A';
@@ -121,12 +121,12 @@ class StockOpnameScheduleItem extends Model
     {
         if ($this->item_type === 'sparepart') {
             $sparepart = Sparepart::find($this->item_id);
-            return $sparepart ? ($sparepart->location ?? '-') : '-';
+            return $sparepart ? $sparepart->location ?? '-' : '-';
         } elseif ($this->item_type === 'tool') {
             return 'Tool Storage'; // Tools don't have specific locations
         } elseif ($this->item_type === 'asset') {
             $asset = Asset::find($this->item_id);
-            return $asset ? ($asset->location ?? '-') : '-';
+            return $asset ? $asset->location ?? '-' : '-';
         }
 
         return '-';
@@ -300,7 +300,7 @@ class StockOpnameScheduleItem extends Model
     // Get review status badge color
     public function getReviewStatusBadgeColor()
     {
-        return match($this->review_status) {
+        return match ($this->review_status) {
             'pending_review' => 'warning',
             'approved' => 'success',
             'rejected' => 'danger',
@@ -312,7 +312,7 @@ class StockOpnameScheduleItem extends Model
     // Get review status label
     public function getReviewStatusLabel()
     {
-        return match($this->review_status) {
+        return match ($this->review_status) {
             'pending_review' => 'Pending Review',
             'approved' => 'Approved',
             'rejected' => 'Rejected',
