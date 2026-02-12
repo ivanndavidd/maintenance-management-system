@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -288,7 +289,7 @@ class UserController extends Controller
     }
 
     /**
-     * Update site access for a user in central database
+     * Update site access for a user in central database and sync user to each site DB
      */
     public function updateSiteAccess(Request $request, User $user)
     {
@@ -302,7 +303,7 @@ class UserController extends Controller
         try {
             $centralUserId = $this->getOrCreateCentralUser($user);
 
-            // Sync site_user entries
+            // Sync site_user entries in central DB
             DB::connection('central')->table('site_user')
                 ->where('user_id', $centralUserId)
                 ->delete();
@@ -316,9 +317,104 @@ class UserController extends Controller
                 ]);
             }
 
+            // Sync user to each selected site's database
+            $selectedSites = DB::connection('central')->table('sites')
+                ->whereIn('id', $siteIds)
+                ->get();
+
+            $userRole = $user->roles->first()?->name ?? 'staff_maintenance';
+
+            foreach ($selectedSites as $site) {
+                $this->syncUserToSiteDatabase($user, $site->database_name, $userRole);
+            }
+
             return redirect()->back()->with('success', 'Site access updated successfully!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to update site access: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sync user to a specific site database (create or update)
+     */
+    protected function syncUserToSiteDatabase(User $user, string $databaseName, string $roleName): void
+    {
+        try {
+            Config::set('database.connections.site_sync.driver', 'mysql');
+            Config::set('database.connections.site_sync.host', config('database.connections.site.host'));
+            Config::set('database.connections.site_sync.port', config('database.connections.site.port'));
+            Config::set('database.connections.site_sync.database', $databaseName);
+            Config::set('database.connections.site_sync.username', config('database.connections.site.username'));
+            Config::set('database.connections.site_sync.password', config('database.connections.site.password'));
+            Config::set('database.connections.site_sync.charset', 'utf8mb4');
+            Config::set('database.connections.site_sync.collation', 'utf8mb4_unicode_ci');
+
+            DB::purge('site_sync');
+
+            $existingUser = DB::connection('site_sync')
+                ->table('users')
+                ->where('email', $user->email)
+                ->first();
+
+            if ($existingUser) {
+                DB::connection('site_sync')->table('users')
+                    ->where('id', $existingUser->id)
+                    ->update([
+                        'name' => $user->name,
+                        'employee_id' => $user->employee_id,
+                        'phone' => $user->phone,
+                        'password' => $user->password,
+                        'is_active' => $user->is_active,
+                        'department_id' => $user->department_id,
+                        'updated_at' => now(),
+                    ]);
+                $siteUserId = $existingUser->id;
+            } else {
+                $siteUserId = DB::connection('site_sync')->table('users')->insertGetId([
+                    'employee_id' => $user->employee_id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'email_verified_at' => $user->email_verified_at,
+                    'password' => $user->password,
+                    'is_active' => $user->is_active,
+                    'department_id' => $user->department_id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // Ensure role exists in target site DB
+            $roleId = DB::connection('site_sync')->table('roles')
+                ->where('name', $roleName)
+                ->where('guard_name', 'web')
+                ->value('id');
+
+            if (!$roleId) {
+                $roleId = DB::connection('site_sync')->table('roles')->insertGetId([
+                    'name' => $roleName,
+                    'guard_name' => 'web',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // Sync role assignment
+            DB::connection('site_sync')->table('model_has_roles')
+                ->where('model_id', $siteUserId)
+                ->where('model_type', 'App\\Models\\User')
+                ->delete();
+
+            DB::connection('site_sync')->table('model_has_roles')->insert([
+                'role_id' => $roleId,
+                'model_type' => 'App\\Models\\User',
+                'model_id' => $siteUserId,
+            ]);
+
+            DB::purge('site_sync');
+        } catch (\Exception $e) {
+            // Log but don't fail - site DB might not be available
+            \Log::warning("Failed to sync user {$user->email} to site DB {$databaseName}: " . $e->getMessage());
         }
     }
 

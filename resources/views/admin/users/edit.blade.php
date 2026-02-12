@@ -333,6 +333,9 @@
     </div>
 </div>
 
+@endsection
+
+@push('modals')
 <!-- Reset Password Modal -->
 <div class="modal fade" id="resetPasswordModal" tabindex="-1">
     <div class="modal-dialog">
@@ -345,26 +348,26 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> 
+                        <i class="fas fa-info-circle"></i>
                         You are resetting password for: <strong>{{ $user->name }}</strong>
                     </div>
 
                     <div class="mb-3">
                         <label for="modal_password" class="form-label">New Password <span class="text-danger">*</span></label>
-                        <input type="password" 
-                               class="form-control" 
-                               id="modal_password" 
-                               name="password" 
+                        <input type="password"
+                               class="form-control"
+                               id="modal_password"
+                               name="password"
                                required>
                         <small class="text-muted">Minimum 8 characters</small>
                     </div>
 
                     <div class="mb-3">
                         <label for="modal_password_confirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                        <input type="password" 
-                               class="form-control" 
-                               id="modal_password_confirmation" 
-                               name="password_confirmation" 
+                        <input type="password"
+                               class="form-control"
+                               id="modal_password_confirmation"
+                               name="password_confirmation"
                                required>
                     </div>
                 </div>
@@ -378,4 +381,4 @@
         </div>
     </div>
 </div>
-@endsection
+@endpush

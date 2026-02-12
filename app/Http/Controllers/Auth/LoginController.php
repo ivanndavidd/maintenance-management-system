@@ -94,6 +94,34 @@ class LoginController extends Controller
         $siteUser = User::where('email', $email)->where('is_active', true)->first();
 
         if ($siteUser && Hash::check($password, $siteUser->password)) {
+            // If user has admin role, verify they have site access in central DB
+            if ($siteUser->hasRole('admin')) {
+                try {
+                    $currentSiteCode = session('current_site_code');
+                    if ($currentSiteCode) {
+                        $centralUserId = DB::connection('central')
+                            ->table('users')
+                            ->where('email', $email)
+                            ->value('id');
+
+                        if ($centralUserId) {
+                            $hasSiteAccess = DB::connection('central')
+                                ->table('site_user')
+                                ->join('sites', 'site_user.site_id', '=', 'sites.id')
+                                ->where('site_user.user_id', $centralUserId)
+                                ->where('sites.code', $currentSiteCode)
+                                ->exists();
+
+                            if (!$hasSiteAccess) {
+                                return false;
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Central DB not available, allow site-level login
+                }
+            }
+
             Auth::login($siteUser, $request->boolean('remember'));
             return true;
         }
@@ -133,6 +161,21 @@ class LoginController extends Controller
 
         if (!$hasAdminRole) {
             return null;
+        }
+
+        // Check if user has access to the current site
+        $currentSiteCode = session('current_site_code');
+        if ($currentSiteCode) {
+            $hasSiteAccess = DB::connection('central')
+                ->table('site_user')
+                ->join('sites', 'site_user.site_id', '=', 'sites.id')
+                ->where('site_user.user_id', $centralUser->id)
+                ->where('sites.code', $currentSiteCode)
+                ->exists();
+
+            if (!$hasSiteAccess) {
+                return null;
+            }
         }
 
         return $centralUser;

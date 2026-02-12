@@ -243,6 +243,7 @@
     </div>
 </div>
 
+@push('modals')
 <!-- Site Access Modals -->
 @foreach($users as $user)
     @if($user->id !== auth()->id())
@@ -285,6 +286,7 @@
     </div>
     @endif
 @endforeach
+@endpush
 
 <style>
 .avatar-circle {
