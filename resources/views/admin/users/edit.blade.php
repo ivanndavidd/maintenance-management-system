@@ -277,11 +277,8 @@
                     <h6 class="mb-0"><i class="fas fa-globe"></i> Site Access</h6>
                 </div>
                 <div class="card-body">
-                    @php
-                        $isSupervisor = ($userRole && $userRole->name === 'supervisor_maintenance');
-                    @endphp
-                    @if($isSupervisor)
-                        <p class="text-muted small mb-0">Site access management is not available for Supervisor role.</p>
+                    @if(!$userRole || $userRole->name !== 'admin')
+                        <p class="text-muted small mb-0">Site access management is only available for Admin role.</p>
                     @elseif($sites->isEmpty())
                         <p class="text-muted small mb-0">No sites available from central database.</p>
                     @else
