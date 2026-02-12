@@ -170,28 +170,42 @@
                                     </a>
                                     
                                     @if($user->id !== auth()->id())
+                                        <!-- Access Site -->
+                                        @php
+                                            $userRoleName = $user->roles->first()?->name;
+                                            $isSupervisor = $userRoleName === 'supervisor_maintenance';
+                                        @endphp
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                title="Access Site"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#siteAccessModal{{ $user->id }}"
+                                                {{ $isSupervisor ? 'disabled' : '' }}>
+                                            <i class="fas fa-globe"></i>
+                                        </button>
+
                                         <!-- Toggle Status -->
-                                        <form action="{{ route($routePrefix.'.users.toggle-status', $user) }}" 
-                                              method="POST" 
+                                        <form action="{{ route($routePrefix.'.users.toggle-status', $user) }}"
+                                              method="POST"
                                               class="d-inline">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" 
-                                                    class="btn btn-sm btn-{{ $user->is_active ? 'secondary' : 'success' }}" 
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-{{ $user->is_active ? 'secondary' : 'success' }}"
                                                     title="{{ $user->is_active ? 'Deactivate' : 'Activate' }}"
                                                     onclick="return confirm('Are you sure?')">
                                                 <i class="fas fa-power-off"></i>
                                             </button>
                                         </form>
-                                        
+
                                         <!-- Delete -->
-                                        <form action="{{ route($routePrefix.'.users.destroy', $user) }}" 
-                                              method="POST" 
+                                        <form action="{{ route($routePrefix.'.users.destroy', $user) }}"
+                                              method="POST"
                                               class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" 
-                                                    class="btn btn-sm btn-danger" 
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger"
                                                     title="Delete"
                                                     onclick="return confirm('Are you sure you want to delete this user?')">
                                                 <i class="fas fa-trash"></i>
@@ -228,6 +242,49 @@
         @endif
     </div>
 </div>
+
+<!-- Site Access Modals -->
+@foreach($users as $user)
+    @if($user->id !== auth()->id())
+    <div class="modal fade" id="siteAccessModal{{ $user->id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route($routePrefix.'.users.site-access', $user) }}" method="POST">
+                    @csrf
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="fas fa-globe"></i> Site Access: {{ $user->name }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted mb-3">Select which sites this user can access:</p>
+                        @forelse($sites as $site)
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox"
+                                       name="site_ids[]"
+                                       value="{{ $site->id }}"
+                                       id="site_{{ $user->id }}_{{ $site->id }}"
+                                       {{ in_array($site->id, $userSiteAccess[$user->id] ?? []) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="site_{{ $user->id }}_{{ $site->id }}">
+                                    {{ $site->name }}
+                                    <small class="text-muted">({{ $site->code }})</small>
+                                </label>
+                            </div>
+                        @empty
+                            <p class="text-muted">No sites available.</p>
+                        @endforelse
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Site Access
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+@endforeach
 
 <style>
 .avatar-circle {

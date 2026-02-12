@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
@@ -51,7 +52,27 @@ class UserController extends Controller
         $roles = Role::all();
         $departments = Department::all();
 
-        return view('admin.users.index', compact('users', 'roles', 'departments'));
+        // Get sites and user site access from central DB for the modal
+        $sites = collect();
+        $userSiteAccess = [];
+        try {
+            $sites = DB::connection('central')->table('sites')->where('is_active', true)->get();
+            $centralUsers = DB::connection('central')->table('users')->pluck('id', 'email');
+            foreach ($users as $user) {
+                $centralId = $centralUsers[$user->email] ?? null;
+                if ($centralId) {
+                    $userSiteAccess[$user->id] = DB::connection('central')
+                        ->table('site_user')
+                        ->where('user_id', $centralId)
+                        ->pluck('site_id')
+                        ->toArray();
+                }
+            }
+        } catch (\Exception $e) {
+            // Central DB not available
+        }
+
+        return view('admin.users.index', compact('users', 'roles', 'departments', 'sites', 'userSiteAccess'));
     }
 
     /**
@@ -134,7 +155,24 @@ class UserController extends Controller
         $departments = Department::all();
         $userRole = $user->roles->first();
 
-        return view('admin.users.edit', compact('user', 'roles', 'departments', 'userRole'));
+        // Get sites and user site access from central DB
+        $sites = collect();
+        $userSiteIds = [];
+        try {
+            $sites = DB::connection('central')->table('sites')->where('is_active', true)->get();
+            $centralUserId = DB::connection('central')->table('users')
+                ->where('email', $user->email)->value('id');
+            if ($centralUserId) {
+                $userSiteIds = DB::connection('central')->table('site_user')
+                    ->where('user_id', $centralUserId)
+                    ->pluck('site_id')
+                    ->toArray();
+            }
+        } catch (\Exception $e) {
+            // Central DB not available
+        }
+
+        return view('admin.users.edit', compact('user', 'roles', 'departments', 'userRole', 'sites', 'userSiteIds'));
     }
 
     /**
@@ -184,6 +222,11 @@ class UserController extends Controller
 
         // Sync role
         $user->syncRoles([$validated['role']]);
+
+        // If role is admin, sync to central database
+        if ($validated['role'] === 'admin') {
+            $this->syncUserToCentral($user);
+        }
 
         return redirect()
             ->route('admin.users.index')
@@ -242,5 +285,119 @@ class UserController extends Controller
         return redirect()
             ->route('admin.users.show', $user)
             ->with('success', 'Password reset successfully!');
+    }
+
+    /**
+     * Update site access for a user in central database
+     */
+    public function updateSiteAccess(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'site_ids' => ['nullable', 'array'],
+            'site_ids.*' => ['integer'],
+        ]);
+
+        $siteIds = $validated['site_ids'] ?? [];
+
+        try {
+            $centralUserId = $this->getOrCreateCentralUser($user);
+
+            // Sync site_user entries
+            DB::connection('central')->table('site_user')
+                ->where('user_id', $centralUserId)
+                ->delete();
+
+            foreach ($siteIds as $siteId) {
+                DB::connection('central')->table('site_user')->insert([
+                    'user_id' => $centralUserId,
+                    'site_id' => $siteId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Site access updated successfully!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update site access: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sync user to central database with admin role and current site access
+     */
+    protected function syncUserToCentral(User $user): void
+    {
+        try {
+            $centralUserId = $this->getOrCreateCentralUser($user);
+
+            // Assign admin role in central DB
+            $roleId = DB::connection('central')->table('roles')
+                ->where('name', 'admin')
+                ->where('guard_name', 'web')
+                ->value('id');
+
+            if ($roleId) {
+                DB::connection('central')->table('model_has_roles')->updateOrInsert(
+                    [
+                        'role_id' => $roleId,
+                        'model_type' => 'App\\Models\\User',
+                        'model_id' => $centralUserId,
+                    ]
+                );
+            }
+
+            // Add current site to site_user if not exists
+            $siteCode = session('current_site_code');
+            if ($siteCode) {
+                $siteId = DB::connection('central')->table('sites')
+                    ->where('code', $siteCode)->value('id');
+
+                if ($siteId) {
+                    DB::connection('central')->table('site_user')->updateOrInsert(
+                        ['user_id' => $centralUserId, 'site_id' => $siteId],
+                        ['created_at' => now(), 'updated_at' => now()]
+                    );
+                }
+            }
+        } catch (\Exception $e) {
+            // Central DB not available, skip silently
+        }
+    }
+
+    /**
+     * Get or create user in central database, returns central user ID
+     */
+    protected function getOrCreateCentralUser(User $user): int
+    {
+        $centralUserId = DB::connection('central')->table('users')
+            ->where('email', $user->email)->value('id');
+
+        if ($centralUserId) {
+            // Update existing central user
+            DB::connection('central')->table('users')
+                ->where('id', $centralUserId)
+                ->update([
+                    'name' => $user->name,
+                    'employee_id' => $user->employee_id,
+                    'phone' => $user->phone,
+                    'password' => $user->password,
+                    'is_active' => $user->is_active,
+                    'updated_at' => now(),
+                ]);
+        } else {
+            $centralUserId = DB::connection('central')->table('users')->insertGetId([
+                'employee_id' => $user->employee_id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'email_verified_at' => $user->email_verified_at,
+                'password' => $user->password,
+                'is_active' => $user->is_active,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return $centralUserId;
     }
 }
