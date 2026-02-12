@@ -170,19 +170,16 @@
                                     </a>
                                     
                                     @if($user->id !== auth()->id())
-                                        <!-- Access Site -->
-                                        @php
-                                            $userRoleName = $user->roles->first()?->name;
-                                            $isSupervisor = $userRoleName === 'supervisor_maintenance';
-                                        @endphp
+                                        <!-- Access Site (admin only) -->
+                                        @if($user->roles->first()?->name === 'admin')
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-primary"
                                                 title="Access Site"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#siteAccessModal{{ $user->id }}"
-                                                {{ $isSupervisor ? 'disabled' : '' }}>
+                                                data-bs-target="#siteAccessModal{{ $user->id }}">
                                             <i class="fas fa-globe"></i>
                                         </button>
+                                        @endif
 
                                         <!-- Toggle Status -->
                                         <form action="{{ route($routePrefix.'.users.toggle-status', $user) }}"
