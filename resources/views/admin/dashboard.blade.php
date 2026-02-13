@@ -275,6 +275,9 @@
                                 <span class="text-warning">{{ $stats['pending_cmr'] }} pending</span> |
                                 <span class="text-primary">{{ $stats['in_progress_cmr'] }} in progress</span> |
                                 <span class="text-success">{{ $stats['completed_cmr'] }} completed</span>
+                                @if($stats['further_repair_cmr'] > 0)
+                                | <span class="text-danger">{{ $stats['further_repair_cmr'] }} further repair</span>
+                                @endif
                             </small>
                         </div>
                         <div class="text-primary opacity-25">

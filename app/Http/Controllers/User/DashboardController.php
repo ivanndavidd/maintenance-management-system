@@ -29,27 +29,30 @@ class DashboardController extends Controller
         // CMR Statistics
         $tasks = [
             'pending' => $assignedScope(CorrectiveMaintenanceRequest::query())
-                ->where('status', 'pending')
+                ->whereIn('status', ['pending', 'received'])
                 ->count(),
             'in_progress' => $assignedScope(CorrectiveMaintenanceRequest::query())
                 ->where('status', 'in_progress')
                 ->count(),
             'completed_this_month' => $assignedScope(CorrectiveMaintenanceRequest::query())
-                ->where('status', 'completed')
+                ->whereIn('status', ['completed', 'done'])
                 ->whereMonth('completed_at', now()->month)
+                ->count(),
+            'further_repair' => $assignedScope(CorrectiveMaintenanceRequest::query())
+                ->where('status', 'further_repair')
                 ->count(),
         ];
 
-        // Recent Tasks (Last 5) - Exclude completed
+        // Recent Tasks (Last 5) - Exclude completed/done
         $recentTasks = $assignedScope(CorrectiveMaintenanceRequest::query())
-            ->whereNotIn('status', ['completed'])
+            ->whereNotIn('status', ['completed', 'done'])
             ->latest()
             ->limit(5)
             ->get();
 
         // Performance Metrics
         $totalCompleted = $assignedScope(CorrectiveMaintenanceRequest::query())
-            ->where('status', 'completed')
+            ->whereIn('status', ['completed', 'done'])
             ->count();
 
         $totalAssigned = $assignedScope(CorrectiveMaintenanceRequest::query())->count();
