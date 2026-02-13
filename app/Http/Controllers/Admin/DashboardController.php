@@ -19,9 +19,10 @@ class DashboardController extends Controller
         // === CMR Statistics ===
         $cmrStats = CorrectiveMaintenanceRequest::selectRaw("
             COUNT(*) as total,
-            SUM(status = 'pending') as pending,
+            SUM(status IN ('pending', 'received')) as pending,
             SUM(status = 'in_progress') as in_progress,
-            SUM(status = 'completed') as completed
+            SUM(status IN ('completed', 'done')) as completed,
+            SUM(status = 'further_repair') as further_repair
         ")->first();
 
         $userStats = Cache::remember('dashboard_user_stats', 300, function () {
@@ -36,6 +37,7 @@ class DashboardController extends Controller
             'pending_cmr' => (int) $cmrStats->pending,
             'in_progress_cmr' => (int) $cmrStats->in_progress,
             'completed_cmr' => (int) $cmrStats->completed,
+            'further_repair_cmr' => (int) $cmrStats->further_repair,
             'total_operators' => $userStats['total_operators'],
             'active_operators' => $userStats['active_operators'],
         ];
@@ -70,7 +72,7 @@ class DashboardController extends Controller
         $last7DaysCompleted = CorrectiveMaintenanceRequest::selectRaw("
             DATE(completed_at) as date, COUNT(*) as count
         ")
-            ->where('status', 'completed')
+            ->whereIn('status', ['completed', 'done'])
             ->whereDate('completed_at', '>=', $sevenDaysAgo)
             ->groupByRaw('DATE(completed_at)')
             ->pluck('count', 'date');
@@ -93,7 +95,7 @@ class DashboardController extends Controller
             ->get();
 
         // === MTTR from CMR ===
-        $avgResolutionTime = CorrectiveMaintenanceRequest::where('status', 'completed')
+        $avgResolutionTime = CorrectiveMaintenanceRequest::whereIn('status', ['completed', 'done'])
             ->whereNotNull('started_at')
             ->whereNotNull('completed_at')
             ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, started_at, completed_at)) as avg_hours')

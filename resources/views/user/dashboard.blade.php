@@ -261,7 +261,7 @@
     <!-- Row 1: Statistics Cards -->
     <div class="row g-3 mb-4">
         <!-- Pending Tasks Card -->
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card border-warning shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -279,7 +279,7 @@
         </div>
 
         <!-- In Progress Tasks Card -->
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card border-primary shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -297,7 +297,7 @@
         </div>
 
         <!-- Completed This Month Card -->
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card border-success shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -318,6 +318,26 @@
                 </div>
             </div>
         </div>
+
+        <!-- Further Repair Card -->
+        @if($tasks['further_repair'] > 0)
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-danger shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-danger mb-1">Further Repair</h6>
+                            <h2 class="mb-0 text-danger">{{ $tasks['further_repair'] }}</h2>
+                            <small class="text-muted">Needs follow-up</small>
+                        </div>
+                        <div class="text-danger">
+                            <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- Row 2: Today Tasks & Mini Calendar -->
