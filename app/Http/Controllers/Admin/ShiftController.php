@@ -395,29 +395,35 @@ class ShiftController extends Controller
         }
 
         // Check if user already has assignment in this shift (any column)
-        $existingInShift = ShiftAssignment::where('shift_schedule_id', $checkScheduleId)
-            ->where('day_of_week', $checkDutyDay)
-            ->where('shift_id', $checkShiftId)
-            ->where('user_id', $user->id)
-            ->first();
+        // Skip this check for Sunday 22-23 since those hours will be merged
+        // into the existing Shift 1 assignment (which may already have 00-05 hours)
+        $isSundayOvernightHours = $firstDay === 'sunday' && ($firstHour == 22 || $firstHour == 23);
 
-        if ($existingInShift) {
-            $shiftNames = [
-                1 => 'Shift 1 (22:00-05:00)',
-                2 => 'Shift 2 (06:00-13:00)',
-                3 => 'Shift 3 (14:00-21:00)',
-            ];
+        if (!$isSundayOvernightHours) {
+            $existingInShift = ShiftAssignment::where('shift_schedule_id', $checkScheduleId)
+                ->where('day_of_week', $checkDutyDay)
+                ->where('shift_id', $checkShiftId)
+                ->where('user_id', $user->id)
+                ->first();
 
-            return response()->json(
-                [
-                    'success' => false,
-                    'error' =>
-                        "User {$user->name} is already assigned to {$shiftNames[$checkShiftId]} on " .
-                        ucfirst($checkDutyDay) .
-                        '. Each user can only be assigned once per shift, regardless of column.',
-                ],
-                422,
-            );
+            if ($existingInShift) {
+                $shiftNames = [
+                    1 => 'Shift 1 (22:00-05:00)',
+                    2 => 'Shift 2 (06:00-13:00)',
+                    3 => 'Shift 3 (14:00-21:00)',
+                ];
+
+                return response()->json(
+                    [
+                        'success' => false,
+                        'error' =>
+                            "User {$user->name} is already assigned to {$shiftNames[$checkShiftId]} on " .
+                            ucfirst($checkDutyDay) .
+                            '. Each user can only be assigned once per shift, regardless of column.',
+                    ],
+                    422,
+                );
+            }
         }
 
         // Group hours by day, column, and shift, collecting selected hours

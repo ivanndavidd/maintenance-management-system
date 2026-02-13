@@ -174,6 +174,7 @@ class DashboardController extends Controller
         $pmTasks = PmTask::where('assigned_user_id', $userId)
             ->where('task_date', $today)
             ->whereIn('status', ['pending', 'in_progress'])
+            ->whereNotNull('pm_schedule_id')
             ->get()
             ->map(function($task) {
                 return [
