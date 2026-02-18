@@ -8,7 +8,7 @@
         <h2>Create Purchase Order</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'Prefix.$Prefix.'.purchase-orders.index') }}">Purchase Orders</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.purchase-orders.index') }}">Purchase Orders</a></li>
                 <li class="breadcrumb-item active">Create</li>
             </ol>
         </nav>
@@ -178,7 +178,7 @@
                     <h5 class="mb-0">Purchase Order Details</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route($routePrefix.'Prefix.$Prefix.'.purchase-orders.store') }}" method="POST" id="po_form">
+                    <form action="{{ route($routePrefix.'.purchase-orders.store') }}" method="POST" id="po_form">
                         @csrf
                         <div id="hidden_cart_items"></div>
 
@@ -217,7 +217,7 @@
                             <button type="submit" class="btn btn-primary btn-lg" id="submit_btn" disabled>
                                 <i class="fas fa-paper-plane"></i> Create Purchase Order
                             </button>
-                            <a href="{{ route($routePrefix.'Prefix.$Prefix.'.purchase-orders.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.purchase-orders.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Back
                             </a>
                         </div>
