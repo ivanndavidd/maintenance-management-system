@@ -185,4 +185,33 @@ class AssetController extends Controller
 
         return back()->with('error', 'Template file not found.');
     }
+
+    /**
+     * Search assets for Select2 AJAX
+     */
+    public function search(Request $request)
+    {
+        $q = $request->get('q', '');
+
+        $query = Asset::where('status', 'active');
+
+        if ($q !== '') {
+            $query->where(function ($qb) use ($q) {
+                $qb->where('asset_name', 'like', "%{$q}%")
+                    ->orWhere('equipment_id', 'like', "%{$q}%")
+                    ->orWhere('location', 'like', "%{$q}%");
+            });
+        }
+
+        $assets = $query->orderBy('equipment_id')
+        ->get()
+        ->map(function ($asset) {
+            return [
+                'id' => $asset->id,
+                'text' => ($asset->equipment_id ?? '-') . ' - ' . $asset->asset_name . ' (' . ($asset->location ?? '-') . ')',
+            ];
+        });
+
+        return response()->json(['results' => $assets]);
+    }
 }

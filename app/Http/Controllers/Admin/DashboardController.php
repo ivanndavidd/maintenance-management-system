@@ -3,13 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Asset;
 use App\Models\CorrectiveMaintenanceRequest;
 use App\Models\PmSchedule;
 use App\Models\PmTask;
+use App\Models\Sparepart;
+use App\Models\StockOpnameScheduleItem;
 use App\Models\StockOpnameUserAssignment;
 use App\Models\ShiftAssignment;
+use App\Models\Tool;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
@@ -171,19 +176,20 @@ class DashboardController extends Controller
         });
 
         // Preventive Maintenance Tasks
-        $pmTasks = PmTask::where('assigned_user_id', $userId)
+        $pmTasks = PmTask::with('sprGroup.cleaningGroup')
+            ->where('assigned_user_id', $userId)
             ->where('task_date', $today)
             ->whereIn('status', ['pending', 'in_progress'])
-            ->whereNotNull('pm_schedule_id')
             ->get()
             ->map(function($task) {
+                $scheduleId = $task->sprGroup?->cleaningGroup?->pm_schedule_id;
                 return [
                     'type' => 'preventive',
                     'id' => $task->id,
                     'title' => $task->task_name,
                     'status' => $task->status,
                     'shift' => $task->assigned_shift_id,
-                    'url' => route('supervisor.my-tasks.preventive-maintenance.show', $task->pm_schedule_id)
+                    'url' => $scheduleId ? route('supervisor.my-tasks.preventive-maintenance.show', $scheduleId) : '#'
                 ];
             });
 
@@ -300,5 +306,152 @@ class DashboardController extends Controller
         ];
 
         return $dayMap[$date->dayOfWeek] ?? 'monday';
+    }
+
+    /**
+     * KPI Monitor Data (Admin Only) - AJAX endpoint
+     */
+    public function kpiData(Request $request)
+    {
+        $period = $request->get('period', '1M');
+        $now = Carbon::now();
+
+        if ($period === 'custom') {
+            $dateFrom = Carbon::parse($request->get('date_from'))->startOfDay();
+            $dateTo = Carbon::parse($request->get('date_to'))->endOfDay();
+        } else {
+            $dateTo = $now->copy()->endOfDay();
+            $dateFrom = match ($period) {
+                '3M' => $now->copy()->subMonths(3)->startOfDay(),
+                '6M' => $now->copy()->subMonths(6)->startOfDay(),
+                '1Y' => $now->copy()->subYear()->startOfDay(),
+                default => $now->copy()->subMonth()->startOfDay(),
+            };
+        }
+
+        return response()->json([
+            'period' => $period,
+            'date_from' => $dateFrom->toDateString(),
+            'date_to' => $dateTo->toDateString(),
+            'pm' => $this->getPmKpi($dateFrom, $dateTo),
+            'cm' => $this->getCmKpi($dateFrom, $dateTo),
+            'stock_opname' => $this->getStockOpnameKpi($dateFrom, $dateTo),
+        ]);
+    }
+
+    private function getPmKpi(Carbon $dateFrom, Carbon $dateTo): array
+    {
+        $today = Carbon::today();
+        $rangeFrom = $dateFrom->toDateString();
+        $rangeTo = $dateTo->toDateString();
+
+        // On-time: completed AND completed_at <= end of task_date day
+        $onTime = PmTask::whereBetween('task_date', [$rangeFrom, $rangeTo])
+            ->where('status', 'completed')
+            ->whereNotNull('completed_at')
+            ->whereRaw('completed_at <= DATE_ADD(task_date, INTERVAL 1 DAY)')
+            ->count();
+
+        // Late: completed BUT completed_at > end of task_date day
+        $late = PmTask::whereBetween('task_date', [$rangeFrom, $rangeTo])
+            ->where('status', 'completed')
+            ->whereNotNull('completed_at')
+            ->whereRaw('completed_at > DATE_ADD(task_date, INTERVAL 1 DAY)')
+            ->count();
+
+        // Not done: task_date has passed AND status is NOT completed
+        $notDone = PmTask::whereBetween('task_date', [$rangeFrom, $rangeTo])
+            ->where('task_date', '<', $today->toDateString())
+            ->where('status', '!=', 'completed')
+            ->count();
+
+        $total = PmTask::whereBetween('task_date', [$rangeFrom, $rangeTo])->count();
+
+        return [
+            'on_time' => $onTime,
+            'late' => $late,
+            'not_done' => $notDone,
+            'total' => $total,
+        ];
+    }
+
+    private function getCmKpi(Carbon $dateFrom, Carbon $dateTo): array
+    {
+        $openStatuses = ['pending', 'received', 'in_progress', 'further_repair'];
+        $closedStatuses = ['completed', 'done'];
+
+        $open = CorrectiveMaintenanceRequest::whereBetween('created_at', [$dateFrom, $dateTo])
+            ->whereIn('status', $openStatuses)
+            ->count();
+
+        $closed = CorrectiveMaintenanceRequest::whereBetween('created_at', [$dateFrom, $dateTo])
+            ->whereIn('status', $closedStatuses)
+            ->count();
+
+        $total = CorrectiveMaintenanceRequest::whereBetween('created_at', [$dateFrom, $dateTo])
+            ->count();
+
+        return [
+            'open' => $open,
+            'closed' => $closed,
+            'total' => $total,
+        ];
+    }
+
+    private function getStockOpnameKpi(Carbon $dateFrom, Carbon $dateTo): array
+    {
+        $today = Carbon::today()->toDateString();
+        $rangeFrom = $dateFrom->toDateString();
+        $rangeTo = $dateTo->toDateString();
+
+        // Accuracy: completed schedule items with execution_date in range
+        $completedItems = StockOpnameScheduleItem::whereHas('schedule', function ($q) use ($rangeFrom, $rangeTo) {
+                $q->whereBetween('execution_date', [$rangeFrom, $rangeTo]);
+            })
+            ->where('execution_status', 'completed')
+            ->get(['physical_quantity', 'system_quantity']);
+
+        $totalCompleted = $completedItems->count();
+        $accurate = $completedItems->filter(fn($item) => $item->physical_quantity == $item->system_quantity)->count();
+        $withDiscrepancy = $totalCompleted - $accurate;
+        $accuracyPercent = $totalCompleted > 0 ? round(($accurate / $totalCompleted) * 100, 1) : 0;
+
+        // Missed jobs: schedule items from schedules in range, execution_date passed, NOT completed
+        $missedJobs = StockOpnameScheduleItem::whereHas('schedule', function ($q) use ($rangeFrom, $rangeTo, $today) {
+                $q->whereBetween('execution_date', [$rangeFrom, $rangeTo])
+                  ->where('execution_date', '<', $today);
+            })
+            ->where('execution_status', '!=', 'completed')
+            ->where('is_active', true)
+            ->count();
+
+        // Uncovered items: items in master data with NO schedule item ever
+        $coveredSparepartIds = StockOpnameScheduleItem::where('item_type', 'sparepart')
+            ->distinct()->pluck('item_id')->toArray();
+        $uncoveredSpareparts = Sparepart::whereNotIn('id', $coveredSparepartIds)->count();
+
+        $coveredToolIds = StockOpnameScheduleItem::where('item_type', 'tool')
+            ->distinct()->pluck('item_id')->toArray();
+        $uncoveredTools = Tool::whereNotIn('id', $coveredToolIds)->count();
+
+        $coveredAssetIds = StockOpnameScheduleItem::where('item_type', 'asset')
+            ->distinct()->pluck('item_id')->toArray();
+        $uncoveredAssets = Asset::whereNotIn('id', $coveredAssetIds)->count();
+
+        return [
+            'accuracy' => [
+                'percent' => $accuracyPercent,
+                'accurate' => $accurate,
+                'discrepancy' => $withDiscrepancy,
+                'total_completed' => $totalCompleted,
+            ],
+            'missed_jobs' => $missedJobs,
+            'uncovered' => [
+                'spareparts' => $uncoveredSpareparts,
+                'tools' => $uncoveredTools,
+                'assets' => $uncoveredAssets,
+                'total' => $uncoveredSpareparts + $uncoveredTools + $uncoveredAssets,
+            ],
+        ];
     }
 }

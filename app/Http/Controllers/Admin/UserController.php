@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Department;
+use App\Models\SiteAccessRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -73,7 +74,11 @@ class UserController extends Controller
             // Central DB not available
         }
 
-        return view('admin.users.index', compact('users', 'roles', 'departments', 'sites', 'userSiteAccess'));
+        $pendingApprovals = auth()->user()->isSuper()
+            ? SiteAccessRequest::pending()->with(['requester', 'targetUser'])->latest()->get()
+            : collect();
+
+        return view('admin.users.index', compact('users', 'roles', 'departments', 'sites', 'userSiteAccess', 'pendingApprovals'));
     }
 
     /**
@@ -246,6 +251,31 @@ class UserController extends Controller
                 ->with('error', 'You cannot delete your own account!');
         }
 
+        // Non-super admin cannot delete/request deletion of super admin
+        if (!auth()->user()->isSuper() && $user->isSuper()) {
+            return redirect()
+                ->route('admin.users.index')
+                ->with('error', 'You cannot delete a super admin account.');
+        }
+
+        // Non-super admin: create approval request instead of deleting directly
+        if (!auth()->user()->isSuper()) {
+            SiteAccessRequest::where('target_user_id', $user->id)
+                ->where('type', SiteAccessRequest::TYPE_DELETE_USER)
+                ->pending()
+                ->update(['status' => 'rejected', 'review_note' => 'Superseded by new request']);
+
+            SiteAccessRequest::create([
+                'requested_by' => auth()->id(),
+                'target_user_id' => $user->id,
+                'type' => SiteAccessRequest::TYPE_DELETE_USER,
+                'status' => 'pending',
+            ]);
+
+            return redirect()
+                ->route('admin.users.index')
+                ->with('success', "Delete request for {$user->name} submitted. Waiting for super admin approval.");
+        }
 
         $user->delete();
 
@@ -259,6 +289,33 @@ class UserController extends Controller
      */
     public function toggleStatus(User $user)
     {
+        // Non-super admin cannot toggle super admin
+        if (!auth()->user()->isSuper() && $user->isSuper()) {
+            return redirect()
+                ->route('admin.users.index')
+                ->with('error', 'You cannot modify a super admin account.');
+        }
+
+        // Non-super admin: create approval request instead of toggling directly
+        if (!auth()->user()->isSuper()) {
+            SiteAccessRequest::where('target_user_id', $user->id)
+                ->where('type', SiteAccessRequest::TYPE_TOGGLE_STATUS)
+                ->pending()
+                ->update(['status' => 'rejected', 'review_note' => 'Superseded by new request']);
+
+            SiteAccessRequest::create([
+                'requested_by' => auth()->id(),
+                'target_user_id' => $user->id,
+                'type' => SiteAccessRequest::TYPE_TOGGLE_STATUS,
+                'status' => 'pending',
+            ]);
+
+            $action = $user->is_active ? 'deactivate' : 'activate';
+            return redirect()
+                ->route('admin.users.index')
+                ->with('success', "Request to {$action} {$user->name} submitted. Waiting for super admin approval.");
+        }
+
         $user->update([
             'is_active' => !$user->is_active,
         ]);
@@ -293,6 +350,11 @@ class UserController extends Controller
      */
     public function updateSiteAccess(Request $request, User $user)
     {
+        // Non-super admin cannot update own or super admin's site access
+        if (!auth()->user()->isSuper() && ($user->id === auth()->id() || $user->isSuper())) {
+            return redirect()->back()->with('error', 'You are not authorized to update this site access.');
+        }
+
         $validated = $request->validate([
             'site_ids' => ['nullable', 'array'],
             'site_ids.*' => ['integer'],
@@ -300,38 +362,142 @@ class UserController extends Controller
 
         $siteIds = $validated['site_ids'] ?? [];
 
-        try {
-            $centralUserId = $this->getOrCreateCentralUser($user);
-
-            // Sync site_user entries in central DB
-            DB::connection('central')->table('site_user')
-                ->where('user_id', $centralUserId)
-                ->delete();
-
-            foreach ($siteIds as $siteId) {
-                DB::connection('central')->table('site_user')->insert([
-                    'user_id' => $centralUserId,
-                    'site_id' => $siteId,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+        // If current user is super admin, execute directly
+        if (auth()->user()->isSuper()) {
+            try {
+                $this->performSiteAccessSync($user, $siteIds);
+                return redirect()->back()->with('success', 'Site access updated successfully!');
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', 'Failed to update site access: ' . $e->getMessage());
             }
-
-            // Sync user to each selected site's database
-            $selectedSites = DB::connection('central')->table('sites')
-                ->whereIn('id', $siteIds)
-                ->get();
-
-            $userRole = $user->roles->first()?->name ?? 'staff_maintenance';
-
-            foreach ($selectedSites as $site) {
-                $this->syncUserToSiteDatabase($user, $site->database_name, $userRole);
-            }
-
-            return redirect()->back()->with('success', 'Site access updated successfully!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update site access: ' . $e->getMessage());
         }
+
+        // Non-super admin: create approval request
+        try {
+            $currentSiteIds = [];
+            $centralUserId = DB::connection('central')->table('users')
+                ->where('email', $user->email)->value('id');
+            if ($centralUserId) {
+                $currentSiteIds = DB::connection('central')->table('site_user')
+                    ->where('user_id', $centralUserId)
+                    ->pluck('site_id')
+                    ->toArray();
+            }
+
+            // Cancel any existing pending request for this target user
+            SiteAccessRequest::where('target_user_id', $user->id)
+                ->pending()
+                ->update(['status' => 'rejected', 'review_note' => 'Superseded by new request']);
+
+            SiteAccessRequest::create([
+                'requested_by' => auth()->id(),
+                'target_user_id' => $user->id,
+                'requested_site_ids' => array_map('intval', $siteIds),
+                'current_site_ids' => array_map('intval', $currentSiteIds),
+                'status' => 'pending',
+            ]);
+
+            return redirect()->back()->with('success', 'Site access change request submitted. Waiting for super admin approval.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to submit site access request: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Execute site access sync to central DB and site databases
+     */
+    protected function performSiteAccessSync(User $user, array $siteIds): void
+    {
+        $centralUserId = $this->getOrCreateCentralUser($user);
+
+        // Sync site_user entries in central DB
+        DB::connection('central')->table('site_user')
+            ->where('user_id', $centralUserId)
+            ->delete();
+
+        foreach ($siteIds as $siteId) {
+            DB::connection('central')->table('site_user')->insert([
+                'user_id' => $centralUserId,
+                'site_id' => $siteId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Sync user to each selected site's database
+        $selectedSites = DB::connection('central')->table('sites')
+            ->whereIn('id', $siteIds)
+            ->get();
+
+        $userRole = $user->roles->first()?->name ?? 'staff_maintenance';
+
+        foreach ($selectedSites as $site) {
+            $this->syncUserToSiteDatabase($user, $site->database_name, $userRole);
+        }
+    }
+
+    /**
+     * Approve a site access request (super admin only)
+     */
+    public function approveAccessRequest(SiteAccessRequest $siteAccessRequest)
+    {
+        if (!auth()->user()->isSuper()) {
+            abort(403);
+        }
+
+        $targetUser = $siteAccessRequest->targetUser;
+
+        try {
+            switch ($siteAccessRequest->type) {
+                case SiteAccessRequest::TYPE_SITE_ACCESS:
+                    $this->performSiteAccessSync($targetUser, $siteAccessRequest->requested_site_ids ?? []);
+                    $message = "Site access for {$targetUser->name} has been approved and applied.";
+                    break;
+
+                case SiteAccessRequest::TYPE_DELETE_USER:
+                    $targetUser->delete();
+                    $message = "User {$targetUser->name} has been deleted as approved.";
+                    break;
+
+                case SiteAccessRequest::TYPE_TOGGLE_STATUS:
+                    $targetUser->update(['is_active' => !$targetUser->is_active]);
+                    $status = $targetUser->is_active ? 'activated' : 'deactivated';
+                    $message = "User {$targetUser->name} has been {$status} as approved.";
+                    break;
+
+                default:
+                    return redirect()->back()->with('error', 'Unknown request type.');
+            }
+
+            $siteAccessRequest->update([
+                'status' => 'approved',
+                'reviewed_by' => auth()->id(),
+                'reviewed_at' => now(),
+            ]);
+
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to process approval: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reject a request (super admin only)
+     */
+    public function rejectAccessRequest(Request $request, SiteAccessRequest $siteAccessRequest)
+    {
+        if (!auth()->user()->isSuper()) {
+            abort(403);
+        }
+
+        $siteAccessRequest->update([
+            'status' => 'rejected',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+            'review_note' => $request->input('review_note'),
+        ]);
+
+        return redirect()->back()->with('success', "Request for {$siteAccessRequest->targetUser->name} has been rejected.");
     }
 
     /**

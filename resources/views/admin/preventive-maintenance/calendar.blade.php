@@ -173,7 +173,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="saveTaskBtn">
                         <i class="fas fa-save me-1"></i>Save Task
                     </button>
                 </div>
@@ -515,6 +515,54 @@ body.fc-loading::after {
     background-color: rgba(0, 120, 212, 0.05);
 }
 
+/* More events popover */
+.fc .fc-more-popover {
+    z-index: 1060 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+    max-width: 300px;
+    min-width: 200px;
+    background-color: #ffffff !important;
+    border: 1px solid #d2d0ce !important;
+}
+
+.fc .fc-more-popover .fc-popover-header {
+    padding: 8px 12px;
+    background-color: #faf9f8 !important;
+    border-bottom: 1px solid #e1dfdd;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.fc .fc-more-popover .fc-popover-body {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 6px !important;
+    background-color: #ffffff !important;
+}
+
+/* Make events inside popover fully opaque with solid background */
+.fc .fc-more-popover .fc-event:hover {
+    transform: none !important;
+}
+
+.fc .fc-more-popover .shift-1 {
+    background-color: #dbeafe !important;
+}
+
+.fc .fc-more-popover .shift-2 {
+    background-color: #f3e0f1 !important;
+}
+
+.fc .fc-more-popover .shift-3 {
+    background-color: #d1f5f7 !important;
+}
+
+.fc .fc-more-popover .no-shift {
+    background-color: #e8e7e6 !important;
+}
+
 /* Day cell hover */
 .fc .fc-daygrid-day:hover {
     background-color: rgba(0, 0, 0, 0.02);
@@ -692,6 +740,22 @@ document.addEventListener('DOMContentLoaded', function() {
         loading: function(isLoading) {
             // Completely disable loading indicator - do nothing
             return false;
+        },
+
+        // Fix "+more" popover: after it opens, strip inline absolute positioning
+        moreLinkClick: function(info) {
+            // Let FullCalendar render the popover first, then fix it
+            setTimeout(function() {
+                const popovers = document.querySelectorAll('.fc-more-popover');
+                popovers.forEach(function(popover) {
+                    const harnesses = popover.querySelectorAll('.fc-daygrid-event-harness');
+                    harnesses.forEach(function(harness) {
+                        harness.style.cssText = 'position: relative !important; top: auto !important; left: auto !important; right: auto !important; margin-bottom: 3px; visibility: visible; display: block;';
+                    });
+                });
+            }, 50);
+            // Return 'popover' to keep default behavior
+            return 'popover';
         },
 
         // Event rendering
@@ -1291,8 +1355,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Form submit
+    let isSubmitting = false;
     eventForm.addEventListener('submit', function(e) {
         e.preventDefault();
+
+        if (isSubmitting) return;
+        isSubmitting = true;
+
+        const saveBtn = document.getElementById('saveTaskBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
 
         const formData = new FormData(eventForm);
         const taskId = document.getElementById('taskId').value;
@@ -1363,6 +1435,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 showAlert(errorMessage, 'danger');
+                isSubmitting = false;
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save me-1"></i>Save Task';
                 return;
             }
 
@@ -1396,13 +1471,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
 
                 showAlert(data.message || 'Task saved successfully', 'success');
+                isSubmitting = false;
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save me-1"></i>Save Task';
             } else {
                 showAlert(data.message || 'Error saving task', 'danger');
+                isSubmitting = false;
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save me-1"></i>Save Task';
             }
         })
         .catch(error => {
             console.error('Error:', error);
             showAlert('Network error. Please check your connection and try again.', 'danger');
+            isSubmitting = false;
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save me-1"></i>Save Task';
         });
     });
 
@@ -1514,11 +1598,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Aggressive removal of any loading overlays that appear dynamically
+    // Fix "+more" popover: strip inline absolute positioning from event harnesses
+    function fixPopoverEvents(popover) {
+        const harnesses = popover.querySelectorAll('.fc-daygrid-event-harness');
+        harnesses.forEach(function(harness) {
+            harness.style.position = 'relative';
+            harness.style.top = 'auto';
+            harness.style.left = 'auto';
+            harness.style.right = 'auto';
+            harness.style.marginTop = '0';
+            harness.style.marginBottom = '3px';
+            harness.style.visibility = 'visible';
+            harness.style.display = 'block';
+        });
+    }
+
+    // Aggressive removal of any loading overlays + fix popover stacking
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             mutation.addedNodes.forEach(function(node) {
                 if (node.nodeType === 1) { // Element node
+                    // Fix "+more" popover when it appears
+                    if (node.classList && node.classList.contains('fc-more-popover')) {
+                        fixPopoverEvents(node);
+                    }
+                    // Also check if a popover was added as a descendant
+                    const popover = node.querySelector && node.querySelector('.fc-more-popover');
+                    if (popover) {
+                        fixPopoverEvents(popover);
+                    }
+
                     // Check if it's a loading overlay
                     const text = node.textContent || '';
                     if (text.includes('Saving') || text.includes('Loading') ||

@@ -3,13 +3,18 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Concerns\IteratesOverSites;
+use App\Mail\PmTaskAssigned;
 use App\Models\PmTask;
 use App\Models\ShiftAssignment;
 use App\Models\ShiftSchedule;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class AssignPmTasksToShifts extends Command
 {
+    use IteratesOverSites;
+
     /**
      * The name and signature of the console command.
      *
@@ -33,6 +38,16 @@ class AssignPmTasksToShifts extends Command
 
         $force = $this->option('force');
 
+        $this->forEachSite(function ($site) use ($force) {
+            $this->info("Processing site: {$site->name}...");
+            $this->assignTasksForSite($force);
+        });
+
+        return 0;
+    }
+
+    protected function assignTasksForSite(bool $force): void
+    {
         // Get all PM tasks that need assignment
         $query = PmTask::whereNotNull('task_date')
             ->whereNotNull('assigned_shift_id')
@@ -45,19 +60,16 @@ class AssignPmTasksToShifts extends Command
         $tasks = $query->get();
 
         if ($tasks->isEmpty()) {
-            $this->info('No tasks found that need assignment.');
-            return 0;
+            $this->info('  No tasks found that need assignment.');
+            return;
         }
 
-        $this->info("Found {$tasks->count()} tasks to process.");
+        $this->info("  Found {$tasks->count()} tasks to process.");
 
         $assignedCount = 0;
         $skippedCount = 0;
-        $bar = $this->output->createProgressBar($tasks->count());
 
         foreach ($tasks as $task) {
-            $bar->advance();
-
             // Find the shift schedule that covers this task date
             $shiftSchedule = ShiftSchedule::where('start_date', '<=', $task->task_date)
                 ->where('end_date', '>=', $task->task_date)
@@ -95,24 +107,25 @@ class AssignPmTasksToShifts extends Command
                 'notes' => "Auto-assigned to {$shiftAssignment->user->name} via command"
             ]);
 
+            // Send email notification
+            try {
+                $user = $shiftAssignment->user;
+                if ($user && $user->email) {
+                    Mail::to($user->email)->send(new PmTaskAssigned($task));
+                }
+            } catch (\Exception $e) {
+                $this->error("  Failed to send email for task #{$task->id}: {$e->getMessage()}");
+            }
+
             $assignedCount++;
         }
 
-        $bar->finish();
-        $this->newLine(2);
-
-        $this->info("Assignment complete!");
-        $this->info("Assigned: {$assignedCount}");
-        $this->info("Skipped: {$skippedCount}");
-
-        return 0;
+        $this->info("  Assigned: {$assignedCount}");
+        $this->info("  Skipped: {$skippedCount}");
     }
 
     /**
      * Get day of week string from Carbon date
-     *
-     * @param Carbon $date
-     * @return string
      */
     protected function getDayOfWeekString($date): string
     {

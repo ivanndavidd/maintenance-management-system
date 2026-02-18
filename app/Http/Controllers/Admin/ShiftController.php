@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PmTaskAssigned;
+use App\Models\PmTask;
 use App\Models\ShiftSchedule;
 use App\Models\ShiftAssignment;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class ShiftController extends Controller
@@ -286,9 +289,81 @@ class ShiftController extends Controller
 
         $shift->activate();
 
+        // Auto-assign PM tasks that fall within this schedule's date range
+        $assignedCount = $this->assignPmTasksForSchedule($shift);
+
+        $message = 'Shift schedule activated successfully.';
+        if ($assignedCount > 0) {
+            $message .= " {$assignedCount} PM task(s) auto-assigned to shift users.";
+        }
+
         return redirect()
             ->route($this->getRoutePrefix() . '.shifts.index')
-            ->with('success', 'Shift schedule activated successfully.');
+            ->with('success', $message);
+    }
+
+    /**
+     * Auto-assign PM tasks to users based on shift assignments
+     */
+    private function assignPmTasksForSchedule(ShiftSchedule $shift): int
+    {
+        $tasks = PmTask::whereNotNull('task_date')
+            ->whereNotNull('assigned_shift_id')
+            ->whereNull('assigned_user_id')
+            ->whereIn('status', [PmTask::STATUS_PENDING, PmTask::STATUS_IN_PROGRESS])
+            ->whereBetween('task_date', [$shift->start_date, $shift->end_date])
+            ->get();
+
+        $assignedCount = 0;
+        $dayMap = [
+            Carbon::MONDAY => 'monday',
+            Carbon::TUESDAY => 'tuesday',
+            Carbon::WEDNESDAY => 'wednesday',
+            Carbon::THURSDAY => 'thursday',
+            Carbon::FRIDAY => 'friday',
+            Carbon::SATURDAY => 'saturday',
+            Carbon::SUNDAY => 'sunday',
+        ];
+
+        foreach ($tasks as $task) {
+            $dayOfWeek = $dayMap[$task->task_date->dayOfWeek] ?? 'monday';
+
+            $shiftAssignment = ShiftAssignment::where('shift_schedule_id', $shift->id)
+                ->where('day_of_week', $dayOfWeek)
+                ->where('shift_id', $task->assigned_shift_id)
+                ->first();
+
+            if (!$shiftAssignment) {
+                continue;
+            }
+
+            $task->update([
+                'assigned_user_id' => $shiftAssignment->user_id,
+            ]);
+
+            $task->logs()->create([
+                'user_id' => $shiftAssignment->user_id,
+                'action' => 'auto_assigned',
+                'notes' => "Auto-assigned to {$shiftAssignment->user->name} on shift activation",
+            ]);
+
+            // Send email notification
+            try {
+                $user = $shiftAssignment->user;
+                if ($user && $user->email) {
+                    Mail::to($user->email)->send(new PmTaskAssigned($task));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send PM task assignment email: ' . $e->getMessage(), [
+                    'task_id' => $task->id,
+                    'assigned_user_id' => $shiftAssignment->user_id,
+                ]);
+            }
+
+            $assignedCount++;
+        }
+
+        return $assignedCount;
     }
 
     /**
@@ -384,29 +459,18 @@ class ShiftController extends Controller
         $checkScheduleId = $shift->id;
         $checkDutyDay = $firstDay;
 
-        if ($firstDay === 'sunday' && ($firstHour == 22 || $firstHour == 23)) {
-            $nextWeekSchedule = ShiftSchedule::where('start_date', '>', $shift->start_date)
-                ->orderBy('start_date', 'asc')
-                ->first();
-            if ($nextWeekSchedule) {
-                $checkScheduleId = $nextWeekSchedule->id;
-                $checkDutyDay = 'monday';
-            }
-        }
-
         // Check if user already has assignment in this shift (any column)
-        // Skip this check for Sunday 22-23 since those hours will be merged
-        // into the existing Shift 1 assignment (which may already have 00-05 hours)
-        $isSundayOvernightHours = $firstDay === 'sunday' && ($firstHour == 22 || $firstHour == 23);
+        $existingInShift = ShiftAssignment::where('shift_schedule_id', $checkScheduleId)
+            ->where('day_of_week', $checkDutyDay)
+            ->where('shift_id', $checkShiftId)
+            ->where('user_id', $user->id)
+            ->first();
 
-        if (!$isSundayOvernightHours) {
-            $existingInShift = ShiftAssignment::where('shift_schedule_id', $checkScheduleId)
-                ->where('day_of_week', $checkDutyDay)
-                ->where('shift_id', $checkShiftId)
-                ->where('user_id', $user->id)
-                ->first();
-
-            if ($existingInShift) {
+        if ($existingInShift) {
+            // Allow merging additional hours (e.g., adding 22-23 to existing 00-05)
+            // by checking if the existing assignment is for the same user and column
+            $requestedColumn = $firstAssignment['column'];
+            if ($existingInShift->column_index != $requestedColumn) {
                 $shiftNames = [
                     1 => 'Shift 1 (22:00-05:00)',
                     2 => 'Shift 2 (06:00-13:00)',
@@ -424,6 +488,7 @@ class ShiftController extends Controller
                     422,
                 );
             }
+            // Same user, same column - will be merged in the loop below
         }
 
         // Group hours by day, column, and shift, collecting selected hours
@@ -436,36 +501,11 @@ class ShiftController extends Controller
                 continue; // Skip invalid hours
             }
 
-            // NEW CONCEPT: Use the day AS-IS (no conversion to duty day)
-            // All hours in a shift (including 22-23) belong to the SAME day
-            // Monday 22:00 -> Monday Shift 1 (not Tuesday)
-            // Monday 00:00 -> Monday Shift 1
+            // Use the day AS-IS (no conversion to duty day)
+            // All hours in a shift (including 22-23) belong to the SAME day column
+            // Sunday 22:00-23:00 -> Sunday Shift 1 (part of Sunday's overnight shift)
             $dutyDay = $assignment['day'];
-
-            // Determine which schedule to use
-            // Sunday 22-23 belongs to Monday Shift 1 of NEXT week's schedule
             $targetScheduleId = $shift->id;
-            if (
-                $assignment['day'] === 'sunday' &&
-                ($assignment['hour'] == 22 || $assignment['hour'] == 23)
-            ) {
-                // Find next week's schedule (schedule with start_date after current)
-                $nextWeekSchedule = ShiftSchedule::where('start_date', '>', $shift->start_date)
-                    ->orderBy('start_date', 'asc')
-                    ->first();
-
-                if ($nextWeekSchedule) {
-                    $targetScheduleId = $nextWeekSchedule->id;
-                    // For next week, Sunday 22-23 becomes Monday (next day)
-                    $dutyDay = 'monday';
-                    \Log::info('Sunday 22-23 assignment redirected to next week schedule', [
-                        'current_schedule' => $shift->id,
-                        'next_schedule' => $nextWeekSchedule->id,
-                        'hour' => $assignment['hour'],
-                        'duty_day' => $dutyDay,
-                    ]);
-                }
-            }
 
             $key =
                 $targetScheduleId . '_' . $dutyDay . '_' . $assignment['column'] . '_' . $shiftId;
@@ -508,9 +548,11 @@ class ShiftController extends Controller
                 ->first();
 
             if ($existing) {
-                // Check if existing assignment is for the SAME user and SAME original day
+                // Check if existing assignment is for the SAME user
                 $isSameUser = $existing->user_id == $user->id;
+                // Consider same original day if both match OR if existing has no original_calendar_day set
                 $isSameOriginalDay =
+                    $existing->original_calendar_day === null ||
                     $existing->original_calendar_day == $shiftAssignment['original_day'];
 
                 if ($isSameUser && $isSameOriginalDay) {
