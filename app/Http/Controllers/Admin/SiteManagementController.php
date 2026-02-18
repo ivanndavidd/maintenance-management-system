@@ -11,6 +11,16 @@ use Illuminate\Support\Facades\DB;
 
 class SiteManagementController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!auth()->user()->isSuper()) {
+                abort(403, 'Only super admin can access site management.');
+            }
+            return $next($request);
+        });
+    }
+
     /**
      * Display a listing of sites.
      */

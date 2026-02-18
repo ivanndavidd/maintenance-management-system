@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CorrectiveMaintenanceRequest;
 use App\Models\PmSchedule;
 use App\Models\PmScheduleDate;
 use App\Models\PmCleaningGroup;
 use App\Models\PmSprGroup;
 use App\Models\PmTask;
+use App\Models\PmTaskReport;
+use App\Models\ShiftAssignment;
 use App\Models\ShiftSchedule;
 use App\Models\Sparepart;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class PreventiveMaintenanceController extends Controller
@@ -612,6 +617,11 @@ class PreventiveMaintenanceController extends Controller
                 $this->generateRecurringTasks($task);
             }
 
+            // Auto-assign from shift schedule if no user selected
+            if (!$task->assigned_user_id && $task->assigned_shift_id && $task->task_date) {
+                $this->autoAssignFromShift($task);
+            }
+
             // Send notification email to assigned user
             if ($task->assigned_user_id) {
                 try {
@@ -683,7 +693,26 @@ class PreventiveMaintenanceController extends Controller
             ], 422);
         }
 
+        // Check if assigned user changed
+        $previousUserId = $task->assigned_user_id;
+        $newUserId = $validated['assigned_user_id'] ?? null;
+
         $task->update($validated);
+
+        // Send email notification if assigned to a new/different user
+        if ($newUserId && $newUserId != $previousUserId) {
+            try {
+                $user = \App\Models\User::find($newUserId);
+                if ($user && $user->email) {
+                    \Mail::to($user->email)->send(new \App\Mail\PmTaskAssigned($task));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send PM task assignment email: ' . $e->getMessage(), [
+                    'task_id' => $task->id,
+                    'assigned_user_id' => $newUserId,
+                ]);
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -806,6 +835,58 @@ class PreventiveMaintenanceController extends Controller
     }
 
     /**
+     * Auto-assign a PM task to a user based on active shift schedule
+     */
+    private function autoAssignFromShift(PmTask $task): void
+    {
+        $taskDate = Carbon::parse($task->task_date);
+
+        // Find active shift schedule covering this date
+        $shiftSchedule = ShiftSchedule::where('start_date', '<=', $taskDate)
+            ->where('end_date', '>=', $taskDate)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$shiftSchedule) {
+            return;
+        }
+
+        $dayMap = [
+            Carbon::MONDAY => 'monday',
+            Carbon::TUESDAY => 'tuesday',
+            Carbon::WEDNESDAY => 'wednesday',
+            Carbon::THURSDAY => 'thursday',
+            Carbon::FRIDAY => 'friday',
+            Carbon::SATURDAY => 'saturday',
+            Carbon::SUNDAY => 'sunday',
+        ];
+
+        $dayOfWeek = $dayMap[$taskDate->dayOfWeek] ?? null;
+        if (!$dayOfWeek) {
+            return;
+        }
+
+        $shiftAssignment = ShiftAssignment::where('shift_schedule_id', $shiftSchedule->id)
+            ->where('day_of_week', $dayOfWeek)
+            ->where('shift_id', $task->assigned_shift_id)
+            ->first();
+
+        if (!$shiftAssignment) {
+            return;
+        }
+
+        $task->update([
+            'assigned_user_id' => $shiftAssignment->user_id,
+        ]);
+
+        $task->logs()->create([
+            'user_id' => $shiftAssignment->user_id,
+            'action' => 'auto_assigned',
+            'notes' => "Auto-assigned to {$shiftAssignment->user->name} from active shift schedule",
+        ]);
+    }
+
+    /**
      * Generate recurring task instances
      */
     private function generateRecurringTasks(PmTask $parentTask)
@@ -923,5 +1004,204 @@ class PreventiveMaintenanceController extends Controller
         }
 
         return true; // For daily and yearly, always create
+    }
+
+    /**
+     * Display PM Reports page grouped by month
+     */
+    public function reports(Request $request)
+    {
+        $query = PmTask::with(['latestReport.submitter', 'latestReport.furtherRepairAssets', 'assignedUser'])
+            ->whereNotNull('task_date');
+
+        // Filter by month
+        if ($request->filled('month')) {
+            $query->whereYear('task_date', date('Y', strtotime($request->month . '-01')))
+                  ->whereMonth('task_date', date('m', strtotime($request->month . '-01')));
+        }
+
+        // Filter by report status
+        if ($request->filled('report_status')) {
+            if ($request->report_status === 'no_report') {
+                $query->whereDoesntHave('latestReport');
+            } else {
+                $query->whereHas('latestReport', function ($q) use ($request) {
+                    $q->where('status', $request->report_status);
+                });
+            }
+        }
+
+        $tasks = $query->orderBy('task_date', 'asc')->get();
+
+        // Group tasks by month
+        $currentMonth = Carbon::now()->format('Y-m');
+        $tasksByMonth = $tasks->groupBy(function ($task) {
+            return Carbon::parse($task->task_date)->format('Y-m');
+        })->sortBy(function ($tasks, $month) use ($currentMonth) {
+            // Current month gets priority (sort value 0), others sorted desc by date
+            if ($month === $currentMonth) {
+                return '0';
+            }
+            // Invert the month string for descending order after current month
+            return '1-' . (9999 - intval(str_replace('-', '', $month)));
+        });
+
+        // Calculate stats per month
+        $monthlyStats = [];
+        foreach ($tasksByMonth as $month => $monthTasks) {
+            $total = $monthTasks->count();
+            $withReport = $monthTasks->filter(fn($t) => $t->latestReport)->count();
+            $submitted = $monthTasks->filter(fn($t) => $t->latestReport && $t->latestReport->status === 'submitted')->count();
+            $approved = $monthTasks->filter(fn($t) => $t->latestReport && $t->latestReport->status === 'approved')->count();
+            $revisionNeeded = $monthTasks->filter(fn($t) => $t->latestReport && $t->latestReport->status === 'revision_needed')->count();
+            $noReport = $total - $withReport;
+
+            $monthlyStats[$month] = [
+                'total' => $total,
+                'with_report' => $withReport,
+                'submitted' => $submitted,
+                'approved' => $approved,
+                'revision_needed' => $revisionNeeded,
+                'no_report' => $noReport,
+            ];
+        }
+
+        $routePrefix = auth()->user()->hasRole('supervisor_maintenance') ? 'supervisor' : 'admin';
+
+        return view('admin.preventive-maintenance.reports', compact(
+            'tasksByMonth', 'monthlyStats', 'routePrefix'
+        ));
+    }
+
+    /**
+     * Show PM task report detail
+     */
+    public function showReport(PmTaskReport $report)
+    {
+        $report->load(['task.assignedUser', 'submitter', 'reviewer', 'furtherRepairAssets']);
+
+        return response()->json([
+            'success' => true,
+            'report' => [
+                'id' => $report->id,
+                'description' => $report->description,
+                'photos' => collect($report->photos)->map(function ($photo) {
+                    return [
+                        'path' => $photo['path'],
+                        'url' => Storage::url($photo['path']),
+                        'original_name' => $photo['original_name'],
+                    ];
+                }),
+                'status' => $report->status,
+                'status_label' => $report->getStatusLabel(),
+                'status_badge' => $report->getStatusBadgeClass(),
+                'admin_comments' => $report->admin_comments,
+                'submitted_by' => $report->submitter->name ?? '-',
+                'submitted_at' => $report->submitted_at?->format('d M Y, H:i'),
+                'reviewed_by' => $report->reviewer->name ?? null,
+                'reviewed_at' => $report->reviewed_at?->format('d M Y, H:i'),
+                'further_repair_assets' => $report->furtherRepairAssets->map(function ($asset) {
+                    return [
+                        'id' => $asset->id,
+                        'equipment_id' => $asset->equipment_id ?? '-',
+                        'asset_name' => $asset->asset_name,
+                        'location' => $asset->location ?? '-',
+                        'notes' => $asset->pivot->notes,
+                    ];
+                }),
+                'task' => [
+                    'id' => $report->task->id,
+                    'task_name' => $report->task->task_name,
+                    'task_date' => $report->task->task_date?->format('d M Y'),
+                    'shift' => $report->task->assigned_shift_id,
+                    'assigned_to' => $report->task->assignedUser->name ?? '-',
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Review PM task report (approve or request revision)
+     */
+    public function reviewReport(Request $request, PmTaskReport $report)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,revision_needed',
+            'admin_comments' => 'required_if:status,revision_needed|nullable|string',
+        ]);
+
+        $report->update([
+            'status' => $request->status,
+            'admin_comments' => $request->admin_comments,
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+        ]);
+
+        // If revision needed, revert task status to in_progress
+        if ($request->status === 'revision_needed') {
+            $report->task->update([
+                'status' => 'in_progress',
+                'completed_at' => null,
+            ]);
+        }
+
+        // Log the review action
+        $report->task->logs()->create([
+            'user_id' => auth()->id(),
+            'action' => $request->status === 'approved' ? 'report_approved' : 'report_revision_requested',
+            'notes' => $request->admin_comments ?? 'Report approved',
+        ]);
+
+        $statusLabel = $request->status === 'approved' ? 'approved' : 'revision requested';
+
+        return response()->json([
+            'success' => true,
+            'message' => "Report {$statusLabel} successfully!",
+        ]);
+    }
+
+    /**
+     * Create CM ticket from PM report further repair asset
+     */
+    public function createCmFromReport(Request $request, PmTaskReport $report)
+    {
+        $request->validate([
+            'asset_id' => 'required|exists:assets_master,id',
+            'notes' => 'nullable|string',
+        ]);
+
+        $report->load(['task']);
+        $asset = \App\Models\Asset::findOrFail($request->asset_id);
+
+        $ticketNumber = CorrectiveMaintenanceRequest::generateTicketNumber();
+
+        $cmRequest = CorrectiveMaintenanceRequest::create([
+            'ticket_number' => $ticketNumber,
+            'requestor_name' => auth()->user()->name,
+            'requestor_email' => auth()->user()->email,
+            'requestor_department' => 'Maintenance',
+            'location' => $asset->location ?? '-',
+            'equipment_name' => $asset->asset_name,
+            'equipment_id' => $asset->equipment_id ?? $asset->asset_id,
+            'priority' => 'medium',
+            'problem_category' => $asset->equipment_type ?? 'others',
+            'problem_description' => "Further repair needed from PM Task: {$report->task->task_name} ({$report->task->task_date?->format('d M Y')})" .
+                ($request->notes ? "\n\nNotes: {$request->notes}" : ''),
+            'status' => 'pending',
+        ]);
+
+        // Log the CM creation
+        $report->task->logs()->create([
+            'user_id' => auth()->id(),
+            'action' => 'cm_ticket_created',
+            'notes' => "CM Ticket {$ticketNumber} created for asset " . ($asset->equipment_id ?? $asset->asset_id) . " - {$asset->asset_name}",
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "CM Ticket {$ticketNumber} created successfully!",
+            'ticket_number' => $ticketNumber,
+            'cm_id' => $cmRequest->id,
+        ]);
     }
 }

@@ -7,6 +7,7 @@ use App\Models\CorrectiveMaintenanceRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -177,5 +178,32 @@ class User extends Authenticatable
     public function scopeAdmins($query)
     {
         return $query->role('admin');
+    }
+
+    public function siteAccessRequests()
+    {
+        return $this->hasMany(SiteAccessRequest::class, 'target_user_id');
+    }
+
+    public function isSuper(): bool
+    {
+        // Check from central DB so super status is consistent across all sites
+        static $cache = [];
+
+        if (isset($cache[$this->email])) {
+            return $cache[$this->email];
+        }
+
+        try {
+            $centralSuper = DB::connection('central')->table('users')
+                ->where('email', $this->email)
+                ->value('super');
+
+            $cache[$this->email] = (bool) $centralSuper;
+        } catch (\Exception $e) {
+            $cache[$this->email] = false;
+        }
+
+        return $cache[$this->email];
     }
 }

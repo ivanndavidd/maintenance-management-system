@@ -266,8 +266,6 @@
  transition: margin-left 0.3s ease, width 0.3s ease;
  width: calc(100% - 70px);
  overflow-x: hidden;
- position: relative;
- z-index: 1;
  }
 
  /* Push content when sidebar is hovered */
@@ -496,9 +494,11 @@
  </a>
 
  @if(auth()->user()->hasRole('admin'))
+ @if(auth()->user()->isSuper())
  <a href="{{ route('admin.sites.index') }}" class="{{ request()->routeIs('admin.sites.*') ? 'active' : '' }}">
  <i class="fas fa-building"></i><span class="menu-text"> Site Management</span>
  </a>
+ @endif
 
  <a href="{{ route($routePrefix.'.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
  <i class="fas fa-users"></i><span class="menu-text"> User Management</span>
@@ -577,9 +577,21 @@
 
  <hr class="text-white">
 
- <a href="{{ route($routePrefix . '.preventive-maintenance.index') }}" class="{{ request()->routeIs('admin.preventive-maintenance.*') || request()->routeIs('supervisor.preventive-maintenance.*') ? 'active' : '' }}">
- <i class="fas fa-calendar-check"></i><span class="menu-text"> Preventive Maintenance</span>
+ <!-- Preventive Maintenance Dropdown -->
+ <div class="sidebar-dropdown" onclick="togglePmMenu()">
+ <a class="{{ request()->routeIs('admin.preventive-maintenance.*') || request()->routeIs('supervisor.preventive-maintenance.*') ? 'active' : '' }}">
+ <i class="fas fa-calendar-check"></i><span class="menu-text"> Preventive Maint.</span>
+ <i class="fas fa-chevron-down float-end" id="pmChevron"></i>
  </a>
+ </div>
+ <div class="sidebar-submenu {{ request()->routeIs('admin.preventive-maintenance.*') || request()->routeIs('supervisor.preventive-maintenance.*') ? 'show' : '' }}" id="pmSubmenu">
+ <a href="{{ route($routePrefix . '.preventive-maintenance.calendar') }}" class="{{ request()->routeIs('*.preventive-maintenance.calendar*') || request()->routeIs('*.preventive-maintenance.index') ? 'active' : '' }}">
+ <i class="fas fa-calendar"></i><span class="menu-text"> Calendar</span>
+ </a>
+ <a href="{{ route($routePrefix . '.preventive-maintenance.reports') }}" class="{{ request()->routeIs('*.preventive-maintenance.reports*') ? 'active' : '' }}">
+ <i class="fas fa-file-alt"></i><span class="menu-text"> Reports</span>
+ </a>
+ </div>
 
  <!-- Corrective Maintenance Dropdown -->
  <div class="sidebar-dropdown" onclick="toggleCmMenu()">
@@ -621,6 +633,17 @@
  <!-- My Tasks Section for Supervisor Maintenance -->
  <a href="{{ route('supervisor.my-tasks.preventive-maintenance') }}" class="{{ request()->routeIs('supervisor.my-tasks.preventive-maintenance*') ? 'active' : '' }}">
  <i class="fas fa-calendar-check"></i><span class="menu-text"> My PM Tasks</span>
+ @php
+ $myPendingPM = cache()->remember('my_pending_pm_' . auth()->id(), 60, function() {
+     return \App\Models\PmTask::where('assigned_user_id', auth()->id())
+         ->whereIn('status', ['pending', 'in_progress'])
+         ->whereNotNull('task_date')
+         ->count();
+ });
+ @endphp
+ @if($myPendingPM > 0)
+ <span class="badge bg-primary text-white ms-2">{{ $myPendingPM }}</span>
+ @endif
  </a>
 
  <a href="{{ route('supervisor.my-tasks.corrective-maintenance') }}" class="{{ request()->routeIs('supervisor.my-tasks.corrective-maintenance*') ? 'active' : '' }}">
@@ -730,6 +753,21 @@
  function toggleInventoryMenu() {
  const submenu = document.getElementById('inventorySubmenu');
  const chevron = document.getElementById('inventoryChevron');
+
+ submenu.classList.toggle('show');
+
+ if (submenu.classList.contains('show')) {
+ chevron.classList.remove('fa-chevron-down');
+ chevron.classList.add('fa-chevron-up');
+ } else {
+ chevron.classList.remove('fa-chevron-up');
+ chevron.classList.add('fa-chevron-down');
+ }
+ }
+
+ function togglePmMenu() {
+ const submenu = document.getElementById('pmSubmenu');
+ const chevron = document.getElementById('pmChevron');
 
  submenu.classList.toggle('show');
 

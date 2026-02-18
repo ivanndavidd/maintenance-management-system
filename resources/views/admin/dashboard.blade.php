@@ -244,6 +244,44 @@
     .opacity-25 { opacity: 0.25; }
     .card { transition: transform 0.2s; }
     .card:hover { transform: translateY(-3px); }
+
+    /* KPI Monitor Styles */
+    .kpi-timeframe-selector .btn-group .btn {
+        padding: 6px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 0;
+        transition: all 0.2s;
+    }
+    .kpi-timeframe-selector .btn-group .btn:first-child { border-radius: 6px 0 0 6px; }
+    .kpi-timeframe-selector .btn-group .btn:last-child { border-radius: 0 6px 6px 0; }
+    .kpi-timeframe-selector .btn-check:checked + .btn-outline-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: white;
+    }
+    .kpi-metric-card {
+        text-align: center;
+        padding: 20px 15px;
+        border-radius: 10px;
+        transition: all 0.2s;
+    }
+    .kpi-metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .kpi-metric-value { font-size: 28px; font-weight: 800; line-height: 1.2; }
+    .kpi-metric-label {
+        font-size: 12px; font-weight: 600; text-transform: uppercase;
+        letter-spacing: 0.5px; margin-top: 4px; color: #6c757d;
+    }
+    .kpi-custom-range { display: none; margin-top: 10px; }
+    .kpi-custom-range.show { display: flex; }
+    .kpi-loading-overlay {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255,255,255,0.8); display: flex;
+        align-items: center; justify-content: center; z-index: 10; border-radius: 12px;
+    }
 </style>
 @endpush
 
@@ -260,6 +298,160 @@
             <small class="text-muted">{{ Carbon\Carbon::now()->format('h:i A') }}</small>
         </div>
     </div>
+
+    @if(!auth()->user()->hasRole('supervisor_maintenance'))
+    <!-- KPI Monitor Section (Admin Only) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h6 class="mb-0 fw-bold" style="color: #2d3748;">
+                                <i class="fas fa-chart-bar text-primary"></i> KPI Monitor
+                                <span class="badge bg-light text-muted fw-normal ms-1" id="kpiDateRange" style="font-size: 11px;"></span>
+                            </h6>
+                        </div>
+                        <div class="kpi-timeframe-selector">
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="kpiTimeframe" id="kpi1M" value="1M" checked>
+                                <label class="btn btn-outline-primary" for="kpi1M">1M</label>
+                                <input type="radio" class="btn-check" name="kpiTimeframe" id="kpi3M" value="3M">
+                                <label class="btn btn-outline-primary" for="kpi3M">3M</label>
+                                <input type="radio" class="btn-check" name="kpiTimeframe" id="kpi6M" value="6M">
+                                <label class="btn btn-outline-primary" for="kpi6M">6M</label>
+                                <input type="radio" class="btn-check" name="kpiTimeframe" id="kpi1Y" value="1Y">
+                                <label class="btn btn-outline-primary" for="kpi1Y">1Y</label>
+                                <input type="radio" class="btn-check" name="kpiTimeframe" id="kpiCustom" value="custom">
+                                <label class="btn btn-outline-primary" for="kpiCustom"><i class="fas fa-calendar-alt"></i> Custom</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kpi-custom-range align-items-center gap-2 mt-2" id="kpiCustomRange">
+                        <input type="date" class="form-control form-control-sm" id="kpiDateFrom" style="max-width: 160px;">
+                        <span class="text-muted mx-1">to</span>
+                        <input type="date" class="form-control form-control-sm" id="kpiDateTo" style="max-width: 160px;">
+                        <button class="btn btn-sm btn-primary ms-1" onclick="loadKpiData('custom')">
+                            <i class="fas fa-search"></i> Apply
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body position-relative" id="kpiCardBody">
+                    <div class="kpi-loading-overlay" id="kpiLoading" style="display: none;">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary"></div>
+                            <div class="mt-2 text-muted small">Loading KPI data...</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- KPI 1: PM Tasks -->
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                                <div class="card-header bg-success bg-opacity-10 border-0">
+                                    <h6 class="mb-0 text-success fw-bold"><i class="fas fa-calendar-check"></i> PM Tasks</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-4">
+                                            <div class="kpi-metric-card bg-success bg-opacity-10">
+                                                <div class="kpi-metric-value text-success" id="pmOnTime">-</div>
+                                                <div class="kpi-metric-label">On Time</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="kpi-metric-card bg-warning bg-opacity-10">
+                                                <div class="kpi-metric-value text-warning" id="pmLate">-</div>
+                                                <div class="kpi-metric-label">Late</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="kpi-metric-card bg-danger bg-opacity-10">
+                                                <div class="kpi-metric-value text-danger" id="pmNotDone">-</div>
+                                                <div class="kpi-metric-label">Not Done</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="height: 180px; position: relative;">
+                                        <canvas id="pmKpiChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KPI 2: CM Tickets -->
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                                <div class="card-header bg-primary bg-opacity-10 border-0">
+                                    <h6 class="mb-0 text-primary fw-bold"><i class="fas fa-wrench"></i> CM Tickets</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <div class="kpi-metric-card bg-warning bg-opacity-10">
+                                                <div class="kpi-metric-value text-warning" id="cmOpen">-</div>
+                                                <div class="kpi-metric-label">Open</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="kpi-metric-card bg-success bg-opacity-10">
+                                                <div class="kpi-metric-value text-success" id="cmClosed">-</div>
+                                                <div class="kpi-metric-label">Closed</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="height: 180px; position: relative;">
+                                        <canvas id="cmKpiChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KPI 3: Stock Opname -->
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                                <div class="card-header bg-info bg-opacity-10 border-0">
+                                    <h6 class="mb-0 text-info fw-bold"><i class="fas fa-clipboard-check"></i> Stock Opname</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center mb-2">
+                                        <div style="height: 120px; position: relative;">
+                                            <canvas id="soAccuracyChart"></canvas>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <span class="text-success fw-bold" id="soAccurate">-</span> accurate /
+                                                <span class="text-danger fw-bold" id="soDiscrepancy">-</span> discrepancy
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <hr class="my-2">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="kpi-metric-card bg-danger bg-opacity-10">
+                                                <div class="kpi-metric-value text-danger" id="soMissed" style="font-size: 22px;">-</div>
+                                                <div class="kpi-metric-label" style="font-size: 10px;">Missed Jobs</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="kpi-metric-card bg-secondary bg-opacity-10">
+                                                <div class="kpi-metric-value text-secondary" id="soUncovered" style="font-size: 22px;">-</div>
+                                                <div class="kpi-metric-label" style="font-size: 10px;">Uncovered Items</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-1">
+                                        <small class="text-muted" id="soUncoveredBreakdown" style="font-size: 10px;"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
@@ -810,6 +1002,160 @@
     function formatDate(year, month, day) {
         return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     }
+    @endif
+
+    @if(!auth()->user()->hasRole('supervisor_maintenance'))
+    // ========== KPI Monitor ==========
+    let pmKpiChart = null;
+    let cmKpiChart = null;
+    let soAccuracyChart = null;
+    let currentAccuracyPercent = 0;
+
+    document.querySelectorAll('input[name="kpiTimeframe"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const period = this.value;
+            const customRange = document.getElementById('kpiCustomRange');
+            if (period === 'custom') {
+                customRange.classList.add('show');
+            } else {
+                customRange.classList.remove('show');
+                loadKpiData(period);
+            }
+        });
+    });
+
+    function loadKpiData(period) {
+        const loading = document.getElementById('kpiLoading');
+        loading.style.display = 'flex';
+
+        let url = `{{ route('admin.dashboard.kpi-data') }}?period=${period}`;
+        if (period === 'custom') {
+            const dateFrom = document.getElementById('kpiDateFrom').value;
+            const dateTo = document.getElementById('kpiDateTo').value;
+            if (!dateFrom || !dateTo) {
+                alert('Please select both start and end dates.');
+                loading.style.display = 'none';
+                return;
+            }
+            url += `&date_from=${dateFrom}&date_to=${dateTo}`;
+        }
+
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            updatePmKpi(data.pm);
+            updateCmKpi(data.cm);
+            updateStockOpnameKpi(data.stock_opname);
+            document.getElementById('kpiDateRange').textContent = `${data.date_from} ~ ${data.date_to}`;
+            loading.style.display = 'none';
+        })
+        .catch(err => {
+            console.error('KPI load error:', err);
+            loading.style.display = 'none';
+        });
+    }
+
+    function updatePmKpi(pm) {
+        document.getElementById('pmOnTime').textContent = pm.on_time;
+        document.getElementById('pmLate').textContent = pm.late;
+        document.getElementById('pmNotDone').textContent = pm.not_done;
+
+        if (pmKpiChart) pmKpiChart.destroy();
+        const ctx = document.getElementById('pmKpiChart');
+        pmKpiChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['On Time', 'Late', 'Not Done'],
+                datasets: [{
+                    data: [pm.on_time, pm.late, pm.not_done],
+                    backgroundColor: ['rgba(40,167,69,0.8)', 'rgba(255,193,7,0.8)', 'rgba(220,53,69,0.8)'],
+                    borderWidth: 2, borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '60%',
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } } }
+            }
+        });
+    }
+
+    function updateCmKpi(cm) {
+        document.getElementById('cmOpen').textContent = cm.open;
+        document.getElementById('cmClosed').textContent = cm.closed;
+
+        if (cmKpiChart) cmKpiChart.destroy();
+        const ctx = document.getElementById('cmKpiChart');
+        cmKpiChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Open', 'Closed'],
+                datasets: [{
+                    data: [cm.open, cm.closed],
+                    backgroundColor: ['rgba(255,193,7,0.8)', 'rgba(40,167,69,0.8)'],
+                    borderWidth: 2, borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '60%',
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } } }
+            }
+        });
+    }
+
+    function updateStockOpnameKpi(so) {
+        document.getElementById('soAccurate').textContent = so.accuracy.accurate;
+        document.getElementById('soDiscrepancy').textContent = so.accuracy.discrepancy;
+        document.getElementById('soMissed').textContent = so.missed_jobs;
+        document.getElementById('soUncovered').textContent = so.uncovered.total;
+        document.getElementById('soUncoveredBreakdown').textContent =
+            `(${so.uncovered.spareparts} spareparts, ${so.uncovered.tools} tools, ${so.uncovered.assets} assets)`;
+
+        currentAccuracyPercent = so.accuracy.percent;
+
+        if (soAccuracyChart) soAccuracyChart.destroy();
+        const ctx = document.getElementById('soAccuracyChart');
+        soAccuracyChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Accurate', 'Discrepancy'],
+                datasets: [{
+                    data: [so.accuracy.accurate, so.accuracy.discrepancy],
+                    backgroundColor: ['rgba(40,167,69,0.8)', 'rgba(220,53,69,0.8)'],
+                    borderWidth: 2, borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '70%',
+                plugins: { legend: { display: false } }
+            },
+            plugins: [{
+                id: 'centerText',
+                beforeDraw: function(chart) {
+                    const { ctx, width, height } = chart;
+                    ctx.restore();
+                    const fontSize = (height / 80).toFixed(2);
+                    ctx.font = `bold ${fontSize}em sans-serif`;
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+                    const text = currentAccuracyPercent + '%';
+                    ctx.fillStyle = currentAccuracyPercent >= 90 ? '#28a745' :
+                                    currentAccuracyPercent >= 70 ? '#ffc107' : '#dc3545';
+                    ctx.fillText(text, width / 2, height / 2);
+                    ctx.save();
+                }
+            }]
+        });
+    }
+
+    // Load KPI data on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadKpiData('1M');
+    });
     @endif
 </script>
 @endsection

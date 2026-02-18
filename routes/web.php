@@ -125,6 +125,12 @@ Route::middleware(['auth'])->group(function () {
                 'index',
             ])->name('dashboard');
 
+            // KPI Monitor Data (Admin Only)
+            Route::get('/dashboard/kpi-data', [
+                App\Http\Controllers\Admin\DashboardController::class,
+                'kpiData',
+            ])->name('dashboard.kpi-data')->middleware(RoleMiddleware::class . ':admin');
+
             // Site Management (Admin Only)
             Route::prefix('sites')
                 ->name('sites.')
@@ -153,6 +159,14 @@ Route::middleware(['auth'])->group(function () {
                 App\Http\Controllers\Admin\UserController::class,
                 'updateSiteAccess',
             ])->name('users.site-access');
+            Route::post('site-access-requests/{siteAccessRequest}/approve', [
+                App\Http\Controllers\Admin\UserController::class,
+                'approveAccessRequest',
+            ])->name('site-access-requests.approve');
+            Route::post('site-access-requests/{siteAccessRequest}/reject', [
+                App\Http\Controllers\Admin\UserController::class,
+                'rejectAccessRequest',
+            ])->name('site-access-requests.reject');
 
             // Shift Management
             Route::resource('shifts', App\Http\Controllers\Admin\ShiftController::class);
@@ -525,6 +539,33 @@ Route::middleware(['auth'])->group(function () {
                         'deleteCalendarTask',
                     ])->name('calendar.tasks.delete');
 
+                    // PM Reports routes (must be before wildcard routes)
+                    Route::get('/reports', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'reports',
+                    ])->name('reports');
+
+                    Route::get('/reports/{report}', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'showReport',
+                    ])->name('reports.show');
+
+                    Route::post('/reports/{report}/review', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'reviewReport',
+                    ])->name('reports.review');
+
+                    Route::post('/reports/{report}/create-cm', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'createCmFromReport',
+                    ])->name('reports.create-cm');
+
+                    // Asset search for report form
+                    Route::get('/assets/search', [
+                        App\Http\Controllers\Admin\AssetController::class,
+                        'search',
+                    ])->name('assets.search');
+
                     Route::get('/{preventive_maintenance}', [
                         App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
                         'show',
@@ -845,6 +886,15 @@ Route::middleware(['auth'])->group(function () {
                 Route::delete('/calendar/tasks/{task}', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'deleteTask'])->name('delete-task');
                 Route::post('/task/{task}/status', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'updateTaskStatus'])->name('update-task-status');
                 Route::resource('schedules', App\Http\Controllers\Admin\PreventiveMaintenanceController::class)->except(['index']);
+
+                // PM Reports
+                Route::get('/reports', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'reports'])->name('reports');
+                Route::get('/reports/{report}', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'showReport'])->name('reports.show');
+                Route::post('/reports/{report}/review', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'reviewReport'])->name('reports.review');
+                Route::post('/reports/{report}/create-cm', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'createCmFromReport'])->name('reports.create-cm');
+
+                // Asset search
+                Route::get('/assets/search', [App\Http\Controllers\Admin\AssetController::class, 'search'])->name('assets.search');
             });
 
             // Corrective Maintenance
@@ -884,6 +934,22 @@ Route::middleware(['auth'])->group(function () {
                         App\Http\Controllers\Supervisor\MyTaskController::class,
                         'showPreventiveMaintenance',
                     ])->name('preventive-maintenance.show');
+
+                    Route::post('/preventive-maintenance/task/{task}/report', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'storePmReport',
+                    ])->name('preventive-maintenance.task.store-report');
+
+                    Route::get('/preventive-maintenance/task/{task}/report/{report}', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'showPmReport',
+                    ])->name('preventive-maintenance.task.show-report');
+
+                    // Asset search for report form
+                    Route::get('/preventive-maintenance/assets/search', [
+                        App\Http\Controllers\Admin\AssetController::class,
+                        'search',
+                    ])->name('preventive-maintenance.assets.search');
 
                     Route::post('/preventive-maintenance/task/{task}/status', [
                         App\Http\Controllers\Supervisor\MyTaskController::class,
@@ -1093,6 +1159,22 @@ Route::middleware(['auth'])->group(function () {
                         App\Http\Controllers\User\PreventiveMaintenanceController::class,
                         'updateTaskStatus',
                     ])->name('task.update-status');
+
+                    Route::post('/task/{task}/report', [
+                        App\Http\Controllers\User\PreventiveMaintenanceController::class,
+                        'storeReport',
+                    ])->name('task.store-report');
+
+                    Route::get('/task/{task}/report/{report}', [
+                        App\Http\Controllers\User\PreventiveMaintenanceController::class,
+                        'showReport',
+                    ])->name('task.show-report');
+
+                    // Asset search for report form
+                    Route::get('/assets/search', [
+                        App\Http\Controllers\Admin\AssetController::class,
+                        'search',
+                    ])->name('assets.search');
                 });
         });
 

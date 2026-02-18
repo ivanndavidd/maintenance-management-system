@@ -209,8 +209,6 @@
             transition: margin-left 0.3s ease, width 0.3s ease;
             width: calc(100% - 70px);
             overflow-x: hidden;
-            position: relative;
-            z-index: 1;
         }
 
         /* Push content when sidebar is hovered */
@@ -310,6 +308,17 @@
 
             <a href="{{ route('user.preventive-maintenance.index') }}" class="{{ request()->routeIs('user.preventive-maintenance.*') ? 'active' : '' }}">
                 <i class="fas fa-calendar-check"></i><span class="menu-text"> Preventive Maintenance</span>
+                @php
+                    $pendingPM = cache()->remember('pending_pm_user_' . auth()->id(), 60, function() {
+                        return \App\Models\PmTask::where('assigned_user_id', auth()->id())
+                            ->whereIn('status', ['pending', 'in_progress'])
+                            ->whereNotNull('task_date')
+                            ->count();
+                    });
+                @endphp
+                @if($pendingPM > 0)
+                    <span class="badge bg-primary text-white ms-2">{{ $pendingPM }}
+                @endif
             </a>
 
             <hr class="text-white">

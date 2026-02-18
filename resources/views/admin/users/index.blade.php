@@ -15,7 +15,21 @@
                 </ol>
             </nav>
         </div>
-        <div>
+        <div class="d-flex align-items-center gap-2">
+            @if(auth()->user()->isSuper() && $pendingApprovals->count() > 0)
+            <div class="position-relative">
+                <button class="btn btn-outline-secondary position-relative" type="button" id="notifBellBtn" data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true" data-bs-trigger="focus" title="Pending Approvals">
+                    <i class="fas fa-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                        {{ $pendingApprovals->count() }}
+                    </span>
+                </button>
+            </div>
+            @elseif(auth()->user()->isSuper())
+            <button class="btn btn-outline-secondary" type="button" disabled title="No pending approvals">
+                <i class="fas fa-bell"></i>
+            </button>
+            @endif
             <a href="{{ route($routePrefix.'.users.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Add New User
             </a>
@@ -141,6 +155,9 @@
                                         {{ ucfirst(str_replace('_', ' ', $role->name)) }}
                                     </span>
                                 @endforeach
+                                @if($user->isSuper())
+                                    <span class="badge bg-dark"><i class="fas fa-shield-alt"></i> Super</span>
+                                @endif
                             </td>
                             <td>
                                 @if($user->is_active)
@@ -169,18 +186,18 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     
-                                    @if($user->id !== auth()->id())
-                                        <!-- Access Site (admin only) -->
-                                        @if($user->roles->first()?->name === 'admin')
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-primary"
-                                                title="Access Site"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#siteAccessModal{{ $user->id }}">
-                                            <i class="fas fa-globe"></i>
-                                        </button>
-                                        @endif
+                                    <!-- Access Site: super admin can manage all (including self), non-super can only request for others -->
+                                    @if($user->roles->first()?->name === 'admin' && (auth()->user()->isSuper() || ($user->id !== auth()->id() && !$user->isSuper())))
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary"
+                                            title="Access Site"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#siteAccessModal{{ $user->id }}">
+                                        <i class="fas fa-globe"></i>
+                                    </button>
+                                    @endif
 
+                                    @if($user->id !== auth()->id() && (auth()->user()->isSuper() || !$user->isSuper()))
                                         <!-- Toggle Status -->
                                         <form action="{{ route($routePrefix.'.users.toggle-status', $user) }}"
                                               method="POST"
@@ -243,7 +260,7 @@
 @push('modals')
 <!-- Site Access Modals -->
 @foreach($users as $user)
-    @if($user->id !== auth()->id())
+    @if($user->roles->first()?->name === 'admin' && (auth()->user()->isSuper() || ($user->id !== auth()->id() && !$user->isSuper())))
     <div class="modal fade" id="siteAccessModal{{ $user->id }}" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -285,6 +302,82 @@
 @endforeach
 @endpush
 
+{{-- Hidden popover content for notification bell --}}
+@if(auth()->user()->isSuper() && $pendingApprovals->count() > 0)
+<div id="notifPopoverContent" class="d-none">
+    <div style="max-height: 350px; overflow-y: auto; min-width: 320px;">
+        @foreach($pendingApprovals as $req)
+        <div class="border-bottom pb-2 mb-2">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+                <strong class="text-truncate" style="max-width: 180px;">{{ $req->targetUser->name }}</strong>
+                <small class="text-muted">{{ $req->created_at->diffForHumans() }}</small>
+            </div>
+            <p class="mb-1 small text-muted">
+                Requested by <strong>{{ $req->requester->name }}</strong>
+            </p>
+
+            {{-- Request type specific content --}}
+            @if($req->type === 'delete_user')
+                <div class="small">
+                    <span class="badge bg-danger"><i class="fas fa-trash"></i> Delete User</span>
+                    <span class="text-muted">{{ $req->targetUser->email }}</span>
+                </div>
+            @elseif($req->type === 'toggle_status')
+                <div class="small">
+                    @if($req->targetUser->is_active)
+                        <span class="badge bg-warning text-dark"><i class="fas fa-power-off"></i> Deactivate User</span>
+                    @else
+                        <span class="badge bg-success"><i class="fas fa-power-off"></i> Activate User</span>
+                    @endif
+                    <span class="text-muted">{{ $req->targetUser->email }}</span>
+                </div>
+            @else
+                @php
+                    $currentIds = $req->current_site_ids ?? [];
+                    $requestedIds = $req->requested_site_ids ?? [];
+                    $addedIds = array_diff($requestedIds, $currentIds);
+                    $removedIds = array_diff($currentIds, $requestedIds);
+                    $allSiteIds = array_unique(array_merge($addedIds, $removedIds));
+                    $allSites = count($allSiteIds) > 0
+                        ? DB::connection('central')->table('sites')->whereIn('id', $allSiteIds)->pluck('name', 'id')
+                        : collect();
+                @endphp
+                @if(count($addedIds) > 0)
+                    <div class="small"><span class="text-success"><i class="fas fa-plus-circle"></i> Add:</span>
+                        @foreach($addedIds as $sid)
+                            <span class="badge bg-success-subtle text-success">{{ $allSites[$sid] ?? "Site #$sid" }}</span>
+                        @endforeach
+                    </div>
+                @endif
+                @if(count($removedIds) > 0)
+                    <div class="small"><span class="text-danger"><i class="fas fa-minus-circle"></i> Remove:</span>
+                        @foreach($removedIds as $sid)
+                            <span class="badge bg-danger-subtle text-danger">{{ $allSites[$sid] ?? "Site #$sid" }}</span>
+                        @endforeach
+                    </div>
+                @endif
+            @endif
+
+            <div class="mt-2 d-flex gap-1">
+                <form action="{{ route($routePrefix.'.site-access-requests.approve', $req) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this request?')">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                </form>
+                <form action="{{ route($routePrefix.'.site-access-requests.reject', $req) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Reject this request?')">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 <style>
 .avatar-circle {
     width: 40px;
@@ -296,5 +389,27 @@
     font-weight: bold;
     font-size: 14px;
 }
+.popover {
+    max-width: 400px !important;
+}
 </style>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bellBtn = document.getElementById('notifBellBtn');
+    if (bellBtn) {
+        const contentEl = document.getElementById('notifPopoverContent');
+        if (contentEl) {
+            new bootstrap.Popover(bellBtn, {
+                html: true,
+                content: contentEl.innerHTML,
+                sanitize: false,
+                trigger: 'focus'
+            });
+        }
+    }
+});
+</script>
+@endpush
 @endsection

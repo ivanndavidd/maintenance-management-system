@@ -4,7 +4,9 @@ namespace App\Observers;
 
 use App\Models\ShiftAssignment;
 use App\Models\PmTask;
+use App\Mail\PmTaskAssigned;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class ShiftAssignmentObserver
 {
@@ -81,6 +83,19 @@ class ShiftAssignmentObserver
                     'action' => 'auto_assigned',
                     'notes' => "Auto-assigned to {$shiftAssignment->user->name} via shift schedule"
                 ]);
+
+                // Send email notification
+                try {
+                    $user = $shiftAssignment->user;
+                    if ($user && $user->email) {
+                        Mail::to($user->email)->send(new PmTaskAssigned($task));
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send PM task assignment email: ' . $e->getMessage(), [
+                        'task_id' => $task->id,
+                        'assigned_user_id' => $shiftAssignment->user_id,
+                    ]);
+                }
             });
     }
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PmTask extends TenantModels
@@ -36,6 +37,7 @@ class PmTask extends TenantModels
         'recurrence_end_date',
         'is_recurring',
         'parent_task_id',
+        'reminder_sent_at',
     ];
 
     protected $casts = [
@@ -44,6 +46,7 @@ class PmTask extends TenantModels
         'recurrence_start_date' => 'date',
         'recurrence_end_date' => 'date',
         'is_recurring' => 'boolean',
+        'reminder_sent_at' => 'datetime',
     ];
 
     const STATUS_PENDING = 'pending';
@@ -141,6 +144,16 @@ class PmTask extends TenantModels
     public function childTasks(): HasMany
     {
         return $this->hasMany(PmTask::class, 'parent_task_id');
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(PmTaskReport::class);
+    }
+
+    public function latestReport(): HasOne
+    {
+        return $this->hasOne(PmTaskReport::class)->latestOfMany();
     }
 
     // Get schedule through relationships

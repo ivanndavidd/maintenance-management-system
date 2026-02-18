@@ -110,11 +110,19 @@ class CentralDatabaseSeeder extends Seeder
                                 'email_verified_at' => $user->email_verified_at ?? null,
                                 'password' => $user->password,
                                 'is_active' => $user->is_active ?? true,
+                                'super' => $user->super ?? false,
                                 'last_login_at' => $user->last_login_at ?? null,
                                 'remember_token' => $user->remember_token ?? null,
                                 'created_at' => $user->created_at,
                                 'updated_at' => $user->updated_at,
                             ]);
+                        } else {
+                            // If user has super flag in any site, propagate to central
+                            if (!empty($user->super)) {
+                                DB::connection('central')->table('users')
+                                    ->where('id', $centralUserId)
+                                    ->update(['super' => true]);
+                            }
                         }
 
                         $centralUsers[$user->email] = $centralUserId;

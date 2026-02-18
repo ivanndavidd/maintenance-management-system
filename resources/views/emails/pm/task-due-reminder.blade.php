@@ -3,11 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PM Task Assigned</title>
+    <title>PM Task Due Today</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #22C55E; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+        .header { background: #3B82F6; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
         .content { background: #f8f9fa; padding: 20px; border: 1px solid #ddd; }
         .task-info { background: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
         .task-info table { width: 100%; border-collapse: collapse; }
@@ -16,29 +16,32 @@
         .badge { display: inline-block; padding: 5px 10px; border-radius: 3px; font-size: 12px; font-weight: bold; }
         .badge-pending { background: #3B82F6; color: white; }
         .badge-shift { background: #EAB308; color: white; }
-        .btn { display: inline-block; padding: 12px 24px; background: #22C55E; color: white; text-decoration: none; border-radius: 5px; margin: 10px 5px; }
-        .btn:hover { background: #16A34A; }
+        .btn { display: inline-block; padding: 12px 24px; background: #3B82F6; color: white; text-decoration: none; border-radius: 5px; margin: 10px 5px; }
+        .btn:hover { background: #2563EB; }
         .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        .alert-box { background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 5px; padding: 12px; margin: 15px 0; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 style="margin: 0;">Preventive Maintenance Task Assigned</h1>
-            <p style="margin: 10px 0 0 0;">You have been assigned a new PM task</p>
+            <h1 style="margin: 0;">PM Task Due Today</h1>
+            <p style="margin: 10px 0 0 0;">You have a preventive maintenance task scheduled for today</p>
         </div>
 
         <div class="content">
             <p>Dear <strong>{{ $task->assignedUser->name ?? 'Team Member' }}</strong>,</p>
 
-            <p>A new preventive maintenance task has been assigned to you. Please review the details below and complete the task on the scheduled date.</p>
+            <div class="alert-box">
+                <strong>Reminder:</strong> You have a PM task that is due today. Please complete it during your assigned shift.
+            </div>
 
             <div class="task-info">
                 <h3 style="margin-top: 0;">Task Details</h3>
                 <table>
                     <tr>
                         <td>Task Name</td>
-                        <td><strong style="color: #22C55E;">{{ $task->task_name }}</strong></td>
+                        <td><strong style="color: #3B82F6;">{{ $task->task_name }}</strong></td>
                     </tr>
                     <tr>
                         <td>Status</td>
@@ -76,18 +79,6 @@
                         <td>{{ $task->equipment_type }}</td>
                     </tr>
                     @endif
-                    @if($task->is_recurring)
-                    <tr>
-                        <td>Recurring Task</td>
-                        <td>Yes ({{ ucfirst($task->recurrence_pattern) }})</td>
-                    </tr>
-                    @endif
-                    @if($task->pmScheduleDate && $task->pmScheduleDate->pmSchedule)
-                    <tr>
-                        <td>Schedule Month</td>
-                        <td>{{ \Carbon\Carbon::parse($task->pmScheduleDate->pmSchedule->scheduled_month)->format('F Y') }}</td>
-                    </tr>
-                    @endif
                 </table>
             </div>
 
@@ -97,13 +88,11 @@
                 </a>
             </p>
 
-            <p><strong>Important:</strong> Please complete this task on the scheduled date during your assigned shift. Update the task status once completed.</p>
-
-            <p>If you have any questions or need assistance, please contact your supervisor.</p>
+            <p><strong>Important:</strong> Please complete this task during your assigned shift and update the task status once done.</p>
         </div>
 
         <div class="footer">
-            <p>This is an automated message from the Warehouse Maintenance System.<br>
+            <p>This is an automated reminder from the Warehouse Maintenance System.<br>
             Please do not reply to this email.</p>
         </div>
     </div>
