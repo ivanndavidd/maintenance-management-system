@@ -84,16 +84,20 @@ class CentralDatabaseSeeder extends Seeder
                 DB::purge('seed_check');
                 DB::connection('seed_check')->getPdo(); // test connection
 
-                $siteUsers = DB::connection('seed_check')->table('users')->get();
+                // Only get users with admin role from this site DB
+                $siteUsers = DB::connection('seed_check')->table('users')
+                    ->join('model_has_roles', function ($join) {
+                        $join->on('users.id', '=', 'model_has_roles.model_id')
+                            ->where('model_has_roles.model_type', 'App\\Models\\User');
+                    })
+                    ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+                    ->where('roles.name', 'admin')
+                    ->select('users.*')
+                    ->distinct()
+                    ->get();
 
                 foreach ($siteUsers as $user) {
-                    // Get user's roles from this site DB
-                    $roles = DB::connection('seed_check')->table('model_has_roles')
-                        ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-                        ->where('model_has_roles.model_id', $user->id)
-                        ->where('model_has_roles.model_type', 'App\\Models\\User')
-                        ->pluck('roles.name')
-                        ->toArray();
+                    $roles = ['admin'];
 
                     // Insert/update user in central DB (dedup by email)
                     if (!isset($centralUsers[$user->email])) {
@@ -154,7 +158,7 @@ class CentralDatabaseSeeder extends Seeder
                     );
                 }
 
-                $this->command->info("    -> {$siteUsers->count()} users processed");
+                $this->command->info("    -> {$siteUsers->count()} admin users processed");
             } catch (\Exception $e) {
                 $this->command->error("    -> Error: {$e->getMessage()}");
             }
