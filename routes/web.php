@@ -12,6 +12,7 @@ use App\Http\Controllers\SiteController;
 Route::get('/', [SiteController::class, 'select'])->name('site.select');
 Route::post('/site/choose', [SiteController::class, 'choose'])->name('site.choose');
 Route::post('/site/switch', [SiteController::class, 'switch'])->name('site.switch');
+Route::post('/site/switch-direct', [SiteController::class, 'switchDirect'])->name('site.switch-direct');
 Route::get('/site/current', [SiteController::class, 'current'])->name('site.current');
 
 // ========================================
@@ -826,20 +827,40 @@ Route::middleware(['auth'])->group(function () {
             });
             Route::resource('assets', App\Http\Controllers\Admin\AssetController::class);
 
-            // Purchase Orders
+            // Purchase Orders (mirrors admin PO routes)
             Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
                 Route::get('/', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'index'])->name('index');
                 Route::get('/create', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'create'])->name('create');
                 Route::post('/', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'store'])->name('store');
                 Route::get('/{purchaseOrder}', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'show'])->name('show');
-                Route::get('/{purchaseOrder}/edit', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'edit'])->name('edit');
-                Route::put('/{purchaseOrder}', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'update'])->name('update');
+
+                // Approval workflow
+                Route::post('/{purchaseOrder}/approve', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'approve'])->name('approve');
+                Route::post('/{purchaseOrder}/reject', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'reject'])->name('reject');
+
+                // Goods receiving (item-level)
+                Route::get('/{purchaseOrder}/receive', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'showReceiveForm'])->name('receive');
+                Route::post('/{purchaseOrder}/items/{item}/receive', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'receiveItem'])->name('receive-item');
+                Route::post('/batch-receive', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'batchReceive'])->name('batch-receive');
+
+                // Quality inspection (item-level)
+                Route::post('/{purchaseOrder}/items/{item}/compliance', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'markItemCompliance'])->name('mark-item-compliance');
+                Route::post('/{purchaseOrder}/items/{item}/mark-compliant', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'markCompliant'])->name('mark-compliant');
+                Route::post('/{purchaseOrder}/items/{item}/mark-non-compliant', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'markNonCompliant'])->name('mark-non-compliant');
+                Route::post('/{purchaseOrder}/items/{item}/reverse-compliance', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'reverseCompliance'])->name('reverse-compliance');
+
+                // Stock management (item-level)
+                Route::post('/{purchaseOrder}/items/{item}/add-to-stock', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'addItemToStock'])->name('add-item-to-stock');
+                Route::post('/{purchaseOrder}/add-all-to-stock', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'addAllCompliantToStock'])->name('add-all-to-stock');
+
+                // Return and reorder
+                Route::post('/{purchaseOrder}/return-and-reorder', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'returnAndReorder'])->name('return-and-reorder');
+
+                // Cancel PO
+                Route::post('/{purchaseOrder}/cancel', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'cancel'])->name('cancel');
+
+                // Delete PO
                 Route::delete('/{purchaseOrder}', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'destroy'])->name('destroy');
-                Route::patch('/{purchaseOrder}/approve', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'approve'])->name('approve');
-                Route::patch('/{purchaseOrder}/reject', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'reject'])->name('reject');
-                Route::patch('/{purchaseOrder}/receive', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'receive'])->name('receive');
-                Route::patch('/{purchaseOrder}/cancel', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'cancel'])->name('cancel');
-                Route::get('/{purchaseOrder}/print', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'print'])->name('print');
             });
 
             // Stock Opname

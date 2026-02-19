@@ -89,7 +89,7 @@
                                 <td>
                                     <strong>{{ $item->getItemName() }}</strong>
                                     @if($item->is_unlisted)
-                                        <br><span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle"></i> UNLISTED</span>
+                                        <br><span class="badge bg-warning text-dark"><i class="fas fa-plus-circle"></i> NEW_ITEM</span>
                                     @endif
                                 </td>
                                 <td>

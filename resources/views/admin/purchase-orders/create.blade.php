@@ -33,7 +33,14 @@
                     <div class="border rounded p-3 mb-3 bg-light">
                         <h6 class="mb-3">Add Item to Cart</h6>
 
-                        <div class="row">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="unlisted_toggle" onchange="toggleUnlisted()">
+                            <label class="form-check-label" for="unlisted_toggle">
+                                New Item (Manual Entry)
+                            </label>
+                        </div>
+
+                        <div class="row" id="listed_fields">
                             <div class="col-md-5 mb-3">
                                 <label class="form-label">Search Item</label>
                                 <select id="item_select" class="form-select" onchange="onItemSelect()">
@@ -127,6 +134,45 @@
 
                         <!-- Hidden unit field - auto-filled from master data -->
                         <input type="hidden" id="item_unit" value="pcs">
+
+                        <!-- Unlisted/Manual item fields (hidden by default) -->
+                        <div class="row" id="unlisted_fields" style="display:none;">
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">Item Type <span class="text-danger">*</span></label>
+                                <select id="unlisted_item_type" class="form-select">
+                                    <option value="sparepart">Sparepart</option>
+                                    <option value="tool">Tool</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Item Name <span class="text-danger">*</span></label>
+                                <input type="text" id="unlisted_name" class="form-control" placeholder="e.g., Motor Conveyor 2HP">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">Supplier</label>
+                                <input type="text" id="unlisted_supplier" class="form-control" placeholder="e.g., Siemens">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">Qty</label>
+                                <input type="number" id="unlisted_quantity" class="form-control" min="1" value="1">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">Price (Rp)</label>
+                                <input type="number" id="unlisted_price" class="form-control" min="0" step="0.01">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Description</label>
+                                <input type="text" id="unlisted_description" class="form-control" placeholder="Optional description">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Specs</label>
+                                <input type="text" id="unlisted_specs" class="form-control" placeholder="Optional specifications">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">Unit</label>
+                                <input type="text" id="unlisted_unit" class="form-control" value="pcs" placeholder="pcs">
+                            </div>
+                        </div>
 
                         <button type="button" class="btn btn-success w-100 mt-3" onclick="addToCart()">
                             <i class="fas fa-cart-plus"></i> Add to Cart
@@ -228,11 +274,17 @@
     </div>
 </div>
 
-<!-- Unlisted items feature has been disabled. All items must be added to master data first. -->
 
 <script>
 let cart = [];
 let cartIndex = 0;
+let isUnlistedMode = false;
+
+function toggleUnlisted() {
+    isUnlistedMode = document.getElementById('unlisted_toggle').checked;
+    document.getElementById('listed_fields').style.display = isUnlistedMode ? 'none' : '';
+    document.getElementById('unlisted_fields').style.display = isUnlistedMode ? '' : 'none';
+}
 
 function onItemSelect() {
     const select = document.getElementById('item_select');
@@ -245,6 +297,11 @@ function onItemSelect() {
 }
 
 function addToCart() {
+    if (isUnlistedMode) {
+        addUnlistedToCart();
+        return;
+    }
+
     const select = document.getElementById('item_select');
     const selected = select.options[select.selectedIndex];
 
@@ -292,7 +349,70 @@ function addToCart() {
     resetForm();
 }
 
-// addUnlistedToCart function has been removed - unlisted items feature disabled
+function addUnlistedToCart() {
+    const itemType = document.getElementById('unlisted_item_type').value;
+    const name = document.getElementById('unlisted_name').value.trim();
+    const supplier = document.getElementById('unlisted_supplier').value.trim();
+    const quantity = parseInt(document.getElementById('unlisted_quantity').value);
+    const price = parseFloat(document.getElementById('unlisted_price').value);
+    const unit = document.getElementById('unlisted_unit').value.trim() || 'pcs';
+    const description = document.getElementById('unlisted_description').value.trim();
+    const specs = document.getElementById('unlisted_specs').value.trim();
+
+    if (!name) {
+        alert('Please enter item name!');
+        return;
+    }
+
+    if (!supplier) {
+        alert('Please enter supplier name!');
+        return;
+    }
+
+    if (!quantity || quantity < 1) {
+        alert('Please enter valid quantity!');
+        return;
+    }
+
+    if (!price || price < 0) {
+        alert('Please enter valid price!');
+        return;
+    }
+
+    const typeLabelMap = { sparepart: 'Sparepart', tool: 'Tool' };
+
+    const item = {
+        index: cartIndex++,
+        type: 'unlisted',
+        item_id: null,
+        name: name,
+        code: 'NEW_ITEM',
+        supplier: supplier,
+        quantity: quantity,
+        unit: unit,
+        unit_price: price,
+        subtotal: quantity * price,
+        is_unlisted: true,
+        unlisted_item_type: itemType,
+        unlisted_item_type_label: typeLabelMap[itemType] || itemType,
+        unlisted_name: name,
+        unlisted_description: description,
+        unlisted_specs: specs
+    };
+
+    cart.push(item);
+    renderCart();
+
+    // Reset unlisted fields
+    document.getElementById('unlisted_item_type').value = 'sparepart';
+    document.getElementById('unlisted_name').value = '';
+    document.getElementById('unlisted_supplier').value = '';
+    document.getElementById('unlisted_quantity').value = 1;
+    document.getElementById('unlisted_price').value = '';
+    document.getElementById('unlisted_description').value = '';
+    document.getElementById('unlisted_specs').value = '';
+    document.getElementById('unlisted_unit').value = 'pcs';
+}
 
 function renderCart() {
     const tbody = document.getElementById('cart_tbody');
@@ -319,7 +439,9 @@ function renderCart() {
         grandTotal += item.subtotal;
 
         let typeBadge = '';
-        if (item.type === 'sparepart') {
+        if (item.is_unlisted) {
+            typeBadge = '<span class="badge bg-warning text-dark">New ' + (item.unlisted_item_type_label || '') + '</span>';
+        } else if (item.type === 'sparepart') {
             typeBadge = '<span class="badge bg-info">Sparepart</span>';
         } else if (item.type === 'tool') {
             typeBadge = '<span class="badge bg-success">Tool</span>';
@@ -391,6 +513,7 @@ function updateHiddenFields() {
             fields.push(['unlisted_name', item.unlisted_name]);
             fields.push(['unlisted_description', item.unlisted_description || '']);
             fields.push(['unlisted_specs', item.unlisted_specs || '']);
+            fields.push(['unlisted_item_type', item.unlisted_item_type || 'sparepart']);
         } else {
             fields.push(['type', item.type]);
             fields.push(['item_id', item.item_id]);

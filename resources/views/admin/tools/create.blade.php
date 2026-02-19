@@ -38,6 +38,7 @@
                 <div class="card-body">
                     <form action="{{ route($routePrefix.'.tools.store') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="from_po_item" id="from_po_item_id" value="{{ request('from_po_item') }}">
 
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -224,6 +225,48 @@
                     </button>
                 </div>
             </div>
+
+            @if(isset($pendingPoItems) && $pendingPoItems->count() > 0)
+            <div class="card mt-3 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-shopping-cart"></i> From Purchase Orders
+                        <span class="badge bg-dark ms-1">{{ $pendingPoItems->count() }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-2">
+                    <p class="small text-muted mb-2">New tool items from received POs. Click to auto-fill the form.</p>
+                    @foreach($pendingPoItems as $poItem)
+                    <div class="card mb-2 {{ isset($selectedPoItem) && $selectedPoItem->id === $poItem->id ? 'border-primary shadow-sm' : 'border-light' }}"
+                         style="cursor:pointer; transition: box-shadow 0.2s;"
+                         onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'"
+                         onmouseout="this.style.boxShadow=''"
+                         onclick="fillFromPo({{ json_encode([
+                             'id'       => $poItem->id,
+                             'name'     => $poItem->unlisted_item_name,
+                             'specs'    => $poItem->unlisted_item_specs ?? '',
+                             'unit'     => $poItem->unit,
+                             'price'    => (float) $poItem->unit_price,
+                             'quantity' => (int) $poItem->quantity_received,
+                         ]) }})">
+                        <div class="card-body py-2 px-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong class="small">{{ $poItem->unlisted_item_name }}</strong>
+                                    @if($poItem->unlisted_item_description)
+                                        <br><span class="text-muted" style="font-size:11px;">{{ Str::limit($poItem->unlisted_item_description, 55) }}</span>
+                                    @endif
+                                    <br>
+                                    <span class="badge bg-secondary" style="font-size:10px;">{{ $poItem->purchaseOrder->po_number }}</span>
+                                    <span class="text-muted small ms-1">{{ $poItem->quantity_received }} {{ $poItem->unit }}</span>
+                                </div>
+                                <i class="fas fa-arrow-right text-primary mt-1 ms-2 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -390,6 +433,41 @@ Tools,T-00003,Tang Snap,Tekiro,Tekiro Snap,1,Pcs,Low,WH,,1,Item,sites/SCM`;
         link.click();
         document.body.removeChild(link);
     }
+
+    function fillFromPo(data) {
+        if (data.id)       document.getElementById('from_po_item_id').value = data.id;
+        if (data.name)     document.getElementById('sparepart_name').value = data.name;
+        if (data.specs)    document.getElementById('model').value = data.specs;
+        if (data.price)    document.getElementById('parts_price').value = data.price;
+        if (data.quantity) document.getElementById('quantity').value = data.quantity;
+
+        // Set unit select if it matches an option
+        if (data.unit) {
+            const unitSelect = document.getElementById('unit');
+            for (let i = 0; i < unitSelect.options.length; i++) {
+                if (unitSelect.options[i].value.toLowerCase() === data.unit.toLowerCase()) {
+                    unitSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // Scroll to form
+        document.getElementById('sparepart_name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('sparepart_name').focus();
+    }
+
+    @if(isset($selectedPoItem) && $selectedPoItem)
+    window.addEventListener('DOMContentLoaded', function() {
+        fillFromPo({{ json_encode([
+            'name'     => $selectedPoItem->unlisted_item_name,
+            'specs'    => $selectedPoItem->unlisted_item_specs ?? '',
+            'unit'     => $selectedPoItem->unit,
+            'price'    => (float) $selectedPoItem->unit_price,
+            'quantity' => (int) $selectedPoItem->quantity_received,
+        ]) }});
+    });
+    @endif
 </script>
 @endpush
 

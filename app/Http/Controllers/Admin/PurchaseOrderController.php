@@ -12,6 +12,11 @@ use Illuminate\Http\Request;
 
 class PurchaseOrderController extends Controller
 {
+    protected function routePrefix(): string
+    {
+        return auth()->user()->hasRole('supervisor_maintenance') ? 'supervisor' : 'admin';
+    }
+
     public function index(Request $request)
     {
         $query = PurchaseOrder::with(['items.item', 'orderedByUser', 'receivedByUser', 'approver', 'approvedByUser']);
@@ -77,14 +82,18 @@ class PurchaseOrderController extends Controller
             'approver_id' => 'required|exists:users,id',
             'notes' => 'nullable|string',
 
-            // Cart items (array) - UNLISTED ITEMS NOT ALLOWED
+            // Cart items (array)
             'items' => 'required|array|min:1',
-            'items.*.type' => 'required|in:sparepart,tool',
-            'items.*.item_id' => 'required|integer',
+            'items.*.type' => 'required|in:sparepart,tool,unlisted',
+            'items.*.item_id' => 'nullable|required_unless:items.*.type,unlisted|integer',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.unit' => 'required|string|max:50',
             'items.*.supplier' => 'required|string|max:255',
+            'items.*.unlisted_name' => 'nullable|required_if:items.*.type,unlisted|string|max:255',
+            'items.*.unlisted_description' => 'nullable|string|max:500',
+            'items.*.unlisted_specs' => 'nullable|string|max:500',
+            'items.*.unlisted_item_type' => 'nullable|required_if:items.*.type,unlisted|in:sparepart,tool',
         ]);
 
         // Create Purchase Order
@@ -101,10 +110,10 @@ class PurchaseOrderController extends Controller
             'total_items' => 0,
             'total_quantity' => 0,
             'total_price' => 0,
-            'has_unlisted_items' => false,
+            'has_unlisted_items' => collect($validated['items'])->contains('type', 'unlisted'),
         ]);
 
-        // Add items to cart (only listed items allowed)
+        // Add items to cart
         foreach ($validated['items'] as $itemData) {
             $subtotal = $itemData['quantity'] * $itemData['unit_price'];
 
@@ -119,8 +128,17 @@ class PurchaseOrderController extends Controller
                 'is_unlisted' => false,
             ];
 
-            // Set item type and ID
-            if ($itemData['type'] === 'sparepart') {
+            if ($itemData['type'] === 'unlisted') {
+                $poItemData['is_unlisted'] = true;
+                $poItemData['unlisted_item_name'] = $itemData['unlisted_name'];
+                $poItemData['unlisted_item_description'] = $itemData['unlisted_description'] ?? null;
+                $poItemData['unlisted_item_specs'] = $itemData['unlisted_specs'] ?? null;
+                $poItemData['item_id'] = null;
+
+                // Store intended item_type so we know which master table to use later
+                $unlisted_item_type = $itemData['unlisted_item_type'] ?? 'sparepart';
+                $poItemData['item_type'] = $unlisted_item_type === 'tool' ? Tool::class : Sparepart::class;
+            } elseif ($itemData['type'] === 'sparepart') {
                 $poItemData['item_type'] = Sparepart::class;
                 $poItemData['item_id'] = $itemData['item_id'];
             } elseif ($itemData['type'] === 'tool') {
@@ -132,7 +150,7 @@ class PurchaseOrderController extends Controller
         }
 
         // Update PO summary
-        $purchaseOrder->has_unlisted_items = false;
+        $purchaseOrder->has_unlisted_items = collect($validated['items'])->contains('type', 'unlisted');
         $purchaseOrder->updateSummary();
 
         // Send approval notification to designated approver
@@ -154,7 +172,7 @@ class PurchaseOrderController extends Controller
         }
 
         return redirect()
-            ->route('admin.purchase-orders.index')
+            ->route($this->routePrefix() . '.purchase-orders.index')
             ->with('success', 'Purchase Order created with ' . $purchaseOrder->total_items . ' items! Sent for approval.');
     }
 
@@ -177,22 +195,35 @@ class PurchaseOrderController extends Controller
         // Check if user can approve
         if (!$purchaseOrder->canBeApprovedBy(auth()->id())) {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'You are not authorized to approve this Purchase Order.');
         }
 
         // Check if already approved or rejected
         if ($purchaseOrder->approval_status !== 'pending') {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'This Purchase Order has already been ' . $purchaseOrder->approval_status . '.');
         }
 
         $purchaseOrder->approve(auth()->id());
         $purchaseOrder->update(['status' => 'ordered']);
 
+        // Send approval notification to the user who created the PO
+        try {
+            $purchaseOrder->load(['orderedByUser', 'approvedByUser', 'approver']);
+            $orderedBy = $purchaseOrder->orderedByUser;
+            if ($orderedBy && $orderedBy->email) {
+                \Mail::to($orderedBy->email)->send(new \App\Mail\PurchaseOrderApproved($purchaseOrder));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send PO approved email: ' . $e->getMessage(), [
+                'po_number' => $purchaseOrder->po_number,
+            ]);
+        }
+
         return redirect()
-            ->route('admin.purchase-orders.show', $purchaseOrder)
+            ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
             ->with('success', 'Purchase Order approved successfully!');
     }
 
@@ -201,14 +232,14 @@ class PurchaseOrderController extends Controller
         // Check if user can reject
         if (!$purchaseOrder->canBeApprovedBy(auth()->id())) {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'You are not authorized to reject this Purchase Order.');
         }
 
         // Check if already approved or rejected
         if ($purchaseOrder->approval_status !== 'pending') {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'This Purchase Order has already been ' . $purchaseOrder->approval_status . '.');
         }
 
@@ -219,8 +250,21 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->reject(auth()->id(), $validated['rejection_reason']);
         $purchaseOrder->update(['status' => 'cancelled']);
 
+        // Send rejection notification to the user who created the PO
+        try {
+            $purchaseOrder->load(['orderedByUser', 'approvedByUser', 'approver']);
+            $orderedBy = $purchaseOrder->orderedByUser;
+            if ($orderedBy && $orderedBy->email) {
+                \Mail::to($orderedBy->email)->send(new \App\Mail\PurchaseOrderRejected($purchaseOrder));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send PO rejected email: ' . $e->getMessage(), [
+                'po_number' => $purchaseOrder->po_number,
+            ]);
+        }
+
         return redirect()
-            ->route('admin.purchase-orders.show', $purchaseOrder)
+            ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
             ->with('success', 'Purchase Order rejected.');
     }
 
@@ -230,14 +274,14 @@ class PurchaseOrderController extends Controller
         // Check if PO is approved
         if ($purchaseOrder->approval_status !== 'approved') {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'Can only receive goods for approved Purchase Orders.');
         }
 
         // Check if already fully received
         if ($purchaseOrder->isFullyReceived()) {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'This Purchase Order has already been fully received.');
         }
 
@@ -272,7 +316,7 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->save();
 
         return redirect()
-            ->route('admin.purchase-orders.show', $purchaseOrder)
+            ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
             ->with('success', 'Item received! Please verify quality.');
     }
 
@@ -335,7 +379,7 @@ class PurchaseOrderController extends Controller
         }
 
         return redirect()
-            ->route('admin.purchase-orders.show', $purchaseOrder)
+            ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
             ->with('success', "Successfully received {$receivedCount} item(s)! Please verify quality.");
     }
 
@@ -356,7 +400,7 @@ class PurchaseOrderController extends Controller
         }
 
         return redirect()
-            ->route('admin.purchase-orders.show', $purchaseOrder)
+            ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
             ->with('success', $message);
     }
 
@@ -365,7 +409,7 @@ class PurchaseOrderController extends Controller
     {
         if (!$item->canAddToStock()) {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'Cannot add item to stock. Item must be received and marked as compliant first.');
         }
 
@@ -373,11 +417,11 @@ class PurchaseOrderController extends Controller
             $item->addToStock();
 
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('success', 'Item "' . $item->getItemName() . '" added to stock successfully!');
         } catch (\Exception $e) {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'Error: ' . $e->getMessage());
         }
     }
@@ -405,12 +449,12 @@ class PurchaseOrderController extends Controller
                 $message .= ' Some items failed: ' . implode(', ', $errors);
             }
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('success', $message);
         }
 
         return redirect()
-            ->route('admin.purchase-orders.show', $purchaseOrder)
+            ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
             ->with('error', 'No items could be added to stock. ' . implode(', ', $errors));
     }
 
@@ -419,7 +463,7 @@ class PurchaseOrderController extends Controller
         // Check if PO can be cancelled
         if (!$purchaseOrder->canBeCancelled()) {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'Cannot cancel this Purchase Order. Items may have already been added to stock.');
         }
 
@@ -436,11 +480,11 @@ class PurchaseOrderController extends Controller
             );
 
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('success', 'Purchase Order cancelled successfully. Cancellation has been recorded in history.');
         } catch (\Exception $e) {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', $e->getMessage());
         }
     }
@@ -451,7 +495,7 @@ class PurchaseOrderController extends Controller
         // Check if user is admin
         if (!auth()->user()->hasRole('admin')) {
             return redirect()
-                ->route('admin.purchase-orders.index')
+                ->route($this->routePrefix() . '.purchase-orders.index')
                 ->with('error', 'Only admin can delete Purchase Orders.');
         }
 
@@ -459,7 +503,7 @@ class PurchaseOrderController extends Controller
         $hasStockItems = $purchaseOrder->items()->where('added_to_stock', true)->exists();
         if ($hasStockItems) {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'Cannot delete PO: Some items have already been added to stock. Please reverse the process first.');
         }
 
@@ -472,7 +516,7 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->delete();
 
         return redirect()
-            ->route('admin.purchase-orders.index')
+            ->route($this->routePrefix() . '.purchase-orders.index')
             ->with('success', "Purchase Order {$poNumber} has been permanently deleted.");
     }
 
@@ -486,7 +530,7 @@ class PurchaseOrderController extends Controller
         $item->markAsCompliant($validated['compliance_notes'] ?? null);
 
         return redirect()
-            ->route('admin.purchase-orders.show', $purchaseOrder)
+            ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
             ->with('success', 'Item marked as compliant!');
     }
 
@@ -500,7 +544,7 @@ class PurchaseOrderController extends Controller
         $item->markAsNonCompliant($validated['compliance_notes']);
 
         return redirect()
-            ->route('admin.purchase-orders.show', $purchaseOrder)
+            ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
             ->with('warning', 'Item marked as NON-COMPLIANT. This item cannot be added to stock.');
     }
 
@@ -510,7 +554,7 @@ class PurchaseOrderController extends Controller
     {
         if ($item->compliance_status !== 'non_compliant') {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'Only non-compliant items can be reversed.');
         }
 
@@ -551,7 +595,7 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->load('items.item');
 
         return redirect()
-            ->route('admin.purchase-orders.show', $purchaseOrder)
+            ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
             ->with('warning', 'PO has been reversed and sent back for re-approval. Stock quantities have been adjusted. PO Number remains: ' . $purchaseOrder->po_number . '. All items must be re-received and re-checked after approval.');
     }
 
@@ -561,14 +605,14 @@ class PurchaseOrderController extends Controller
         // Check if PO has non-compliant items
         if (!$purchaseOrder->hasNonCompliantItems()) {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'Can only return purchase orders with non-compliant items.');
         }
 
         // Check if already returned
         if ($purchaseOrder->returned_at) {
             return redirect()
-                ->route('admin.purchase-orders.show', $purchaseOrder)
+                ->route($this->routePrefix() . '.purchase-orders.show', $purchaseOrder)
                 ->with('error', 'This Purchase Order has already been returned.');
         }
 
@@ -580,7 +624,7 @@ class PurchaseOrderController extends Controller
         $newPO = $purchaseOrder->returnAndReorder(auth()->id(), $validated['return_reason']);
 
         return redirect()
-            ->route('admin.purchase-orders.show', $newPO)
+            ->route($this->routePrefix() . '.purchase-orders.show', $newPO)
             ->with('success', 'Items returned! New PO created: ' . $newPO->po_number . ' with ' . $newPO->total_items . ' items.');
     }
 }

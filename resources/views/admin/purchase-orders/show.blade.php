@@ -67,12 +67,15 @@
                     } elseif ($purchaseOrder->status === 'received') {
                         // Check if items need compliance check
                         $hasCompliantItems = $purchaseOrder->items->where('compliance_status', 'compliant')->count() > 0;
-                        $allItemsAdded = $purchaseOrder->items->where('added_to_stock', true)->count() === $purchaseOrder->items->count();
+                        // Unlisted compliant = done; listed items need to be added to stock
+                        $allListedDone = $purchaseOrder->items->where('is_unlisted', false)->every(fn($i) => $i->added_to_stock);
+                        $allUnlistedDone = $purchaseOrder->items->where('is_unlisted', true)->every(fn($i) => $i->compliance_status === 'compliant');
+                        $allItemsAdded = $allListedDone && $allUnlistedDone;
 
                         if ($allItemsAdded) {
-                            $currentStep = 6; // Completed - all items in stock
+                            $currentStep = 6; // Completed
                         } elseif ($hasCompliantItems) {
-                            $currentStep = 5; // Items ready to add to stock
+                            $currentStep = 5; // Items ready to add to stock / mark complete
                         } else {
                             $currentStep = 4; // Received - need quality check
                         }
@@ -340,8 +343,20 @@
                 @php
                     $needsQualityCheck = $purchaseOrder->items->where('compliance_status', null)->count() > 0;
                     $hasCompliant = $purchaseOrder->items->where('compliance_status', 'compliant')->count() > 0;
-                    $canAddToStock = $purchaseOrder->items->where('compliance_status', 'compliant')->where('added_to_stock', false)->count() > 0;
-                    $allItemsInStock = $purchaseOrder->items->where('added_to_stock', true)->count() === $purchaseOrder->items->count();
+                    // Unlisted items that are compliant count as "done" — no stock entry needed
+                    $canAddToStock = $purchaseOrder->items
+                        ->where('is_unlisted', false)
+                        ->where('compliance_status', 'compliant')
+                        ->where('added_to_stock', false)->count() > 0;
+                    // Unlisted items that are compliant AND not yet registered to master data
+                    $compliantUnlisted = $purchaseOrder->items
+                        ->where('is_unlisted', true)
+                        ->where('compliance_status', 'compliant')
+                        ->filter(fn($i) => is_null($i->registered_to_master_at));
+                    // PO is "complete" when all listed items are in stock AND all unlisted items are compliant (registered or not)
+                    $allListedInStock = $purchaseOrder->items->where('is_unlisted', false)->every(fn($i) => $i->added_to_stock);
+                    $allUnlistedCompliant = $purchaseOrder->items->where('is_unlisted', true)->every(fn($i) => $i->compliance_status === 'compliant');
+                    $allItemsInStock = $allListedInStock && $allUnlistedCompliant;
                 @endphp
 
                 @if($needsQualityCheck)
@@ -431,12 +446,13 @@
                     </div>
                     @endif
 
-                @elseif($canAddToStock)
-                    <!-- Ready to Add to Stock -->
+                @elseif($canAddToStock || $compliantUnlisted->count() > 0)
+                    <!-- Ready to Add to Stock (listed items) + Needs Master Data (unlisted items) -->
+                    @if($canAddToStock)
                     <div class="alert alert-success">
                         <h6 class="alert-heading"><i class="fas fa-warehouse"></i> Ready to Add to Stock</h6>
-                        <p class="mb-2">Quality check completed. Items are ready to be added to inventory stock.</p>
-                        <p class="mb-3"><strong>Items ready: {{ $purchaseOrder->items->where('compliance_status', 'compliant')->where('added_to_stock', false)->count() }}</strong></p>
+                        <p class="mb-2">Quality check completed. Listed items are ready to be added to inventory stock.</p>
+                        <p class="mb-3"><strong>Items ready: {{ $purchaseOrder->items->where('is_unlisted', false)->where('compliance_status', 'compliant')->where('added_to_stock', false)->count() }}</strong></p>
                         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAllToStockModal">
                             <i class="fas fa-plus-circle"></i> Add All Compliant Items to Stock
                         </button>
@@ -457,7 +473,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($purchaseOrder->items->where('compliance_status', 'compliant')->where('added_to_stock', false) as $item)
+                                        @foreach($purchaseOrder->items->where('is_unlisted', false)->where('compliance_status', 'compliant')->where('added_to_stock', false) as $item)
                                         <tr>
                                             <td><strong>{{ $item->getItemName() }}</strong></td>
                                             <td>{{ $item->quantity_received }} {{ $item->unit }}</td>
@@ -474,12 +490,78 @@
                             </div>
                         </div>
                     </div>
+                    @endif
+
+                    @if($compliantUnlisted->count() > 0)
+                    <!-- NEW_ITEM: Needs Master Data -->
+                    <div class="alert alert-warning mt-3">
+                        <h6 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> New Items — Must Be Added to Master Data</h6>
+                        <p class="mb-2">The following items are compliant but are <strong>new items not yet in master data</strong>. Please add them to the Sparepart or Tool master data list so they can be tracked in stock.</p>
+                    </div>
+                    <div class="card mt-2 border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0"><i class="fas fa-plus-circle"></i> New Items Pending Master Data Entry ({{ $compliantUnlisted->count() }})</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th>Type</th>
+                                            <th>Qty Received</th>
+                                            <th>Unit Price</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($compliantUnlisted as $item)
+                                        <tr>
+                                            <td>
+                                                <strong>{{ $item->unlisted_item_name }}</strong>
+                                                @if($item->unlisted_item_description)
+                                                    <br><small class="text-muted">{{ $item->unlisted_item_description }}</small>
+                                                @endif
+                                                @if($item->unlisted_item_specs)
+                                                    <br><small class="text-info"><i class="fas fa-cog"></i> {{ $item->unlisted_item_specs }}</small>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($item->item_type === 'App\Models\Sparepart')
+                                                    <span class="badge bg-info"><i class="fas fa-cogs"></i> Sparepart</span>
+                                                @elseif($item->item_type === 'App\Models\Tool')
+                                                    <span class="badge bg-success"><i class="fas fa-tools"></i> Tool</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $item->quantity_received }} {{ $item->unit }}</td>
+                                            <td>Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
+                                            <td>
+                                                @if($item->item_type === 'App\Models\Sparepart')
+                                                    <a href="{{ route(($routePrefix ?? 'admin').'.spareparts.create') }}?from_po_item={{ $item->id }}"
+                                                       class="btn btn-sm btn-info text-white">
+                                                        <i class="fas fa-plus"></i> Add to Spareparts
+                                                    </a>
+                                                @elseif($item->item_type === 'App\Models\Tool')
+                                                    <a href="{{ route(($routePrefix ?? 'admin').'.tools.create') }}?from_po_item={{ $item->id }}"
+                                                       class="btn btn-sm btn-success">
+                                                        <i class="fas fa-plus"></i> Add to Tools
+                                                    </a>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                 @elseif($allItemsInStock)
                     <!-- Process Complete -->
                     <div class="alert alert-success">
                         <h6 class="alert-heading"><i class="fas fa-check-double"></i> Process Complete!</h6>
-                        <p class="mb-0">All items from this PO have been successfully added to inventory stock.</p>
+                        <p class="mb-0">All items from this PO have been successfully processed. Listed items added to stock; new items are pending master data entry.</p>
                     </div>
 
                 @endif
@@ -611,7 +693,11 @@
                                     <td>{{ $item->supplier ?? '-' }}</td>
                                     <td>
                                         @if($item->is_unlisted)
-                                            <span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle"></i> UNLISTED</span>
+                                            <span class="badge bg-warning text-dark"><i class="fas fa-plus-circle"></i> New
+                                                @if($item->item_type === 'App\Models\Sparepart') Sparepart
+                                                @elseif($item->item_type === 'App\Models\Tool') Tool
+                                                @endif
+                                            </span>
                                         @elseif($item->item_type === 'App\Models\Sparepart')
                                             <span class="badge bg-info">Sparepart</span>
                                         @elseif($item->item_type === 'App\Models\Tool')

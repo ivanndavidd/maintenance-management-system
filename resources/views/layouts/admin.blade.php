@@ -699,16 +699,51 @@
  <h5 class="mb-0">@yield('page-title', 'Dashboard')</h5>
  <div class="d-flex align-items-center gap-3">
  @if(session('current_site_code'))
- <div class="d-flex align-items-center">
- <span class="badge bg-info me-2">
- <i class="fas fa-building me-1"></i>{{ session('current_site_name') }}
- </span>
- <form action="{{ route('site.switch') }}" method="POST" class="d-inline">
- @csrf
- <button type="submit" class="btn btn-sm btn-outline-secondary" title="Switch Site">
- <i class="fas fa-exchange-alt"></i>
- </button>
- </form>
+ @php
+     try {
+         $allSites = \App\Models\Site::on('central')->active()->get();
+     } catch (\Exception $e) {
+         $allSites = collect();
+     }
+ @endphp
+ <div class="dropdown">
+     <button class="btn btn-sm btn-outline-info dropdown-toggle d-flex align-items-center gap-1"
+             type="button" data-bs-toggle="dropdown" aria-expanded="false">
+         <i class="fas fa-building"></i>
+         <span>{{ session('current_site_name') }}</span>
+     </button>
+     <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width:220px;">
+         <li><h6 class="dropdown-header"><i class="fas fa-exchange-alt me-1"></i> Switch Site</h6></li>
+         @foreach($allSites as $site)
+         <li>
+             @if($site->code === session('current_site_code'))
+                 <span class="dropdown-item d-flex align-items-center gap-2 text-muted">
+                     <i class="fas fa-check-circle text-success"></i>
+                     <span>{{ $site->name }}</span>
+                     <span class="badge bg-success ms-auto" style="font-size:10px;">Current</span>
+                 </span>
+             @else
+                 <form action="{{ route('site.switch-direct') }}" method="POST" class="m-0">
+                     @csrf
+                     <input type="hidden" name="site_code" value="{{ $site->code }}">
+                     <button type="submit" class="dropdown-item d-flex align-items-center gap-2">
+                         <i class="fas fa-circle text-secondary" style="font-size:8px;"></i>
+                         <span>{{ $site->name }}</span>
+                     </button>
+                 </form>
+             @endif
+         </li>
+         @endforeach
+         <li><hr class="dropdown-divider"></li>
+         <li>
+             <form action="{{ route('site.switch') }}" method="POST" class="m-0">
+                 @csrf
+                 <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
+                     <i class="fas fa-sign-out-alt"></i> Logout & Switch Site
+                 </button>
+             </form>
+         </li>
+     </ul>
  </div>
  @endif
  <span>Welcome, {{ auth()->user()->name }}
@@ -732,6 +767,20 @@
  @if (session('error'))
  <div class="alert alert-danger alert-dismissible fade show">
  {{ session('error') }}
+ <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+ </div>
+ @endif
+
+ @if (session('switch_error'))
+ <div class="alert alert-danger alert-dismissible fade show">
+ <i class="fas fa-lock me-2"></i><strong>Access Denied:</strong> {{ session('switch_error') }}
+ <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+ </div>
+ @endif
+
+ @if (session('switch_info'))
+ <div class="alert alert-info alert-dismissible fade show">
+ <i class="fas fa-info-circle me-2"></i>{{ session('switch_info') }}
  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
  </div>
  @endif

@@ -25,6 +25,7 @@ class PurchaseOrderItem extends TenantModels
         'compliance_notes',
         'added_to_stock',
         'stock_added_at',
+        'registered_to_master_at',
         'notes',
     ];
 
@@ -36,6 +37,7 @@ class PurchaseOrderItem extends TenantModels
         'subtotal' => 'decimal:2',
         'added_to_stock' => 'boolean',
         'stock_added_at' => 'datetime',
+        'registered_to_master_at' => 'datetime',
     ];
 
     // Purchase Order relationship
@@ -105,7 +107,7 @@ class PurchaseOrderItem extends TenantModels
     public function getItemCode()
     {
         if ($this->is_unlisted) {
-            return 'UNLISTED';
+            return 'NEW_ITEM';
         }
 
         $item = $this->item;
