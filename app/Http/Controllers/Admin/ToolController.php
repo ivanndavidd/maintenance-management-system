@@ -67,12 +67,27 @@ class ToolController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         // Generate tool ID
         $toolId = Tool::generateToolId();
 
-        return view('admin.tools.create', compact('toolId'));
+        // Get pending unlisted tool items from received POs that haven't been registered yet
+        $pendingPoItems = \App\Models\PurchaseOrderItem::with('purchaseOrder')
+            ->where('is_unlisted', true)
+            ->where('item_type', Tool::class)
+            ->where('compliance_status', 'compliant')
+            ->whereNull('registered_to_master_at')
+            ->whereHas('purchaseOrder', fn($q) => $q->where('status', 'received'))
+            ->get();
+
+        // If coming from a specific PO item, pre-select it
+        $selectedPoItem = null;
+        if ($request->filled('from_po_item')) {
+            $selectedPoItem = $pendingPoItems->firstWhere('id', $request->from_po_item);
+        }
+
+        return view('admin.tools.create', compact('toolId', 'pendingPoItems', 'selectedPoItem'));
     }
 
     /**
@@ -101,6 +116,14 @@ class ToolController extends Controller
         $validated['add_part_by'] = auth()->id();
 
         Tool::create($validated);
+
+        // If created from a PO unlisted item, mark that item as registered
+        if ($request->filled('from_po_item')) {
+            \App\Models\PurchaseOrderItem::where('id', $request->from_po_item)
+                ->where('is_unlisted', true)
+                ->whereNull('registered_to_master_at')
+                ->update(['registered_to_master_at' => now()]);
+        }
 
         return redirect()
             ->route('admin.tools.index')

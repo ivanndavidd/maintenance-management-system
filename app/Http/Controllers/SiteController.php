@@ -84,7 +84,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Switch to a different site
+     * Switch to a different site (requires re-login, for unauthenticated switching)
      */
     public function switch(Request $request)
     {
@@ -99,6 +99,91 @@ class SiteController extends Controller
         }
 
         return redirect()->route('site.select');
+    }
+
+    /**
+     * Switch site directly without re-login (for authenticated users).
+     * Checks if user has access to the target site, then switches instantly.
+     */
+    public function switchDirect(Request $request)
+    {
+        $request->validate(['site_code' => 'required|string']);
+
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $targetSite = Site::on('central')
+            ->where('code', $request->site_code)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$targetSite) {
+            return back()->with('switch_error', 'Site not found or inactive.');
+        }
+
+        // Don't switch if already on the same site
+        if (session('current_site_code') === $targetSite->code) {
+            return back()->with('switch_info', "You are already on {$targetSite->name}.");
+        }
+
+        $email = Auth::user()->email;
+
+        // Configure target site DB temporarily to check if user exists there
+        try {
+            \Illuminate\Support\Facades\Config::set('database.connections.site.database', $targetSite->database_name);
+            \Illuminate\Support\Facades\DB::purge('site');
+            \Illuminate\Support\Facades\DB::reconnect('site');
+
+            $userInTargetSite = \Illuminate\Support\Facades\DB::connection('site')
+                ->table('users')
+                ->where('email', $email)
+                ->where('is_active', true)
+                ->first();
+        } catch (\Exception $e) {
+            return back()->with('switch_error', "Cannot connect to {$targetSite->name} database.");
+        }
+
+        if (!$userInTargetSite) {
+            // Restore original site connection before returning error
+            $currentSite = Site::on('central')->where('code', session('current_site_code'))->first();
+            if ($currentSite) {
+                \Illuminate\Support\Facades\Config::set('database.connections.site.database', $currentSite->database_name);
+                \Illuminate\Support\Facades\DB::purge('site');
+                \Illuminate\Support\Facades\DB::reconnect('site');
+            }
+            return back()->with('switch_error', "You don't have access to {$targetSite->name}.");
+        }
+
+        // User exists — perform the switch
+        \Illuminate\Support\Facades\Config::set('database.default', 'site');
+        \Auth::guard('web')->forgetUser();
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $newSiteUser = \App\Models\User::where('email', $email)->first();
+
+        if (!$newSiteUser) {
+            return back()->with('switch_error', "Your account was not found in {$targetSite->name}.");
+        }
+
+        // Login with new site's user record (uses session regenerate internally)
+        Auth::login($newSiteUser);
+
+        // Set site session AFTER login so it's not lost by session regeneration
+        request()->session()->put('current_site_code', $targetSite->code);
+        request()->session()->put('current_site_name', $targetSite->name);
+        request()->session()->put('auth_site', $targetSite->code);
+
+        // Redirect to appropriate dashboard
+        if ($newSiteUser->hasRole('admin')) {
+            return redirect()->route('admin.dashboard')->with('success', "Switched to {$targetSite->name}.");
+        } elseif ($newSiteUser->hasRole('supervisor_maintenance')) {
+            return redirect()->route('supervisor.dashboard')->with('success', "Switched to {$targetSite->name}.");
+        } elseif ($newSiteUser->hasRole('staff_maintenance')) {
+            return redirect()->route('user.dashboard')->with('success', "Switched to {$targetSite->name}.");
+        }
+
+        return redirect('/dashboard')->with('success', "Switched to {$targetSite->name}.");
     }
 
     /**
