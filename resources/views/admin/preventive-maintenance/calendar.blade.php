@@ -541,24 +541,24 @@ body.fc-loading::after {
 }
 .list-btn-group { display: flex; }
 .list-btn {
-    background: #2C3E50;
-    border: 1px solid #2C3E50;
+    background: #0078d4;
+    border: 1px solid #0078d4;
     color: #fff;
-    padding: 6px 10px;
-    font-size: 1em;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
     font-family: inherit;
     cursor: pointer;
     line-height: 1.5;
     border-radius: 0;
 }
-.list-btn:first-child { border-radius: 4px 0 0 4px; }
-.list-btn:last-child { border-radius: 0 4px 4px 0; }
-.list-btn-group .list-btn:only-child { border-radius: 4px; }
+.list-btn:first-child { border-radius: 2px 0 0 2px; }
+.list-btn:last-child { border-radius: 0 2px 2px 0; }
+.list-btn-group .list-btn:only-child { border-radius: 2px; }
 .list-btn + .list-btn { border-left: 1px solid rgba(255,255,255,0.3); }
-/* today button — standalone (not in group) */
-#listViewToolbar > .list-toolbar-chunk > .list-btn { border-radius: 4px; }
-.list-btn:hover { background: #1a252f; border-color: #1a252f; }
-.list-btn-active { background: #1a252f !important; }
+#listViewToolbar > .list-toolbar-chunk > .list-btn { border-radius: 2px; }
+.list-btn:hover { background: #106ebe; border-color: #106ebe; }
+.list-btn-active { background: #005a9e !important; border-color: #005a9e !important; }
 .list-btn .fc-icon { font-size: 1em; }
 
 /* Custom list view table */
@@ -1049,41 +1049,28 @@ document.addEventListener('DOMContentLoaded', function() {
         const year = listCurrentDate.getFullYear();
         const month = listCurrentDate.getMonth();
         const start = new Date(year, month, 1).toISOString().split('T')[0];
-        const end = new Date(year, month + 1, 0).toISOString().split('T')[0];
+        const end = new Date(year, month + 1, 1).toISOString().split('T')[0];
 
         // Update title
         const title = listCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         document.getElementById('listViewTitle').textContent = title;
 
-        // Fetch events
-        const cacheKey = `${start}_${new Date(year, month + 1, 1).toISOString().split('T')[0]}`;
-        const cached = eventCache[cacheKey];
-        if (cached) {
-            renderListEvents(cached);
-        } else {
-            fetch(`${baseUrl}/events?start=${start}&end=${end}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (Array.isArray(data)) {
-                        eventCache[cacheKey] = data;
-                        renderListEvents(data);
-                    }
-                });
-        }
+        // Always fetch fresh from API (independent of FC cache)
+        fetch(`${baseUrl}/events?start=${start}&end=${end}`)
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data)) renderListEvents(data);
+            })
+            .catch(() => {
+                document.getElementById('listViewContent').innerHTML = '<div class="list-no-events">Failed to load events.</div>';
+            });
     }
 
     function renderListEvents(events) {
         const content = document.getElementById('listViewContent');
 
-        // Filter to current month and sort by date
-        const year = listCurrentDate.getFullYear();
-        const month = listCurrentDate.getMonth();
-        const filtered = events
-            .filter(e => {
-                const d = new Date(e.start);
-                return d.getFullYear() === year && d.getMonth() === month;
-            })
-            .sort((a, b) => new Date(a.start) - new Date(b.start));
+        // Sort by date (API already returns only events in range)
+        const filtered = events.slice().sort((a, b) => new Date(a.start) - new Date(b.start));
 
         if (filtered.length === 0) {
             content.innerHTML = '<div class="list-no-events">No events this month.</div>';
