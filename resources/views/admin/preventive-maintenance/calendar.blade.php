@@ -503,7 +503,6 @@ body.fc-loading::after {
   z-index: -9999 !important;
 }
 
-
 /* More events link */
 .fc .fc-daygrid-more-link {
     color: #0078d4;
@@ -925,7 +924,6 @@ document.addEventListener('DOMContentLoaded', function() {
         eventResize: function(info) {
             updateEventDuration(info.event);
         },
-
     });
 
     calendar.render();
