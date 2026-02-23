@@ -717,7 +717,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize calendar
     const calendar = new FullCalendar.Calendar(calendarEl, {
-        // Completely disable loading UI
         displayEventTime: false,
         displayEventEnd: false,
         initialView: 'dayGridMonth',
@@ -732,19 +731,37 @@ document.addEventListener('DOMContentLoaded', function() {
         dayMaxEvents: 3,
         weekends: true,
         height: 'auto',
-        firstDay: 0, // Sunday
+        firstDay: 0,
         weekNumbers: false,
-        navLinks: false, // Disable day/week links to remove underline
-        dayHeaderFormat: { weekday: 'long' }, // Full day names (Sunday, Monday, etc)
-        progressiveEventRendering: true, // Disable loading overlay completely
-        loading: function(isLoading) {
-            // Completely disable loading indicator - do nothing
-            return false;
+        navLinks: false,
+        dayHeaderFormat: { weekday: 'long' },
+        loading: function(isLoading) { return false; },
+
+        // Lazy load events per view range — only fetch what's visible
+        events: function(info, successCallback, failureCallback) {
+            const start = info.startStr.split('T')[0];
+            const end = info.endStr.split('T')[0];
+            fetch(`${baseUrl}/events?start=${start}&end=${end}`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        successCallback(data);
+                    } else {
+                        console.error('Server error:', data.message);
+                        successCallback([]);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching events:', error);
+                    failureCallback(error);
+                });
         },
 
-        // Fix "+more" popover: after it opens, strip inline absolute positioning
+        // Fix "+more" popover
         moreLinkClick: function(info) {
-            // Let FullCalendar render the popover first, then fix it
             setTimeout(function() {
                 const popovers = document.querySelectorAll('.fc-more-popover');
                 popovers.forEach(function(popover) {
@@ -754,67 +771,37 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 });
             }, 50);
-            // Return 'popover' to keep default behavior
             return 'popover';
         },
 
-        // Event rendering
+        // Event rendering — lightweight, no Bootstrap Tooltip per event
         eventDidMount: function(info) {
-            // Add recurring class to recurring events
             if (info.event.extendedProps.is_recurring || info.event.extendedProps.parent_task_id) {
                 info.el.classList.add('recurring');
             }
 
-            // Add shift badge to event title
             const shiftId = info.event.extendedProps.assigned_shift_id;
             if (shiftId) {
                 const titleEl = info.el.querySelector('.fc-event-title');
                 if (titleEl) {
                     const shiftBadge = document.createElement('span');
                     shiftBadge.className = 'shift-badge';
-                    const shiftLabel = shiftId === 1 ? 'Shift 1' : shiftId === 2 ? 'Shift 2' : 'Shift 3';
-                    shiftBadge.textContent = shiftLabel;
+                    shiftBadge.textContent = 'S' + shiftId;
                     titleEl.appendChild(shiftBadge);
                 }
             }
 
-            // Add enhanced tooltip with clean design
+            // Use native title attribute for tooltip — no Bootstrap Tooltip objects
             const shiftNames = {
-                1: 'Shift 1 (22:00 - 05:00)',
-                2: 'Shift 2 (06:00 - 13:00)',
-                3: 'Shift 3 (14:00 - 21:00)'
+                1: 'Shift 1 (22:00-05:00)',
+                2: 'Shift 2 (06:00-13:00)',
+                3: 'Shift 3 (14:00-21:00)'
             };
-
-            let tooltipContent = `<div style="text-align: left;">`;
-            tooltipContent += `<div style="font-weight: 600; font-size: 13px; margin-bottom: 6px;">${info.event.title}</div>`;
-
-            if (shiftId) {
-                tooltipContent += `<div style="font-size: 12px; margin-bottom: 4px;">👤 ${shiftNames[shiftId]}</div>`;
-            }
-
-            if (info.event.extendedProps.equipment_type) {
-                tooltipContent += `<div style="font-size: 12px; margin-bottom: 4px;">🔧 ${info.event.extendedProps.equipment_type}</div>`;
-            }
-
-            if (info.event.extendedProps.is_recurring || info.event.extendedProps.parent_task_id) {
-                tooltipContent += `<div style="font-size: 11px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.1);">🔄 Recurring Event</div>`;
-            }
-
-            tooltipContent += `</div>`;
-
-            info.el.setAttribute('data-bs-toggle', 'tooltip');
-            info.el.setAttribute('data-bs-html', 'true');
-            info.el.setAttribute('data-bs-placement', 'top');
-            info.el.setAttribute('title', tooltipContent);
-
-            // Initialize Bootstrap tooltip with custom template
-            new bootstrap.Tooltip(info.el, {
-                html: true,
-                trigger: 'hover',
-                container: 'body',
-                customClass: 'event-tooltip-modern',
-                template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); max-width: 300px; padding: 10px 12px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: left; border: 1px solid #e1dfdd; color: #323130;"></div></div>'
-            });
+            let tip = info.event.title;
+            if (shiftId) tip += '\n' + shiftNames[shiftId];
+            if (info.event.extendedProps.equipment_type) tip += '\n🔧 ' + info.event.extendedProps.equipment_type;
+            if (info.event.extendedProps.is_recurring || info.event.extendedProps.parent_task_id) tip += '\n🔄 Recurring';
+            info.el.setAttribute('title', tip);
         },
 
         // Handle date click/select (for new events)
@@ -931,59 +918,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     calendar.render();
-
-    // Fetch all events once at initialization (1 year range)
-    const today = new Date();
-    const startDate = new Date(today.getFullYear(), 0, 1); // Jan 1 this year
-    const endDate = new Date(today.getFullYear() + 1, 11, 31); // Dec 31 next year
-
-    fetch(`${baseUrl}/events?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (Array.isArray(data)) {
-                // Add all events to calendar at once
-                data.forEach(event => {
-                    calendar.addEvent(event);
-                });
-            } else if (data.error) {
-                console.error('Server error:', data.message);
-                showAlert('Error loading calendar events: ' + data.message, 'warning');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching events:', error);
-            showAlert('Failed to load calendar events. Please refresh the page.', 'warning');
-        });
-
-    // Override refetchEvents to prevent loading indicator
-    const originalRefetch = calendar.refetchEvents.bind(calendar);
-    calendar.refetchEvents = function() {
-        // Temporarily hide any loading overlays
-        const style = document.createElement('style');
-        style.id = 'no-loading-temp';
-        style.textContent = `
-            .fc-loading, .fc-loading-overlay,
-            body > div[style*="position: fixed"],
-            body > div[style*="position: absolute"] {
-                display: none !important;
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Call original refetch
-        originalRefetch();
-
-        // Remove temp style after a short delay
-        setTimeout(() => {
-            const tempStyle = document.getElementById('no-loading-temp');
-            if (tempStyle) tempStyle.remove();
-        }, 1000);
-    };
 
     // New Event Button
     document.getElementById('btnNewEvent').addEventListener('click', function() {
@@ -1445,30 +1379,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Close modal after success
                 eventModal.hide();
 
-                // Instead of refetching, manually update calendar events
-                if (isEdit) {
-                    // Update existing event
-                    const existingEvent = calendar.getEventById(taskId);
-                    if (existingEvent) {
-                        existingEvent.remove();
-                    }
-                }
-
-                // Fetch only the new/updated events
-                const today = new Date();
-                const startDate = new Date(today.getFullYear(), 0, 1);
-                const endDate = new Date(today.getFullYear() + 1, 11, 31);
-
-                fetch(`${baseUrl}/events?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`)
-                    .then(response => response.json())
-                    .then(events => {
-                        if (Array.isArray(events)) {
-                            // Remove all existing events
-                            calendar.getEvents().forEach(e => e.remove());
-                            // Add updated events
-                            events.forEach(event => calendar.addEvent(event));
-                        }
-                    });
+                // Refetch only the current view's date range
+                calendar.refetchEvents();
 
                 showAlert(data.message || 'Task saved successfully', 'success');
                 isSubmitting = false;
@@ -1563,25 +1475,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 // Remove events from calendar based on delete type
-                if (deleteType === 'this') {
-                    // Remove only this event
-                    const event = calendar.getEventById(taskId);
-                    if (event) event.remove();
-                } else if (deleteType === 'following' || deleteType === 'all') {
-                    // Reload all events to ensure consistency
-                    const today = new Date();
-                    const startDate = new Date(today.getFullYear(), 0, 1);
-                    const endDate = new Date(today.getFullYear() + 1, 11, 31);
-
-                    fetch(`${baseUrl}/events?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`)
-                        .then(response => response.json())
-                        .then(events => {
-                            if (Array.isArray(events)) {
-                                calendar.getEvents().forEach(e => e.remove());
-                                events.forEach(event => calendar.addEvent(event));
-                            }
-                        });
-                }
+                // Refetch current view range
+                calendar.refetchEvents();
 
                 showAlert(data.message || 'Task deleted successfully', 'success');
             } else {
@@ -1613,48 +1508,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Aggressive removal of any loading overlays + fix popover stacking
+    // Fix "+more" popover when it appears — lightweight observer scoped to calendar only
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             mutation.addedNodes.forEach(function(node) {
-                if (node.nodeType === 1) { // Element node
-                    // Fix "+more" popover when it appears
-                    if (node.classList && node.classList.contains('fc-more-popover')) {
-                        fixPopoverEvents(node);
-                    }
-                    // Also check if a popover was added as a descendant
-                    const popover = node.querySelector && node.querySelector('.fc-more-popover');
-                    if (popover) {
-                        fixPopoverEvents(popover);
-                    }
-
-                    // Check if it's a loading overlay
-                    const text = node.textContent || '';
-                    if (text.includes('Saving') || text.includes('Loading') ||
-                        node.className && (
-                            node.className.includes('loading') ||
-                            node.className.includes('spinner') ||
-                            node.className.includes('overlay')
-                        )) {
-                        // Remove it immediately
-                        node.remove();
-                    }
-
-                    // Also check child elements
-                    const loadingElements = node.querySelectorAll('[class*="loading"], [class*="spinner"], [class*="overlay"]');
-                    loadingElements.forEach(el => {
-                        const elText = el.textContent || '';
-                        if (elText.includes('Saving') || elText.includes('Loading')) {
-                            el.remove();
-                        }
-                    });
+                if (node.nodeType === 1 && node.classList && node.classList.contains('fc-more-popover')) {
+                    fixPopoverEvents(node);
                 }
             });
         });
     });
 
-    // Start observing the document body for added nodes
-    observer.observe(document.body, {
+    observer.observe(calendarEl, {
         childList: true,
         subtree: true
     });
