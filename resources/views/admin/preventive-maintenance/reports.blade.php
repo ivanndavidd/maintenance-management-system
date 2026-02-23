@@ -17,7 +17,7 @@
             <form method="GET" class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Filter by Month</label>
-                    <input type="month" name="month" class="form-control" value="{{ request('month') }}">
+                    <input type="month" name="month" class="form-control" value="{{ $selectedMonth }}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Report Status</label>
@@ -82,7 +82,7 @@
                 <i class="fas fa-chevron-down"></i>
             </div>
         </div>
-        <div class="collapse show" id="month-{{ $month }}">
+        <div class="collapse show" id="month-{{ $month }}" style="contain: content;">
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
