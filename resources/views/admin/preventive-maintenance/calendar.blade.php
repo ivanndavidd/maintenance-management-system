@@ -694,6 +694,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Store currently selected event for action popover
     let currentEvent = null;
 
+    // In-memory event cache keyed by "start_end" date range
+    const eventCache = {};
+
     // Function to show alert message
     function showAlert(message, type = 'danger') {
         const alertContainer = document.getElementById('alertContainer');
@@ -737,10 +740,17 @@ document.addEventListener('DOMContentLoaded', function() {
         dayHeaderFormat: { weekday: 'long' },
         loading: function(isLoading) { return false; },
 
-        // Lazy load events per view range — only fetch what's visible
+        // Lazy load with in-memory cache — avoid duplicate fetches for same date range
         events: function(info, successCallback, failureCallback) {
             const start = info.startStr.split('T')[0];
             const end = info.endStr.split('T')[0];
+            const cacheKey = `${start}_${end}`;
+
+            if (eventCache[cacheKey]) {
+                successCallback(eventCache[cacheKey]);
+                return;
+            }
+
             fetch(`${baseUrl}/events?start=${start}&end=${end}`)
                 .then(response => {
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -748,6 +758,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(data => {
                     if (Array.isArray(data)) {
+                        eventCache[cacheKey] = data;
                         successCallback(data);
                     } else {
                         console.error('Server error:', data.message);
@@ -1376,7 +1387,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Close modal after success
                 eventModal.hide();
 
-                // Refetch only the current view's date range
+                // Clear cache then refetch current view
+                Object.keys(eventCache).forEach(k => delete eventCache[k]);
                 calendar.refetchEvents();
 
                 showAlert(data.message || 'Task saved successfully', 'success');
