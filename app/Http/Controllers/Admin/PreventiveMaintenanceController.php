@@ -620,28 +620,27 @@ class PreventiveMaintenanceController extends Controller
                 $this->generateRecurringTasks($task);
             }
 
-            // Auto-assign from shift schedule if no user selected
-            if (!$task->assigned_user_id && $task->assigned_shift_id && $task->task_date) {
-                $this->autoAssignFromShift($task);
-            }
-
-            // Send notification email to assigned user
-            if ($task->assigned_user_id) {
+            // Send notification email to all users in the shift (Opsi 3)
+            if ($task->assigned_shift_id && $task->task_date) {
                 try {
-                    $user = User::find($task->assigned_user_id);
-                    if ($user && $user->email) {
-                        \Mail::to($user->email)->send(new \App\Mail\PmTaskAssigned($task));
-                        \Log::info('PM task assignment email sent', [
-                            'task_id' => $task->id,
-                            'task_name' => $task->task_name,
-                            'assigned_user' => $user->name,
-                            'user_email' => $user->email,
-                        ]);
+                    $taskDateStr = $task->task_date instanceof \Carbon\Carbon
+                        ? $task->task_date->format('Y-m-d')
+                        : $task->task_date;
+                    $shiftUsers = $this->getUsersForShiftOnDate($task->assigned_shift_id, $taskDateStr);
+                    foreach ($shiftUsers as $user) {
+                        if ($user->email) {
+                            \Mail::to($user->email)->send(new \App\Mail\PmTaskAssigned($task));
+                            \Log::info('PM task assignment email sent', [
+                                'task_id' => $task->id,
+                                'task_name' => $task->task_name,
+                                'user' => $user->name,
+                                'user_email' => $user->email,
+                            ]);
+                        }
                     }
                 } catch (\Exception $e) {
-                    \Log::error('Failed to send PM task assignment email: ' . $e->getMessage(), [
+                    \Log::error('Failed to send PM task assignment emails: ' . $e->getMessage(), [
                         'task_id' => $task->id,
-                        'assigned_user_id' => $task->assigned_user_id,
                     ]);
                 }
             }
@@ -696,23 +695,25 @@ class PreventiveMaintenanceController extends Controller
             ], 422);
         }
 
-        // Check if assigned user changed
-        $previousUserId = $task->assigned_user_id;
-        $newUserId = $validated['assigned_user_id'] ?? null;
+        $previousShiftId = $task->assigned_shift_id;
 
         $task->update($validated);
 
-        // Send email notification if assigned to a new/different user
-        if ($newUserId && $newUserId != $previousUserId) {
+        // Send email notification if shift changed (Opsi 3 — all users in new shift)
+        if ($task->assigned_shift_id && $task->assigned_shift_id != $previousShiftId) {
             try {
-                $user = \App\Models\User::find($newUserId);
-                if ($user && $user->email) {
-                    \Mail::to($user->email)->send(new \App\Mail\PmTaskAssigned($task));
+                $taskDateStr = $task->task_date instanceof \Carbon\Carbon
+                    ? $task->task_date->format('Y-m-d')
+                    : $task->task_date;
+                $shiftUsers = $this->getUsersForShiftOnDate($task->assigned_shift_id, $taskDateStr);
+                foreach ($shiftUsers as $user) {
+                    if ($user->email) {
+                        \Mail::to($user->email)->send(new \App\Mail\PmTaskAssigned($task));
+                    }
                 }
             } catch (\Exception $e) {
-                \Log::error('Failed to send PM task assignment email: ' . $e->getMessage(), [
+                \Log::error('Failed to send PM task assignment emails: ' . $e->getMessage(), [
                     'task_id' => $task->id,
-                    'assigned_user_id' => $newUserId,
                 ]);
             }
         }
@@ -838,58 +839,6 @@ class PreventiveMaintenanceController extends Controller
     }
 
     /**
-     * Auto-assign a PM task to a user based on active shift schedule
-     */
-    private function autoAssignFromShift(PmTask $task): void
-    {
-        $taskDate = Carbon::parse($task->task_date);
-
-        // Find active shift schedule covering this date
-        $shiftSchedule = ShiftSchedule::where('start_date', '<=', $taskDate)
-            ->where('end_date', '>=', $taskDate)
-            ->where('status', 'active')
-            ->first();
-
-        if (!$shiftSchedule) {
-            return;
-        }
-
-        $dayMap = [
-            Carbon::MONDAY => 'monday',
-            Carbon::TUESDAY => 'tuesday',
-            Carbon::WEDNESDAY => 'wednesday',
-            Carbon::THURSDAY => 'thursday',
-            Carbon::FRIDAY => 'friday',
-            Carbon::SATURDAY => 'saturday',
-            Carbon::SUNDAY => 'sunday',
-        ];
-
-        $dayOfWeek = $dayMap[$taskDate->dayOfWeek] ?? null;
-        if (!$dayOfWeek) {
-            return;
-        }
-
-        $shiftAssignment = ShiftAssignment::where('shift_schedule_id', $shiftSchedule->id)
-            ->where('day_of_week', $dayOfWeek)
-            ->where('shift_id', $task->assigned_shift_id)
-            ->first();
-
-        if (!$shiftAssignment) {
-            return;
-        }
-
-        $task->update([
-            'assigned_user_id' => $shiftAssignment->user_id,
-        ]);
-
-        $task->logs()->create([
-            'user_id' => $shiftAssignment->user_id,
-            'action' => 'auto_assigned',
-            'notes' => "Auto-assigned to {$shiftAssignment->user->name} from active shift schedule",
-        ]);
-    }
-
-    /**
      * Generate recurring task instances
      */
     private function generateRecurringTasks(PmTask $parentTask)
@@ -1010,11 +959,32 @@ class PreventiveMaintenanceController extends Controller
     }
 
     /**
+     * Get all users assigned to a shift on a specific date (Opsi 3).
+     */
+    private function getUsersForShiftOnDate(int $shiftId, string $taskDate): \Illuminate\Support\Collection
+    {
+        $dayOfWeek = strtolower(Carbon::parse($taskDate)->format('l'));
+
+        $userIds = ShiftAssignment::where('shift_id', $shiftId)
+            ->where('day_of_week', $dayOfWeek)
+            ->whereNull('change_action')
+            ->whereHas('shiftSchedule', function ($q) use ($taskDate) {
+                $q->where('status', 'active')
+                  ->where('start_date', '<=', $taskDate)
+                  ->where('end_date', '>=', $taskDate);
+            })
+            ->pluck('user_id')
+            ->unique();
+
+        return User::whereIn('id', $userIds)->get();
+    }
+
+    /**
      * Display PM Reports page grouped by month
      */
     public function reports(Request $request)
     {
-        $query = PmTask::with(['latestReport.submitter', 'latestReport.furtherRepairAssets', 'assignedUser'])
+        $query = PmTask::with(['latestReport.submitter', 'latestReport.furtherRepairAssets'])
             ->whereNotNull('task_date');
 
         // Default to current month if no filter provided
@@ -1036,6 +1006,25 @@ class PreventiveMaintenanceController extends Controller
         }
 
         $tasks = $query->orderBy('task_date', 'asc')->get();
+
+        // Build shift-user lookup: {shiftId}_{YYYY-MM-DD} => "User A, User B"
+        // Group by (shift_id, task_date) to avoid N+1 queries
+        $shiftUserCache = [];
+        foreach ($tasks as $task) {
+            if (!$task->assigned_shift_id || !$task->task_date) {
+                continue;
+            }
+            $taskDateStr = $task->task_date instanceof \Carbon\Carbon
+                ? $task->task_date->format('Y-m-d')
+                : $task->task_date;
+            $cacheKey = $task->assigned_shift_id . '_' . $taskDateStr;
+            if (!isset($shiftUserCache[$cacheKey])) {
+                $shiftUserCache[$cacheKey] = $this->getUsersForShiftOnDate(
+                    $task->assigned_shift_id,
+                    $taskDateStr
+                )->pluck('name')->join(', ') ?: '-';
+            }
+        }
 
         // Group tasks by month
         $currentMonth = Carbon::now()->format('Y-m');
@@ -1073,7 +1062,7 @@ class PreventiveMaintenanceController extends Controller
         $routePrefix = auth()->user()->hasRole('supervisor_maintenance') ? 'supervisor' : 'admin';
 
         return view('admin.preventive-maintenance.reports', compact(
-            'tasksByMonth', 'monthlyStats', 'routePrefix', 'selectedMonth'
+            'tasksByMonth', 'monthlyStats', 'routePrefix', 'selectedMonth', 'shiftUserCache'
         ));
     }
 
@@ -1082,7 +1071,7 @@ class PreventiveMaintenanceController extends Controller
      */
     public function showReport(PmTaskReport $report)
     {
-        $report->load(['task.assignedUser', 'submitter', 'reviewer', 'furtherRepairAssets']);
+        $report->load(['task', 'submitter', 'reviewer', 'furtherRepairAssets']);
 
         return response()->json([
             'success' => true,
@@ -1118,7 +1107,14 @@ class PreventiveMaintenanceController extends Controller
                     'task_name' => $report->task->task_name,
                     'task_date' => $report->task->task_date?->format('d M Y'),
                     'shift' => $report->task->assigned_shift_id,
-                    'assigned_to' => $report->task->assignedUser->name ?? '-',
+                    'assigned_to' => $report->task->assigned_shift_id && $report->task->task_date
+                        ? $this->getUsersForShiftOnDate(
+                            $report->task->assigned_shift_id,
+                            $report->task->task_date instanceof \Carbon\Carbon
+                                ? $report->task->task_date->format('Y-m-d')
+                                : $report->task->task_date
+                          )->pluck('name')->join(', ') ?: '-'
+                        : '-',
                 ],
             ],
         ]);

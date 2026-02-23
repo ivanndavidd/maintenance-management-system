@@ -1,51 +1,23 @@
 @extends('layouts.user')
 
-@push('styles')
-<style>
-    .date-card {
-        border: 2px solid #dee2e6;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
-    }
-    .date-card-header {
-        background: linear-gradient(135deg, #2c3e50, #3498db);
-        color: white;
-        padding: 12px 15px;
-        border-radius: 6px 6px 0 0;
-    }
-    .cleaning-group-card {
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        margin: 10px;
-    }
-    .cleaning-group-header {
-        background: linear-gradient(135deg, #1e3c72, #2a5298);
-        color: white;
-        padding: 10px 15px;
-        border-radius: 5px 5px 0 0;
-    }
-    .pm-table th { background: #f8f9fa; font-weight: 600; vertical-align: middle; }
-    .pm-table td { vertical-align: middle; }
-    .progress-card { border-left: 4px solid; }
-    .progress-card.completed { border-left-color: #28a745; }
-    .progress-card.pending { border-left-color: #6c757d; }
-    .progress-card.in-progress { border-left-color: #ffc107; }
-</style>
-@endpush
-
 @section('content')
 <div class="container-fluid">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="fas fa-calendar-check text-primary me-2"></i>
-                {{ $schedule->title ?: 'PM Schedule' }}
+                <i class="fas fa-tasks text-primary me-2"></i>
+                {{ $task->task_name }}
             </h4>
             <p class="text-muted mb-0">
                 <i class="fas fa-calendar me-1"></i>
-                {{ $schedule->scheduled_month->format('F Y') }}
-                <span class="badge bg-{{ $schedule->status_badge }} ms-2">{{ ucfirst($schedule->status) }}</span>
+                {{ \Carbon\Carbon::parse($task->task_date)->format('l, d F Y') }}
+                @if($task->assigned_shift_id)
+                    @php $shiftColors = [1 => 'primary', 2 => 'info', 3 => 'success']; @endphp
+                    <span class="badge bg-{{ $shiftColors[$task->assigned_shift_id] ?? 'secondary' }} ms-2">
+                        Shift {{ $task->assigned_shift_id }}
+                    </span>
+                @endif
             </p>
         </div>
         <a href="{{ route('user.preventive-maintenance.index') }}" class="btn btn-outline-secondary">
@@ -53,255 +25,200 @@
         </a>
     </div>
 
-    <!-- Statistics Cards -->
-    @php $stats = $schedule->task_stats; @endphp
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card progress-card pending">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['total'] }}</h3>
-                    <small class="text-muted">Total Tasks</small>
+    <div class="row">
+        <!-- Task Detail -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Task Detail</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Task Name</dt>
+                        <dd class="col-sm-8">{{ $task->task_name }}</dd>
+
+                        @if($task->task_description)
+                        <dt class="col-sm-4">Description</dt>
+                        <dd class="col-sm-8">{{ $task->task_description }}</dd>
+                        @endif
+
+                        <dt class="col-sm-4">Date</dt>
+                        <dd class="col-sm-8">{{ \Carbon\Carbon::parse($task->task_date)->format('d F Y') }}</dd>
+
+                        @if($task->equipment_type)
+                        <dt class="col-sm-4">Equipment Type</dt>
+                        <dd class="col-sm-8"><span class="badge bg-light text-dark border">{{ $task->equipment_type }}</span></dd>
+                        @endif
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-{{ $task->status_badge }}">
+                                {{ ucfirst(str_replace('_', ' ', $task->status)) }}
+                            </span>
+                        </dd>
+
+                        @if($task->is_recurring || $task->parent_task_id)
+                        <dt class="col-sm-4">Recurring</dt>
+                        <dd class="col-sm-8"><i class="fas fa-sync-alt text-muted me-1"></i> Yes</dd>
+                        @endif
+                    </dl>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card progress-card completed">
-                <div class="card-body text-center">
-                    <h3 class="mb-0 text-success">{{ $stats['completed'] }}</h3>
-                    <small class="text-muted">Completed</small>
+
+            <!-- Report Section -->
+            @php $latestReport = $task->latestReport; @endphp
+            @if($latestReport)
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Submitted Report</h5>
+                    <span class="badge {{ $latestReport->getStatusBadgeClass() }}">{{ $latestReport->getStatusLabel() }}</span>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card progress-card in-progress">
-                <div class="card-body text-center">
-                    <h3 class="mb-0 text-warning">{{ $stats['in_progress'] }}</h3>
-                    <small class="text-muted">In Progress</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['progress'] }}%</h3>
-                    <div class="progress mt-2" style="height: 8px;">
-                        <div class="progress-bar bg-success" style="width: {{ $stats['progress'] }}%"></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="fw-semibold d-block mb-1">Detail Kegiatan</label>
+                        <div class="border rounded p-3 bg-light">{{ $latestReport->description }}</div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Date Filter -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Schedule Dates</h5>
-            <div class="input-group input-group-sm" style="width: auto;">
-                <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
-                <input type="date" id="filterDateInput" class="form-control form-control-sm" style="width: 160px;" oninput="filterDates()" min="{{ $schedule->scheduled_month->startOfMonth()->format('Y-m-d') }}" max="{{ $schedule->scheduled_month->endOfMonth()->format('Y-m-d') }}">
-                <button class="btn btn-outline-secondary" onclick="clearDateFilter()" id="clearFilterBtn" style="display:none;" title="Clear filter">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dates with their structure -->
-    @foreach($schedule->scheduleDates as $scheduleDate)
-        <div class="date-card" data-date="{{ $scheduleDate->schedule_date->format('Y-m-d') }}">
-            <div class="date-card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <i class="fas fa-calendar-day me-2"></i>
-                    <strong>{{ $scheduleDate->schedule_date->format('l, d F Y') }}</strong>
-                    <span class="badge bg-light text-dark ms-2">{{ $scheduleDate->cleaningGroups->count() }} Cleaning Groups</span>
-                </div>
-            </div>
-            <div class="p-3">
-                @foreach($scheduleDate->cleaningGroups as $cleaningGroup)
-                    <div class="cleaning-group-card">
-                        <div class="cleaning-group-header">
-                            <i class="fas fa-broom me-2"></i>
-                            <strong>{{ $cleaningGroup->name }}</strong>
-                            <span class="badge bg-light text-dark ms-2">{{ $cleaningGroup->sprGroups->count() }} SPR</span>
-                        </div>
-                        <div class="p-2">
-                            @foreach($cleaningGroup->sprGroups as $sprGroup)
-                                <div class="card mb-2">
-                                    <div class="card-header bg-light py-2">
-                                        <i class="fas fa-folder text-primary me-2"></i>
-                                        <strong>{{ $sprGroup->name }}</strong>
-                                        <span class="badge bg-secondary ms-2">{{ $sprGroup->tasks->count() }} tasks</span>
-                                    </div>
-                                    <div class="card-body p-0">
-                                        <table class="table table-sm table-hover pm-table mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Task</th>
-                                                    <th width="100">Frequency</th>
-                                                    <th width="150">Equipment</th>
-                                                    <th width="120">Shift</th>
-                                                    <th width="120">Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @forelse($sprGroup->tasks as $task)
-                                                    <tr>
-                                                        <td>
-                                                            {{ $task->task_name }}
-                                                            @if($task->task_description)
-                                                                <br><small class="text-muted">{{ $task->task_description }}</small>
-                                                            @endif
-                                                        </td>
-                                                        <td><span class="badge bg-light text-dark border">{{ $task->frequency_label }}</span></td>
-                                                        <td>
-                                                            @if($task->equipment_type)
-                                                                <span class="badge bg-light text-dark">{{ $task->equipment_type }}</span>
-                                                            @else
-                                                                <span class="text-muted">-</span>
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            @if($task->assigned_shift_id)
-                                                                <span class="badge bg-primary">{{ $task->assigned_shift_name }}</span>
-                                                            @else
-                                                                <span class="text-muted">-</span>
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            <select class="form-select form-select-sm" onchange="updateStatus({{ $task->id }}, this.value)" style="width: 120px;">
-                                                                <option value="pending" {{ $task->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                                                <option value="in_progress" {{ $task->status == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                                                <option value="completed" {{ $task->status == 'completed' ? 'selected' : '' }}>Completed</option>
-                                                            </select>
-                                                        </td>
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="5" class="text-center text-muted py-3">No tasks yet</td>
-                                                    </tr>
-                                                @endforelse
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                    @if($latestReport->photos && count($latestReport->photos) > 0)
+                    <div class="mb-3">
+                        <label class="fw-semibold d-block mb-1">Foto ({{ count($latestReport->photos) }})</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach($latestReport->photos as $photo)
+                            <a href="{{ Storage::url($photo['path']) }}" target="_blank">
+                                <img src="{{ Storage::url($photo['path']) }}" style="width:100px;height:100px;object-fit:cover;" class="rounded border">
+                            </a>
                             @endforeach
-
-                            @if($cleaningGroup->sprGroups->count() == 0)
-                                <div class="text-center text-muted py-3">No SPR groups yet.</div>
-                            @endif
                         </div>
                     </div>
-                @endforeach
+                    @endif
 
-                @if($scheduleDate->standaloneTasks->count() > 0)
-                    <div class="card mb-2">
-                        <div class="card-header bg-light py-2">
-                            <i class="fas fa-clipboard-list text-secondary me-2"></i>
-                            <strong>Standalone Tasks</strong>
-                            <span class="badge bg-secondary ms-2">{{ $scheduleDate->standaloneTasks->count() }} tasks</span>
-                        </div>
-                        <div class="card-body p-0">
-                            <table class="table table-sm table-hover pm-table mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Task</th>
-                                        <th width="100">Frequency</th>
-                                        <th width="150">Equipment</th>
-                                        <th width="120">Shift</th>
-                                        <th width="120">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($scheduleDate->standaloneTasks as $task)
-                                        <tr>
-                                            <td>
-                                                {{ $task->task_name }}
-                                                @if($task->task_description)
-                                                    <br><small class="text-muted">{{ $task->task_description }}</small>
-                                                @endif
-                                            </td>
-                                            <td><span class="badge bg-light text-dark border">{{ $task->frequency_label }}</span></td>
-                                            <td>
-                                                @if($task->equipment_type)
-                                                    <span class="badge bg-light text-dark">{{ $task->equipment_type }}</span>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if($task->assigned_shift_id)
-                                                    <span class="badge bg-primary">{{ $task->assigned_shift_name }}</span>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <select class="form-select form-select-sm" onchange="updateStatus({{ $task->id }}, this.value)" style="width: 120px;">
-                                                    <option value="pending" {{ $task->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                                    <option value="in_progress" {{ $task->status == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                                    <option value="completed" {{ $task->status == 'completed' ? 'selected' : '' }}>Completed</option>
-                                                </select>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                    @if($latestReport->admin_comments)
+                    <div class="alert alert-warning">
+                        <strong><i class="fas fa-comment me-1"></i> Review Comments:</strong><br>
+                        {{ $latestReport->admin_comments }}
                     </div>
-                @endif
+                    @endif
 
-                @if($scheduleDate->cleaningGroups->count() == 0 && $scheduleDate->standaloneTasks->count() == 0)
-                    <div class="text-center text-muted py-3">No tasks for this date.</div>
-                @endif
+                    <small class="text-muted">
+                        Submitted by {{ $latestReport->submitter->name ?? '-' }}
+                        on {{ $latestReport->submitted_at?->format('d M Y, H:i') }}
+                    </small>
+                </div>
+            </div>
+            @endif
+
+            <!-- Submit / Update Report -->
+            @if(!$latestReport || $latestReport->status === 'revision_needed')
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        {{ $latestReport ? 'Resubmit Report' : 'Submit Report' }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="reportForm" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Detail Kegiatan <span class="text-danger">*</span></label>
+                            <textarea name="description" class="form-control" rows="5" required placeholder="Jelaskan kegiatan PM yang telah dilakukan..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Foto Dokumentasi</label>
+                            <input type="file" name="photos[]" class="form-control" multiple accept="image/*">
+                            <small class="text-muted">Max 5MB per file. Bisa pilih beberapa foto sekaligus.</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-paper-plane me-1"></i> Submit Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endif
+        </div>
+
+        <!-- Sidebar: Update Status -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Update Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if($task->status !== 'in_progress' && $task->status !== 'completed')
+                        <button class="btn btn-outline-warning" onclick="updateStatus('in_progress')">
+                            <i class="fas fa-play me-1"></i> Mark In Progress
+                        </button>
+                        @endif
+                        @if($task->status !== 'completed')
+                        <button class="btn btn-outline-success" onclick="updateStatus('completed')">
+                            <i class="fas fa-check me-1"></i> Mark Completed
+                        </button>
+                        @endif
+                        @if($task->status !== 'pending')
+                        <button class="btn btn-outline-secondary" onclick="updateStatus('pending')">
+                            <i class="fas fa-undo me-1"></i> Reset to Pending
+                        </button>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
-    @endforeach
-
-    @if($schedule->scheduleDates->count() == 0)
-        <div class="card">
-            <div class="card-body text-center py-4">
-                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No schedule dates yet.</p>
-            </div>
-        </div>
-    @endif
+    </div>
 </div>
 
 @push('scripts')
 <script>
 const csrfToken = '{{ csrf_token() }}';
+const taskId = {{ $task->id }};
+const updateStatusUrl = '{{ route('user.preventive-maintenance.task.update-status', $task->id) }}';
+const storeReportUrl = '{{ route('user.preventive-maintenance.task.store-report', $task->id) }}';
 
-function filterDates() {
-    const filterValue = document.getElementById('filterDateInput').value;
-    const clearBtn = document.getElementById('clearFilterBtn');
-    const dateCards = document.querySelectorAll('.date-card');
-
-    clearBtn.style.display = filterValue ? 'inline-block' : 'none';
-
-    dateCards.forEach(card => {
-        card.style.display = (!filterValue || card.dataset.date === filterValue) ? '' : 'none';
-    });
-}
-
-function clearDateFilter() {
-    document.getElementById('filterDateInput').value = '';
-    filterDates();
-}
-
-function updateStatus(taskId, status) {
-    fetch(`/user/preventive-maintenance/task/${taskId}/status`, {
+function updateStatus(status) {
+    fetch(updateStatusUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-        body: JSON.stringify({ status: status })
+        body: JSON.stringify({ status })
     })
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
-        if (!data.success) {
-            alert('Failed to update status');
-            location.reload();
-        }
+        if (data.success) location.reload();
+        else alert(data.message || 'Failed to update status');
     })
-    .catch(() => { alert('An error occurred'); location.reload(); });
+    .catch(() => alert('An error occurred'));
+}
+
+const reportForm = document.getElementById('reportForm');
+if (reportForm) {
+    reportForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Submitting...';
+
+        const formData = new FormData(this);
+
+        fetch(storeReportUrl, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken },
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to submit report');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Submit Report';
+            }
+        })
+        .catch(() => {
+            alert('An error occurred');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Submit Report';
+        });
+    });
 }
 </script>
 @endpush

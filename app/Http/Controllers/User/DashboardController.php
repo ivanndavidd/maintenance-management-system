@@ -110,10 +110,23 @@ class DashboardController extends Controller
             ];
         });
 
-        // Preventive Maintenance Tasks
-        $pmTasks = PmTask::where('assigned_user_id', $userId)
-            ->where('task_date', $today)
+        // Preventive Maintenance Tasks — dynamic shift membership (Opsi 3)
+        $pmTasks = PmTask::whereNotNull('task_date')
+            ->whereNotNull('assigned_shift_id')
+            ->whereDate('task_date', $today)
             ->whereIn('status', ['pending', 'in_progress'])
+            ->whereExists(function ($sub) use ($userId) {
+                $sub->select(\DB::raw(1))
+                    ->from('shift_assignments as sa')
+                    ->join('shift_schedules as ss', 'ss.id', '=', 'sa.shift_schedule_id')
+                    ->whereColumn('sa.shift_id', 'pm_tasks.assigned_shift_id')
+                    ->where('sa.user_id', $userId)
+                    ->whereNull('sa.change_action')
+                    ->whereRaw("sa.day_of_week = LOWER(DAYNAME(pm_tasks.task_date))")
+                    ->whereColumn('ss.start_date', '<=', 'pm_tasks.task_date')
+                    ->whereColumn('ss.end_date', '>=', 'pm_tasks.task_date')
+                    ->where('ss.status', 'active');
+            })
             ->get()
             ->map(function($task) {
                 return [
@@ -185,9 +198,21 @@ class DashboardController extends Controller
                 $data[$dateStr]['shift'] = $shiftAssignment->shift_id;
             }
 
-            // Get PM Tasks count
-            $pmTasksCount = PmTask::where('assigned_user_id', $userId)
-                ->where('task_date', $date)
+            // Get PM Tasks count — dynamic shift membership (Opsi 3)
+            $pmTasksCount = PmTask::whereNotNull('assigned_shift_id')
+                ->whereDate('task_date', $date)
+                ->whereExists(function ($sub) use ($userId, $date) {
+                    $sub->select(\DB::raw(1))
+                        ->from('shift_assignments as sa')
+                        ->join('shift_schedules as ss', 'ss.id', '=', 'sa.shift_schedule_id')
+                        ->whereColumn('sa.shift_id', 'pm_tasks.assigned_shift_id')
+                        ->where('sa.user_id', $userId)
+                        ->whereNull('sa.change_action')
+                        ->where('sa.day_of_week', $dayOfWeek)
+                        ->where('ss.start_date', '<=', $date->format('Y-m-d'))
+                        ->where('ss.end_date', '>=', $date->format('Y-m-d'))
+                        ->where('ss.status', 'active');
+                })
                 ->count();
 
             for ($i = 0; $i < $pmTasksCount; $i++) {

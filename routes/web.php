@@ -1171,7 +1171,7 @@ Route::middleware(['auth'])->group(function () {
                         'index',
                     ])->name('index');
 
-                    Route::get('/{schedule}', [
+                    Route::get('/{task}', [
                         App\Http\Controllers\User\PreventiveMaintenanceController::class,
                         'show',
                     ])->name('show');
