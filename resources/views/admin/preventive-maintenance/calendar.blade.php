@@ -738,6 +738,7 @@ document.addEventListener('DOMContentLoaded', function() {
         weekNumbers: false,
         navLinks: false,
         dayHeaderFormat: { weekday: 'long' },
+        eventOrder: 'assigned_shift_id,title',
         loading: function(isLoading) { return false; },
 
         // Lazy load with in-memory cache — avoid duplicate fetches for same date range
