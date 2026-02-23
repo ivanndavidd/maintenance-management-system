@@ -807,6 +807,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     shiftBadge.textContent = 'S' + shiftId;
                     titleEl.appendChild(shiftBadge);
                 }
+
+                // In list view, color only applies to tr — force all td to inherit
+                if (info.view.type === 'listMonth') {
+                    const shiftColors = {
+                        1: 'rgba(0, 120, 212, 0.15)',
+                        2: 'rgba(194, 57, 179, 0.15)',
+                        3: 'rgba(0, 183, 195, 0.15)',
+                    };
+                    const bg = shiftColors[shiftId] || 'rgba(96, 94, 92, 0.15)';
+                    info.el.querySelectorAll('td').forEach(td => td.style.backgroundColor = bg);
+                }
             }
 
             // Use native title attribute for tooltip — no Bootstrap Tooltip objects
