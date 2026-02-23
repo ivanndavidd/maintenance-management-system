@@ -24,6 +24,22 @@
     <div class="card">
         <div class="card-body">
             <div id="calendar"></div>
+            <!-- Custom list view table (replaces FC list view) -->
+            <div id="customListView" style="display:none;">
+                <div class="d-flex align-items-center justify-content-between mb-3" id="listViewToolbar">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="listPrev"><i class="fas fa-chevron-left"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary" id="listNext"><i class="fas fa-chevron-right"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary" id="listToday">Today</button>
+                    </div>
+                    <h5 class="mb-0 fw-semibold" id="listViewTitle"></h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="listSwitchMonth">month</button>
+                        <button class="btn btn-sm btn-primary" id="listSwitchList">list</button>
+                    </div>
+                </div>
+                <div id="listViewContent"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -503,10 +519,34 @@ body.fc-loading::after {
   z-index: -9999 !important;
 }
 
-/* List view: td inherits background from tr (shift color) */
-.fc .fc-list-table td {
-    background-color: inherit !important;
+/* Custom list view table */
+#customListView .list-date-header {
+    background-color: #f8f9fa;
+    padding: 8px 14px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #323130;
+    border-bottom: 1px solid #e1dfdd;
+    border-top: 1px solid #e1dfdd;
 }
+#customListView .list-event-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-bottom: 1px solid #e1dfdd;
+    cursor: pointer;
+    font-size: 13px;
+}
+#customListView .list-event-row:hover { filter: brightness(0.95); }
+#customListView .list-event-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+#customListView .list-event-title { flex: 1; color: #323130; }
+#customListView .list-event-shift { font-size: 11px; color: #605e5c; margin-left: 8px; }
+#customListView .list-no-events { padding: 20px 14px; color: #605e5c; font-size: 13px; }
 
 /* More events link */
 .fc .fc-daygrid-more-link {
@@ -731,7 +771,15 @@ document.addEventListener('DOMContentLoaded', function() {
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,listMonth'
+            right: 'dayGridMonth,customList'
+        },
+        customButtons: {
+            customList: {
+                text: 'list',
+                click: function() {
+                    showCustomList();
+                }
+            }
         },
         editable: true,
         selectable: true,
@@ -933,6 +981,144 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     calendar.render();
+
+    // ── Custom List View ──────────────────────────────────────────────────────
+    let listCurrentDate = new Date();
+    const shiftColors = {
+        1: { bg: 'rgba(0,120,212,0.15)', dot: '#0078d4', label: 'Shift 1' },
+        2: { bg: 'rgba(194,57,179,0.15)', dot: '#c239b3', label: 'Shift 2' },
+        3: { bg: 'rgba(0,183,195,0.15)', dot: '#00b7c3', label: 'Shift 3' },
+    };
+
+    function showCustomList() {
+        calendarEl.style.display = 'none';
+        document.getElementById('customListView').style.display = 'block';
+        renderListView();
+    }
+
+    function hideCustomList() {
+        calendarEl.style.display = 'block';
+        document.getElementById('customListView').style.display = 'none';
+    }
+
+    function renderListView() {
+        const year = listCurrentDate.getFullYear();
+        const month = listCurrentDate.getMonth();
+        const start = new Date(year, month, 1).toISOString().split('T')[0];
+        const end = new Date(year, month + 1, 0).toISOString().split('T')[0];
+
+        // Update title
+        const title = listCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        document.getElementById('listViewTitle').textContent = title;
+
+        // Fetch events
+        const cacheKey = `${start}_${new Date(year, month + 1, 1).toISOString().split('T')[0]}`;
+        const cached = eventCache[cacheKey];
+        if (cached) {
+            renderListEvents(cached);
+        } else {
+            fetch(`${baseUrl}/events?start=${start}&end=${end}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        eventCache[cacheKey] = data;
+                        renderListEvents(data);
+                    }
+                });
+        }
+    }
+
+    function renderListEvents(events) {
+        const content = document.getElementById('listViewContent');
+
+        // Filter to current month and sort by date
+        const year = listCurrentDate.getFullYear();
+        const month = listCurrentDate.getMonth();
+        const filtered = events
+            .filter(e => {
+                const d = new Date(e.start);
+                return d.getFullYear() === year && d.getMonth() === month;
+            })
+            .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+        if (filtered.length === 0) {
+            content.innerHTML = '<div class="list-no-events">No events this month.</div>';
+            return;
+        }
+
+        // Group by date
+        const grouped = {};
+        filtered.forEach(e => {
+            const dateKey = e.start.split('T')[0];
+            if (!grouped[dateKey]) grouped[dateKey] = [];
+            grouped[dateKey].push(e);
+        });
+
+        let html = '';
+        Object.keys(grouped).sort().forEach(dateKey => {
+            const d = new Date(dateKey + 'T00:00:00');
+            const dateLabel = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            html += `<div class="list-date-header">${dateLabel}</div>`;
+            grouped[dateKey].forEach(e => {
+                const shiftId = e.extendedProps?.assigned_shift_id;
+                const color = shiftColors[shiftId] || { bg: 'rgba(96,94,92,0.15)', dot: '#605e5c', label: '' };
+                const shiftLabel = color.label ? `<span class="list-event-shift">${color.label}</span>` : '';
+                html += `<div class="list-event-row" style="background:${color.bg};" data-event-id="${e.id}">
+                    <span class="list-event-dot" style="background:${color.dot};"></span>
+                    <span class="list-event-title">${e.title}</span>
+                    ${shiftLabel}
+                </div>`;
+            });
+        });
+
+        content.innerHTML = html;
+
+        // Click on event row to open popover
+        content.querySelectorAll('.list-event-row').forEach(row => {
+            row.addEventListener('click', function() {
+                const eventId = this.getAttribute('data-event-id');
+                const ev = calendar.getEventById(eventId);
+                if (ev) {
+                    const rect = this.getBoundingClientRect();
+                    currentEvent = ev;
+                    document.getElementById('eventActionTitle').textContent = ev.title;
+                    document.getElementById('eventActionDateTime').textContent = new Date(ev.start).toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric', year: 'numeric' });
+                    const isRecurring = ev.extendedProps.is_recurring || ev.extendedProps.parent_task_id;
+                    document.getElementById('btnEditEvent').toggleAttribute('data-is-recurring', !!isRecurring);
+                    document.getElementById('editChevron').style.display = isRecurring ? 'inline-block' : 'none';
+                    document.getElementById('btnDeleteEvent').toggleAttribute('data-is-recurring', !!isRecurring);
+                    document.getElementById('deleteChevron').style.display = isRecurring ? 'inline-block' : 'none';
+                    document.getElementById('editRecurringOptions').style.display = 'none';
+                    document.getElementById('deleteRecurringOptions').style.display = 'none';
+                    eventActionPopover.style.display = 'block';
+                    eventActionPopover.style.left = (rect.left + window.scrollX) + 'px';
+                    eventActionPopover.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+                }
+            });
+        });
+    }
+
+    // List view navigation buttons
+    document.getElementById('listPrev').addEventListener('click', function() {
+        listCurrentDate.setMonth(listCurrentDate.getMonth() - 1);
+        renderListView();
+    });
+    document.getElementById('listNext').addEventListener('click', function() {
+        listCurrentDate.setMonth(listCurrentDate.getMonth() + 1);
+        renderListView();
+    });
+    document.getElementById('listToday').addEventListener('click', function() {
+        listCurrentDate = new Date();
+        renderListView();
+    });
+    document.getElementById('listSwitchMonth').addEventListener('click', function() {
+        hideCustomList();
+        calendar.changeView('dayGridMonth');
+    });
+    document.getElementById('listSwitchList').addEventListener('click', function() {
+        renderListView();
+    });
+    // ─────────────────────────────────────────────────────────────────────────
 
     // New Event Button
     document.getElementById('btnNewEvent').addEventListener('click', function() {
@@ -1397,6 +1583,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Clear cache then refetch current view
                 Object.keys(eventCache).forEach(k => delete eventCache[k]);
                 calendar.refetchEvents();
+                if (document.getElementById('customListView').style.display !== 'none') renderListView();
 
                 showAlert(data.message || 'Task saved successfully', 'success');
                 isSubmitting = false;
@@ -1493,6 +1680,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Remove events from calendar based on delete type
                 // Refetch current view range
                 calendar.refetchEvents();
+                if (document.getElementById('customListView').style.display !== 'none') renderListView();
 
                 showAlert(data.message || 'Task deleted successfully', 'success');
             } else {
