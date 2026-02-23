@@ -531,7 +531,7 @@ body.fc-loading::after {
     align-items: center;
     justify-content: space-between;
     padding: 12px 0;
-    margin-bottom: 0;
+    margin-bottom: 1.5em;
 }
 .list-toolbar-chunk { display: flex; align-items: center; gap: 8px; }
 .list-toolbar-title {
