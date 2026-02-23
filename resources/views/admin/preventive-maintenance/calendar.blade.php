@@ -503,16 +503,11 @@ body.fc-loading::after {
   z-index: -9999 !important;
 }
 
-/* List view: hide empty third column, make event rows full width */
-.fc .fc-list-table col {
-    width: auto !important;
-}
-.fc .fc-list-table .fc-list-event-graphic {
-    width: 30px;
-}
-.fc .fc-list-table .fc-list-event-time {
-    display: none !important;
-}
+/* List view: inherit shift colors into all td cells */
+.fc .fc-list-event.shift-1 td { background-color: rgba(0, 120, 212, 0.15) !important; }
+.fc .fc-list-event.shift-2 td { background-color: rgba(194, 57, 179, 0.15) !important; }
+.fc .fc-list-event.shift-3 td { background-color: rgba(0, 183, 195, 0.15) !important; }
+.fc .fc-list-event.no-shift td { background-color: rgba(96, 94, 92, 0.15) !important; }
 
 /* More events link */
 .fc .fc-daygrid-more-link {
