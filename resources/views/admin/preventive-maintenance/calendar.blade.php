@@ -525,19 +525,21 @@ body.fc-loading::after {
   z-index: -9999 !important;
 }
 
-/* Custom list toolbar — mirrors FC toolbar appearance */
+/* Custom list toolbar — mirrors FC toolbar appearance exactly */
 #listViewToolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5em;
+    padding: 12px 0;
+    margin-bottom: 0;
 }
 .list-toolbar-chunk { display: flex; align-items: center; gap: 8px; }
 .list-toolbar-title {
-    font-size: 1.75em;
-    font-weight: 700;
-    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
     color: #323130;
+    margin: 0;
+    line-height: 1.5;
 }
 .list-btn-group { display: flex; }
 .list-btn {
@@ -551,6 +553,7 @@ body.fc-loading::after {
     cursor: pointer;
     line-height: 1.5;
     border-radius: 0;
+    text-transform: none;
 }
 .list-btn:first-child { border-radius: 2px 0 0 2px; }
 .list-btn:last-child { border-radius: 0 2px 2px 0; }
