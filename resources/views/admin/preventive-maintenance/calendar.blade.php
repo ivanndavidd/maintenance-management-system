@@ -503,11 +503,10 @@ body.fc-loading::after {
   z-index: -9999 !important;
 }
 
-/* List view: inherit shift colors into all td cells */
-.fc .fc-list-event.shift-1 td { background-color: rgba(0, 120, 212, 0.15) !important; }
-.fc .fc-list-event.shift-2 td { background-color: rgba(194, 57, 179, 0.15) !important; }
-.fc .fc-list-event.shift-3 td { background-color: rgba(0, 183, 195, 0.15) !important; }
-.fc .fc-list-event.no-shift td { background-color: rgba(96, 94, 92, 0.15) !important; }
+/* List view: td inherits background from tr (shift color) */
+.fc .fc-list-table td {
+    background-color: inherit !important;
+}
 
 /* More events link */
 .fc .fc-daygrid-more-link {
@@ -808,16 +807,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     titleEl.appendChild(shiftBadge);
                 }
 
-                // In list view, color only applies to tr — force all td to inherit
-                if (info.view.type === 'listMonth') {
-                    const shiftColors = {
-                        1: 'rgba(0, 120, 212, 0.15)',
-                        2: 'rgba(194, 57, 179, 0.15)',
-                        3: 'rgba(0, 183, 195, 0.15)',
-                    };
-                    const bg = shiftColors[shiftId] || 'rgba(96, 94, 92, 0.15)';
-                    info.el.querySelectorAll('td').forEach(td => td.style.backgroundColor = bg);
-                }
             }
 
             // Use native title attribute for tooltip — no Bootstrap Tooltip objects
