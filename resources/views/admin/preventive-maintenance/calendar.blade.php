@@ -503,6 +503,17 @@ body.fc-loading::after {
   z-index: -9999 !important;
 }
 
+/* List view: hide empty third column, make event rows full width */
+.fc .fc-list-table col {
+    width: auto !important;
+}
+.fc .fc-list-table .fc-list-event-graphic {
+    width: 30px;
+}
+.fc .fc-list-table .fc-list-event-time {
+    display: none !important;
+}
+
 /* More events link */
 .fc .fc-daygrid-more-link {
     color: #0078d4;
