@@ -954,19 +954,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const btn = document.createElement('button');
             btn.className = 'btn btn-sm btn-outline-primary fc-list-add-btn';
             btn.innerHTML = '<i class="fas fa-plus"></i> Add Task';
-            btn.style.cssText = 'font-size:11px; padding:2px 8px; margin-left:10px; vertical-align:middle;';
+            btn.style.cssText = 'font-size:11px; padding:2px 8px; margin:0 12px; vertical-align:middle; float:left; position:relative; top:-1px;';
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 openEventModal(null, dateStr);
             });
 
-            // Append to the date label cell (.fc-list-day-cushion is inside the th)
+            // Insert button inside cushion, before the side-text (day name on the right)
             const cushion = dayRow.querySelector('.fc-list-day-cushion');
             if (cushion) {
-                cushion.style.display = 'flex';
-                cushion.style.alignItems = 'center';
-                cushion.style.justifyContent = 'space-between';
-                cushion.appendChild(btn);
+                const sideText = cushion.querySelector('.fc-list-day-side-text');
+                if (sideText) {
+                    cushion.insertBefore(btn, sideText);
+                } else {
+                    cushion.appendChild(btn);
+                }
             }
         });
     }
