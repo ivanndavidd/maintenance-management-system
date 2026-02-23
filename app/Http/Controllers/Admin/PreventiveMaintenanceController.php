@@ -1014,13 +1014,14 @@ class PreventiveMaintenanceController extends Controller
         $query = PmTask::with(['latestReport.submitter', 'latestReport.furtherRepairAssets', 'assignedUser'])
             ->whereNotNull('task_date');
 
-        // Filter by month
-        if ($request->filled('month')) {
-            $query->whereYear('task_date', date('Y', strtotime($request->month . '-01')))
-                  ->whereMonth('task_date', date('m', strtotime($request->month . '-01')));
-        }
+        // Default to current month if no filter provided
+        $selectedMonth = $request->filled('month') ? $request->month : Carbon::now()->format('Y-m');
 
-        // Filter by report status
+        // Filter by month — always apply
+        $query->whereYear('task_date', date('Y', strtotime($selectedMonth . '-01')))
+              ->whereMonth('task_date', date('m', strtotime($selectedMonth . '-01')));
+
+        // Filter by report status (optional)
         if ($request->filled('report_status')) {
             if ($request->report_status === 'no_report') {
                 $query->whereDoesntHave('latestReport');
@@ -1069,7 +1070,7 @@ class PreventiveMaintenanceController extends Controller
         $routePrefix = auth()->user()->hasRole('supervisor_maintenance') ? 'supervisor' : 'admin';
 
         return view('admin.preventive-maintenance.reports', compact(
-            'tasksByMonth', 'monthlyStats', 'routePrefix'
+            'tasksByMonth', 'monthlyStats', 'routePrefix', 'selectedMonth'
         ));
     }
 
