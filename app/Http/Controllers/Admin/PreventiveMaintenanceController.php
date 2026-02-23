@@ -505,11 +505,13 @@ class PreventiveMaintenanceController extends Controller
             $start = $request->input('start');
             $end = $request->input('end');
 
-            // Get all tasks within date range
+            // Get all tasks within date range, ordered by shift
             $tasks = PmTask::query()
                 ->whereNotNull('task_date')
                 ->whereBetween('task_date', [$start, $end])
                 ->with(['assignedUser', 'completedByUser'])
+                ->orderBy('task_date')
+                ->orderByRaw('COALESCE(assigned_shift_id, 9)')
                 ->get();
 
             // Format for FullCalendar
