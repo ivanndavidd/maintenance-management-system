@@ -927,10 +927,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Inject "+ Add" button on each date row in list view
         eventsSet: function() {
-            injectListAddButtons();
-        },
-        datesSet: function() {
-            setTimeout(injectListAddButtons, 50);
+            setTimeout(injectListAddButtons, 100);
         },
     });
 
@@ -940,13 +937,19 @@ document.addEventListener('DOMContentLoaded', function() {
     function injectListAddButtons() {
         if (calendar.view.type !== 'listMonth') return;
 
-        calendarEl.querySelectorAll('.fc-list-day').forEach(function(dayRow) {
+        // In FullCalendar v6, list day rows are <tr class="fc-list-day">
+        // The data-date attribute is on the <th> inside it (or on the tr itself)
+        calendarEl.querySelectorAll('tr.fc-list-day, .fc-list-day').forEach(function(dayRow) {
             // Avoid duplicate buttons
             if (dayRow.querySelector('.fc-list-add-btn')) return;
 
-            const dateAttr = dayRow.querySelector('[data-date]');
-            if (!dateAttr) return;
-            const dateStr = dateAttr.getAttribute('data-date');
+            // data-date may be on the tr itself or on a th child
+            let dateStr = dayRow.getAttribute('data-date');
+            if (!dateStr) {
+                const th = dayRow.querySelector('th[data-date], td[data-date], [data-date]');
+                if (th) dateStr = th.getAttribute('data-date');
+            }
+            if (!dateStr) return;
 
             const btn = document.createElement('button');
             btn.className = 'btn btn-sm btn-outline-primary fc-list-add-btn';
@@ -957,9 +960,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 openEventModal(null, dateStr);
             });
 
-            // Append to the date label cell
+            // Append to the date label cell (.fc-list-day-cushion is inside the th)
             const cushion = dayRow.querySelector('.fc-list-day-cushion');
-            if (cushion) cushion.appendChild(btn);
+            if (cushion) {
+                cushion.style.display = 'flex';
+                cushion.style.alignItems = 'center';
+                cushion.style.justifyContent = 'space-between';
+                cushion.appendChild(btn);
+            }
         });
     }
 
