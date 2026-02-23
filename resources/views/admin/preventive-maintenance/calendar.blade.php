@@ -912,9 +912,6 @@ document.addEventListener('DOMContentLoaded', function() {
         eventResize: function(info) {
             updateEventDuration(info.event);
         },
-
-        // Load all events once - no dynamic fetching on month change
-        events: []
     });
 
     calendar.render();
