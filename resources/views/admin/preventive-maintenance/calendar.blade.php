@@ -503,6 +503,27 @@ body.fc-loading::after {
   z-index: -9999 !important;
 }
 
+/* List view day header layout: [date] [+ Add Task] ... [day name] */
+.fc .fc-list-day-cushion {
+    display: flex !important;
+    align-items: center !important;
+}
+.fc .fc-list-day-cushion::after {
+    display: none !important;
+}
+.fc .fc-list-day-text {
+    float: none !important;
+    order: 3;
+    margin-left: auto !important;
+}
+.fc .fc-list-day-side-text {
+    float: none !important;
+    order: 1;
+}
+.fc-list-add-btn {
+    order: 2;
+}
+
 /* More events link */
 .fc .fc-daygrid-more-link {
     color: #0078d4;
@@ -960,15 +981,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 openEventModal(null, dateStr);
             });
 
-            // Append button directly after the date link (.fc-list-day-text)
+            // FC sets inline style: display:flex; justify-content:space-between
+            // Override justify-content and use order to position elements
             const cushion = dayRow.querySelector('.fc-list-day-cushion');
             if (cushion) {
+                cushion.style.justifyContent = 'flex-start';
+                const sideText = cushion.querySelector('.fc-list-day-side-text');
                 const dayText = cushion.querySelector('.fc-list-day-text');
+                if (sideText) sideText.style.order = '1';
+                btn.style.order = '2';
                 if (dayText) {
-                    dayText.insertAdjacentElement('afterend', btn);
-                } else {
-                    cushion.prepend(btn);
+                    dayText.style.order = '3';
+                    dayText.style.marginLeft = 'auto';
                 }
+                cushion.appendChild(btn);
             }
         });
     }
