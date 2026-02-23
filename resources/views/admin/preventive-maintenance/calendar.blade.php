@@ -954,20 +954,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const btn = document.createElement('button');
             btn.className = 'btn btn-sm btn-outline-primary fc-list-add-btn';
             btn.innerHTML = '<i class="fas fa-plus"></i> Add Task';
-            btn.style.cssText = 'font-size:11px; padding:2px 8px; margin:0 12px; vertical-align:middle; float:left; position:relative; top:-1px;';
+            btn.style.cssText = 'font-size:11px; padding:2px 8px; margin-left:10px;';
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 openEventModal(null, dateStr);
             });
 
-            // Insert button inside cushion, before the side-text (day name on the right)
+            // Append button directly after the date link (.fc-list-day-text)
             const cushion = dayRow.querySelector('.fc-list-day-cushion');
             if (cushion) {
-                const sideText = cushion.querySelector('.fc-list-day-side-text');
-                if (sideText) {
-                    cushion.insertBefore(btn, sideText);
+                const dayText = cushion.querySelector('.fc-list-day-text');
+                if (dayText) {
+                    dayText.insertAdjacentElement('afterend', btn);
                 } else {
-                    cushion.appendChild(btn);
+                    cushion.prepend(btn);
                 }
             }
         });
