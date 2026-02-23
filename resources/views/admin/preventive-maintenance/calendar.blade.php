@@ -26,16 +26,22 @@
             <div id="calendar"></div>
             <!-- Custom list view table (replaces FC list view) -->
             <div id="customListView" style="display:none;">
-                <div class="d-flex align-items-center justify-content-between mb-3" id="listViewToolbar">
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-secondary" id="listPrev"><i class="fas fa-chevron-left"></i></button>
-                        <button class="btn btn-sm btn-outline-secondary" id="listNext"><i class="fas fa-chevron-right"></i></button>
-                        <button class="btn btn-sm btn-outline-secondary" id="listToday">Today</button>
+                <div class="fc-header-toolbar fc-toolbar fc-toolbar-ltr mb-4" id="listViewToolbar">
+                    <div class="fc-toolbar-chunk">
+                        <div class="fc-button-group">
+                            <button type="button" class="fc-prev-button fc-button fc-button-primary" id="listPrev" aria-label="prev"><span class="fc-icon fc-icon-chevron-left"></span></button>
+                            <button type="button" class="fc-next-button fc-button fc-button-primary" id="listNext" aria-label="next"><span class="fc-icon fc-icon-chevron-right"></span></button>
+                        </div>
+                        <button type="button" class="fc-today-button fc-button fc-button-primary" id="listToday">today</button>
                     </div>
-                    <h5 class="mb-0 fw-semibold" id="listViewTitle"></h5>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-secondary" id="listSwitchMonth">month</button>
-                        <button class="btn btn-sm btn-primary" id="listSwitchList">list</button>
+                    <div class="fc-toolbar-chunk">
+                        <h2 class="fc-toolbar-title" id="listViewTitle"></h2>
+                    </div>
+                    <div class="fc-toolbar-chunk">
+                        <div class="fc-button-group">
+                            <button type="button" class="fc-dayGridMonth-button fc-button fc-button-primary" id="listSwitchMonth">month</button>
+                            <button type="button" class="fc-customList-button fc-button fc-button-primary fc-button-active" id="listSwitchList">list</button>
+                        </div>
                     </div>
                 </div>
                 <div id="listViewContent"></div>
@@ -993,6 +999,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function showCustomList() {
         calendarEl.style.display = 'none';
         document.getElementById('customListView').style.display = 'block';
+        // Sync list month with FC current date
+        listCurrentDate = new Date(calendar.getDate());
         renderListView();
     }
 
