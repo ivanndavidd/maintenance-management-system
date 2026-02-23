@@ -723,10 +723,25 @@ document.addEventListener('DOMContentLoaded', function() {
         displayEventTime: false,
         displayEventEnd: false,
         initialView: 'dayGridMonth',
+        customButtons: {
+            addTask: {
+                text: '+ Add Task',
+                click: function() {
+                    const view = calendar.view;
+                    let defaultDate = new Date();
+                    // If today is outside the visible range, fall back to the range start
+                    if (defaultDate < view.activeStart || defaultDate >= view.activeEnd) {
+                        defaultDate = view.activeStart;
+                    }
+                    const dateStr = defaultDate.toISOString().split('T')[0];
+                    openEventModal(null, dateStr);
+                }
+            }
+        },
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,listMonth'
+            right: 'addTask dayGridMonth,listMonth'
         },
         editable: true,
         selectable: true,
