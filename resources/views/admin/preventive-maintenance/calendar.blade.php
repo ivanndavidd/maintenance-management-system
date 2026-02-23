@@ -503,25 +503,17 @@ body.fc-loading::after {
   z-index: -9999 !important;
 }
 
-/* List view day header layout: [date] [+ Add Task] ... [day name] */
-.fc .fc-list-day-cushion {
-    display: flex !important;
-    align-items: center !important;
-}
-.fc .fc-list-day-cushion::after {
-    display: none !important;
-}
+/* List view: button inside date link, aligned vertically */
 .fc .fc-list-day-text {
-    float: none !important;
-    order: 3;
-    margin-left: auto !important;
-}
-.fc .fc-list-day-side-text {
-    float: none !important;
-    order: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 .fc-list-add-btn {
-    order: 2;
+    font-size: 11px !important;
+    padding: 1px 8px !important;
+    line-height: 1.4;
+    white-space: nowrap;
 }
 
 /* More events link */
@@ -981,20 +973,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 openEventModal(null, dateStr);
             });
 
-            // FC sets inline style: display:flex; justify-content:space-between
-            // Override justify-content and use order to position elements
+            // Append button inside .fc-list-day-text so it sits right next to the date
+            // FC's space-between keeps Sunday on the right automatically
             const cushion = dayRow.querySelector('.fc-list-day-cushion');
             if (cushion) {
-                cushion.style.justifyContent = 'flex-start';
-                const sideText = cushion.querySelector('.fc-list-day-side-text');
                 const dayText = cushion.querySelector('.fc-list-day-text');
-                if (sideText) sideText.style.order = '1';
-                btn.style.order = '2';
                 if (dayText) {
-                    dayText.style.order = '3';
-                    dayText.style.marginLeft = 'auto';
+                    dayText.appendChild(btn);
+                } else {
+                    cushion.appendChild(btn);
                 }
-                cushion.appendChild(btn);
             }
         });
     }
