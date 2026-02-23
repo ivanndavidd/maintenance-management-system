@@ -5,17 +5,46 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\PmTask;
 use App\Models\PmTaskReport;
+use App\Models\ShiftAssignment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class PreventiveMaintenanceController extends Controller
 {
+    /**
+     * Build a query that returns PM tasks visible to the current user
+     * based on dynamic shift membership (Opsi 3).
+     *
+     * A task is visible if:
+     *   assigned_shift_id = shift_id of any ShiftAssignment where
+     *   user_id = $userId AND day_of_week = day_of_week(task_date) AND
+     *   the related ShiftSchedule is active and covers task_date.
+     */
+    private function userTasksQuery(int $userId)
+    {
+        return PmTask::whereNotNull('task_date')
+            ->whereNotNull('assigned_shift_id')
+            ->whereExists(function ($sub) use ($userId) {
+                $sub->select(DB::raw(1))
+                    ->from('shift_assignments as sa')
+                    ->join('shift_schedules as ss', 'ss.id', '=', 'sa.shift_schedule_id')
+                    ->whereColumn('sa.shift_id', 'pm_tasks.assigned_shift_id')
+                    ->where('sa.user_id', $userId)
+                    ->whereNull('sa.change_action')
+                    // day_of_week matches the task's day
+                    ->whereRaw("sa.day_of_week = LOWER(DAYNAME(pm_tasks.task_date))")
+                    // shift schedule covers the task date
+                    ->whereColumn('ss.start_date', '<=', 'pm_tasks.task_date')
+                    ->whereColumn('ss.end_date', '>=', 'pm_tasks.task_date')
+                    ->where('ss.status', 'active');
+            });
+    }
+
     public function index(Request $request)
     {
-        // Get ALL PM tasks assigned to this user
-        $query = PmTask::with('latestReport')
-            ->where('assigned_user_id', auth()->id())
-            ->whereNotNull('task_date');
+        $query = $this->userTasksQuery(auth()->id())->with('latestReport');
 
         // Filter by month
         if ($request->filled('month')) {
@@ -68,9 +97,26 @@ class PreventiveMaintenanceController extends Controller
         ));
     }
 
+    public function show(PmTask $task)
+    {
+        // Verify user belongs to the task's shift on that date
+        abort_unless(
+            $this->userTasksQuery(auth()->id())->where('pm_tasks.id', $task->id)->exists(),
+            403
+        );
+
+        $task->load('latestReport.furtherRepairAssets', 'logs.user');
+
+        return view('user.preventive-maintenance.show', compact('task'));
+    }
+
     public function updateTaskStatus(Request $request, PmTask $task)
     {
-        $task = PmTask::where('assigned_user_id', auth()->id())->findOrFail($task->id);
+        // Verify user belongs to the task's shift on that date
+        abort_unless(
+            $this->userTasksQuery(auth()->id())->where('pm_tasks.id', $task->id)->exists(),
+            403
+        );
 
         $request->validate([
             'status' => 'required|in:pending,in_progress,completed',
@@ -108,8 +154,8 @@ class PreventiveMaintenanceController extends Controller
      */
     public function storeReport(Request $request, PmTask $task)
     {
-        // Verify ownership
-        if ($task->assigned_user_id !== auth()->id()) {
+        // Verify user belongs to the task's shift on that date
+        if (!$this->userTasksQuery(auth()->id())->where('pm_tasks.id', $task->id)->exists()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 

@@ -115,7 +115,13 @@
                                             <i class="fas fa-sync-alt text-muted ms-1" style="font-size: 10px;" title="Recurring"></i>
                                         @endif
                                     </td>
-                                    <td>{{ $task->assignedUser->name ?? '-' }}</td>
+                                    @php
+                                        $taskDateKey = ($task->task_date instanceof \Carbon\Carbon ? $task->task_date->format('Y-m-d') : $task->task_date);
+                                        $assignedToNames = $task->assigned_shift_id
+                                            ? ($shiftUserCache[$task->assigned_shift_id . '_' . $taskDateKey] ?? '-')
+                                            : '-';
+                                    @endphp
+                                    <td>{{ $assignedToNames }}</td>
                                     <td>
                                         @if($task->assigned_shift_id)
                                             @php
