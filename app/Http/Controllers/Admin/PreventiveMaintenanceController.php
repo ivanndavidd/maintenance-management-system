@@ -535,6 +535,7 @@ class PreventiveMaintenanceController extends Controller
                 'start' => $startDateTime,
                 'end' => $endDateTime,
                 'className' => $className,
+                'assigned_shift_id' => $task->assigned_shift_id ?? 9, // top-level for eventOrder sorting
                 'extendedProps' => [
                     'description' => $task->task_description,
                     'assigned_shift_id' => $task->assigned_shift_id,
