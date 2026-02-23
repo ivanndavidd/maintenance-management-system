@@ -503,18 +503,6 @@ body.fc-loading::after {
   z-index: -9999 !important;
 }
 
-/* List view: button inside date link, aligned vertically */
-.fc .fc-list-day-text {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-.fc-list-add-btn {
-    font-size: 11px !important;
-    padding: 1px 8px !important;
-    line-height: 1.4;
-    white-space: nowrap;
-}
 
 /* More events link */
 .fc .fc-daygrid-more-link {
@@ -938,54 +926,9 @@ document.addEventListener('DOMContentLoaded', function() {
             updateEventDuration(info.event);
         },
 
-        // Inject "+ Add" button on each date row in list view
-        eventsSet: function() {
-            setTimeout(injectListAddButtons, 100);
-        },
     });
 
     calendar.render();
-
-    // Inject "+ Add" button on each day heading row in list view
-    function injectListAddButtons() {
-        if (calendar.view.type !== 'listMonth') return;
-
-        // In FullCalendar v6, list day rows are <tr class="fc-list-day">
-        // The data-date attribute is on the <th> inside it (or on the tr itself)
-        calendarEl.querySelectorAll('tr.fc-list-day, .fc-list-day').forEach(function(dayRow) {
-            // Avoid duplicate buttons
-            if (dayRow.querySelector('.fc-list-add-btn')) return;
-
-            // data-date may be on the tr itself or on a th child
-            let dateStr = dayRow.getAttribute('data-date');
-            if (!dateStr) {
-                const th = dayRow.querySelector('th[data-date], td[data-date], [data-date]');
-                if (th) dateStr = th.getAttribute('data-date');
-            }
-            if (!dateStr) return;
-
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-sm btn-outline-primary fc-list-add-btn';
-            btn.innerHTML = '<i class="fas fa-plus"></i> Add Task';
-            btn.style.cssText = 'font-size:11px; padding:2px 8px; margin-left:10px;';
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                openEventModal(null, dateStr);
-            });
-
-            // Append button inside .fc-list-day-text so it sits right next to the date
-            // FC's space-between keeps Sunday on the right automatically
-            const cushion = dayRow.querySelector('.fc-list-day-cushion');
-            if (cushion) {
-                const dayText = cushion.querySelector('.fc-list-day-text');
-                if (dayText) {
-                    dayText.appendChild(btn);
-                } else {
-                    cushion.appendChild(btn);
-                }
-            }
-        });
-    }
 
     // New Event Button
     document.getElementById('btnNewEvent').addEventListener('click', function() {
