@@ -1029,6 +1029,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── Custom List View ──────────────────────────────────────────────────────
     let listCurrentDate = new Date();
+    const listCache = {}; // key: "YYYY-MM", value: events array
     const shiftColors = {
         1: { bg: 'rgba(0,120,212,0.15)', dot: '#0078d4', label: 'Shift 1' },
         2: { bg: 'rgba(194,57,179,0.15)', dot: '#c239b3', label: 'Shift 2' },
@@ -1048,21 +1049,31 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('customListView').style.display = 'none';
     }
 
-    function renderListView() {
+    function renderListView(forceRefresh = false) {
         const year = listCurrentDate.getFullYear();
         const month = listCurrentDate.getMonth();
-        const start = new Date(year, month, 1).toISOString().split('T')[0];
-        const end = new Date(year, month + 1, 1).toISOString().split('T')[0];
+        const cacheKey = `${year}-${String(month + 1).padStart(2, '0')}`;
 
         // Update title
         const title = listCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         document.getElementById('listViewTitle').textContent = title;
 
-        // Always fetch fresh from API (independent of FC cache)
+        // Use cache if available and not forced refresh
+        if (!forceRefresh && listCache[cacheKey]) {
+            renderListEvents(listCache[cacheKey]);
+            return;
+        }
+
+        const start = new Date(year, month, 1).toISOString().split('T')[0];
+        const end = new Date(year, month + 1, 1).toISOString().split('T')[0];
+
         fetch(`${baseUrl}/events?start=${start}&end=${end}`)
             .then(r => r.json())
             .then(data => {
-                if (Array.isArray(data)) renderListEvents(data);
+                if (Array.isArray(data)) {
+                    listCache[cacheKey] = data;
+                    renderListEvents(data);
+                }
             })
             .catch(() => {
                 document.getElementById('listViewContent').innerHTML = '<div class="list-no-events">Failed to load events.</div>';
@@ -1616,8 +1627,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Clear cache then refetch current view
                 Object.keys(eventCache).forEach(k => delete eventCache[k]);
+                Object.keys(listCache).forEach(k => delete listCache[k]);
                 calendar.refetchEvents();
-                if (document.getElementById('customListView').style.display !== 'none') renderListView();
+                if (document.getElementById('customListView').style.display !== 'none') renderListView(true);
 
                 showAlert(data.message || 'Task saved successfully', 'success');
                 isSubmitting = false;
@@ -1713,8 +1725,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // Remove events from calendar based on delete type
                 // Refetch current view range
+                Object.keys(listCache).forEach(k => delete listCache[k]);
                 calendar.refetchEvents();
-                if (document.getElementById('customListView').style.display !== 'none') renderListView();
+                if (document.getElementById('customListView').style.display !== 'none') renderListView(true);
 
                 showAlert(data.message || 'Task deleted successfully', 'success');
             } else {
