@@ -723,25 +723,10 @@ document.addEventListener('DOMContentLoaded', function() {
         displayEventTime: false,
         displayEventEnd: false,
         initialView: 'dayGridMonth',
-        customButtons: {
-            addTask: {
-                text: '+ Add Task',
-                click: function() {
-                    const view = calendar.view;
-                    let defaultDate = new Date();
-                    // If today is outside the visible range, fall back to the range start
-                    if (defaultDate < view.activeStart || defaultDate >= view.activeEnd) {
-                        defaultDate = view.activeStart;
-                    }
-                    const dateStr = defaultDate.toISOString().split('T')[0];
-                    openEventModal(null, dateStr);
-                }
-            }
-        },
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'addTask dayGridMonth,listMonth'
+            right: 'dayGridMonth,listMonth'
         },
         editable: true,
         selectable: true,
@@ -939,9 +924,44 @@ document.addEventListener('DOMContentLoaded', function() {
         eventResize: function(info) {
             updateEventDuration(info.event);
         },
+
+        // Inject "+ Add" button on each date row in list view
+        eventsSet: function() {
+            injectListAddButtons();
+        },
+        datesSet: function() {
+            setTimeout(injectListAddButtons, 50);
+        },
     });
 
     calendar.render();
+
+    // Inject "+ Add" button on each day heading row in list view
+    function injectListAddButtons() {
+        if (calendar.view.type !== 'listMonth') return;
+
+        calendarEl.querySelectorAll('.fc-list-day').forEach(function(dayRow) {
+            // Avoid duplicate buttons
+            if (dayRow.querySelector('.fc-list-add-btn')) return;
+
+            const dateAttr = dayRow.querySelector('[data-date]');
+            if (!dateAttr) return;
+            const dateStr = dateAttr.getAttribute('data-date');
+
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-sm btn-outline-primary fc-list-add-btn';
+            btn.innerHTML = '<i class="fas fa-plus"></i> Add Task';
+            btn.style.cssText = 'font-size:11px; padding:2px 8px; margin-left:10px; vertical-align:middle;';
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                openEventModal(null, dateStr);
+            });
+
+            // Append to the date label cell
+            const cushion = dayRow.querySelector('.fc-list-day-cushion');
+            if (cushion) cushion.appendChild(btn);
+        });
+    }
 
     // New Event Button
     document.getElementById('btnNewEvent').addEventListener('click', function() {
