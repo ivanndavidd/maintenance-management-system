@@ -26,21 +26,21 @@
             <div id="calendar"></div>
             <!-- Custom list view table (replaces FC list view) -->
             <div id="customListView" style="display:none;">
-                <div class="fc-header-toolbar fc-toolbar fc-toolbar-ltr mb-4" id="listViewToolbar">
-                    <div class="fc-toolbar-chunk">
-                        <div class="fc-button-group">
-                            <button type="button" class="fc-prev-button fc-button fc-button-primary" id="listPrev" aria-label="prev"><span class="fc-icon fc-icon-chevron-left"></span></button>
-                            <button type="button" class="fc-next-button fc-button fc-button-primary" id="listNext" aria-label="next"><span class="fc-icon fc-icon-chevron-right"></span></button>
+                <div id="listViewToolbar">
+                    <div class="list-toolbar-chunk">
+                        <div class="list-btn-group">
+                            <button type="button" class="list-btn" id="listPrev" aria-label="prev"><span class="fc-icon fc-icon-chevron-left"></span></button>
+                            <button type="button" class="list-btn" id="listNext" aria-label="next"><span class="fc-icon fc-icon-chevron-right"></span></button>
                         </div>
-                        <button type="button" class="fc-today-button fc-button fc-button-primary" id="listToday">today</button>
+                        <button type="button" class="list-btn" id="listToday">today</button>
                     </div>
-                    <div class="fc-toolbar-chunk">
-                        <h2 class="fc-toolbar-title" id="listViewTitle"></h2>
+                    <div class="list-toolbar-chunk">
+                        <h2 class="list-toolbar-title" id="listViewTitle"></h2>
                     </div>
-                    <div class="fc-toolbar-chunk">
-                        <div class="fc-button-group">
-                            <button type="button" class="fc-dayGridMonth-button fc-button fc-button-primary" id="listSwitchMonth">month</button>
-                            <button type="button" class="fc-customList-button fc-button fc-button-primary fc-button-active" id="listSwitchList">list</button>
+                    <div class="list-toolbar-chunk">
+                        <div class="list-btn-group">
+                            <button type="button" class="list-btn" id="listSwitchMonth">month</button>
+                            <button type="button" class="list-btn list-btn-active" id="listSwitchList">list</button>
                         </div>
                     </div>
                 </div>
@@ -524,6 +524,42 @@ body.fc-loading::after {
   pointer-events: none !important;
   z-index: -9999 !important;
 }
+
+/* Custom list toolbar — mirrors FC toolbar appearance */
+#listViewToolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5em;
+}
+.list-toolbar-chunk { display: flex; align-items: center; gap: 8px; }
+.list-toolbar-title {
+    font-size: 1.75em;
+    font-weight: 700;
+    margin: 0;
+    color: #323130;
+}
+.list-btn-group { display: flex; }
+.list-btn {
+    background: #2C3E50;
+    border: 1px solid #2C3E50;
+    color: #fff;
+    padding: 6px 10px;
+    font-size: 1em;
+    font-family: inherit;
+    cursor: pointer;
+    line-height: 1.5;
+    border-radius: 0;
+}
+.list-btn:first-child { border-radius: 4px 0 0 4px; }
+.list-btn:last-child { border-radius: 0 4px 4px 0; }
+.list-btn-group .list-btn:only-child { border-radius: 4px; }
+.list-btn + .list-btn { border-left: 1px solid rgba(255,255,255,0.3); }
+/* today button — standalone (not in group) */
+#listViewToolbar > .list-toolbar-chunk > .list-btn { border-radius: 4px; }
+.list-btn:hover { background: #1a252f; border-color: #1a252f; }
+.list-btn-active { background: #1a252f !important; }
+.list-btn .fc-icon { font-size: 1em; }
 
 /* Custom list view table */
 #customListView .list-date-header {
