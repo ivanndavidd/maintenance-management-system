@@ -371,6 +371,7 @@ Route::middleware(['auth'])->group(function () {
             Route::resource('assets', App\Http\Controllers\Admin\AssetController::class);
 
             // Group Assets
+            Route::post('group-assets/import', [App\Http\Controllers\Admin\GroupAssetController::class, 'import'])->name('group-assets.import');
             Route::resource('group-assets', App\Http\Controllers\Admin\GroupAssetController::class);
 
             // Purchase Orders (Multi-Item Shopping Cart System)

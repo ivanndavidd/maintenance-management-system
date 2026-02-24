@@ -21,18 +21,42 @@
         </div>
     @endif
 
+    @if(session('import_errors') && count(session('import_errors')) > 0)
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Import Warnings:</strong>
+            <ul class="mb-0 mt-1">
+                @foreach(session('import_errors') as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">All Groups</h5>
-            <a href="{{ route($routePrefix.'.group-assets.create') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus me-1"></i> Add Group
-            </a>
+            <h5 class="mb-0">All Groups <span class="text-muted fw-normal fs-6">({{ $groups->count() }} total)</span></h5>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="fas fa-file-csv me-1"></i> Import CSV
+                </button>
+                <a href="{{ route($routePrefix.'.group-assets.create') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i> Add Group
+                </a>
+            </div>
         </div>
         <div class="card-body">
             @if($groups->isEmpty())
                 <div class="text-center text-muted py-5">
                     <i class="fas fa-layer-group fa-3x mb-3 d-block"></i>
-                    No groups found. <a href="{{ route($routePrefix.'.group-assets.create') }}">Create one</a>.
+                    No groups found.
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#importModal">
+                            Import CSV
+                        </button>
+                        or
+                        <a href="{{ route($routePrefix.'.group-assets.create') }}" class="ms-2">create one manually</a>.
+                    </div>
                 </div>
             @else
                 <div class="row g-3">
@@ -86,6 +110,49 @@
                     @endforeach
                 </div>
             @endif
+        </div>
+    </div>
+</div>
+
+{{-- Import CSV Modal --}}
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route($routePrefix.'.group-assets.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel"><i class="fas fa-file-csv me-2"></i>Import Group Assets CSV</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info py-2 px-3 mb-3" style="font-size:13px;">
+                        <strong>Format CSV yang diperlukan:</strong><br>
+                        Kolom: <code>GroupID, GroupName, Severity</code><br>
+                        Severity: <code>high</code>, <code>medium</code>, atau <code>low</code><br>
+                        Baris pertama dianggap sebagai header dan akan dilewati.
+                    </div>
+                    <div class="mb-3">
+                        <label for="csv_file" class="form-label">Pilih File CSV <span class="text-danger">*</span></label>
+                        <input type="file" id="csv_file" name="csv_file"
+                               class="form-control @error('csv_file') is-invalid @enderror"
+                               accept=".csv,.txt" required>
+                        @error('csv_file')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">Format: .csv — Maks. 5MB</div>
+                    </div>
+                    <div class="alert alert-warning py-2 px-3" style="font-size:13px;">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Jika GroupID sudah ada, data akan di-update (bukan duplikat).
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-1"></i> Import
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
