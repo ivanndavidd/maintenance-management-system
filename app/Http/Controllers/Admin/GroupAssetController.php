@@ -5,10 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\GroupAsset;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class GroupAssetController extends Controller
 {
+    private function getRoutePrefix(): string
+    {
+        return auth()->user()->hasRole('supervisor_maintenance') ? 'supervisor' : 'admin';
+    }
+
     public function index()
     {
         $groups = GroupAsset::with(['creator', 'updater'])
@@ -36,7 +40,7 @@ class GroupAssetController extends Controller
 
         GroupAsset::create($validated);
 
-        return redirect()->route('admin.group-assets.index')
+        return redirect()->route($this->getRoutePrefix() . '.group-assets.index')
             ->with('success', 'Group created successfully.');
     }
 
@@ -64,7 +68,7 @@ class GroupAssetController extends Controller
 
         $groupAsset->update($validated);
 
-        return redirect()->route('admin.group-assets.index')
+        return redirect()->route($this->getRoutePrefix() . '.group-assets.index')
             ->with('success', 'Group updated successfully.');
     }
 
@@ -72,7 +76,7 @@ class GroupAssetController extends Controller
     {
         $groupAsset->delete();
 
-        return redirect()->route('admin.group-assets.index')
+        return redirect()->route($this->getRoutePrefix() . '.group-assets.index')
             ->with('success', 'Group deleted successfully.');
     }
 
@@ -82,16 +86,15 @@ class GroupAssetController extends Controller
             'csv_file' => 'required|file|mimes:csv,txt|max:5120',
         ]);
 
-        $file     = $request->file('csv_file');
-        $handle   = fopen($file->getRealPath(), 'r');
-        $header   = null;
-        $imported = 0;
-        $skipped  = 0;
-        $errors   = [];
+        $file            = $request->file('csv_file');
+        $handle          = fopen($file->getRealPath(), 'r');
+        $header          = null;
+        $imported        = 0;
+        $skipped         = 0;
+        $errors          = [];
         $validSeverities = ['high', 'medium', 'low'];
 
         while (($row = fgetcsv($handle, 1000, ',')) !== false) {
-            // Skip header row
             if ($header === null) {
                 $header = array_map('trim', $row);
                 continue;
@@ -111,7 +114,6 @@ class GroupAssetController extends Controller
                 continue;
             }
 
-            // Upsert: update if group_id exists, insert if not
             $existing = GroupAsset::withTrashed()->where('group_id', $groupId)->first();
             if ($existing) {
                 $existing->restore();
@@ -120,15 +122,14 @@ class GroupAssetController extends Controller
                     'severity'   => $severity,
                     'updated_by' => auth()->id(),
                 ]);
-                $imported++;
             } else {
                 GroupAsset::create([
                     'group_id'   => $groupId,
                     'group_name' => $groupName,
                     'severity'   => $severity,
                 ]);
-                $imported++;
             }
+            $imported++;
         }
 
         fclose($handle);
@@ -138,7 +139,7 @@ class GroupAssetController extends Controller
             $message .= " {$skipped} rows skipped.";
         }
 
-        return redirect()->route('admin.group-assets.index')
+        return redirect()->route($this->getRoutePrefix() . '.group-assets.index')
             ->with('success', $message)
             ->with('import_errors', $errors);
     }

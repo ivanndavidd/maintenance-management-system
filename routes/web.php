@@ -831,6 +831,10 @@ Route::middleware(['auth'])->group(function () {
             });
             Route::resource('assets', App\Http\Controllers\Admin\AssetController::class);
 
+            // Group Assets
+            Route::post('group-assets/import', [App\Http\Controllers\Admin\GroupAssetController::class, 'import'])->name('group-assets.import');
+            Route::resource('group-assets', App\Http\Controllers\Admin\GroupAssetController::class);
+
             // Purchase Orders (mirrors admin PO routes)
             Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
                 Route::get('/', [App\Http\Controllers\Admin\PurchaseOrderController::class, 'index'])->name('index');
