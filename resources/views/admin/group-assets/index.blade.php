@@ -1,0 +1,103 @@
+@extends('layouts.admin')
+
+@section('page-title', 'Group Assets')
+
+@section('content')
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2>Group Assets</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Group Assets</li>
+            </ol>
+        </nav>
+    </div>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Groups</h5>
+            <a href="{{ route($routePrefix.'.group-assets.create') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i> Add Group
+            </a>
+        </div>
+        <div class="card-body">
+            @if($groups->isEmpty())
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-layer-group fa-3x mb-3 d-block"></i>
+                    No groups found. <a href="{{ route($routePrefix.'.group-assets.create') }}">Create one</a>.
+                </div>
+            @else
+                <div class="row g-3">
+                    @foreach($groups as $group)
+                        @php
+                            $badgeColor = match($group->severity) {
+                                'high'   => 'danger',
+                                'medium' => 'warning',
+                                'low'    => 'success',
+                                default  => 'secondary',
+                            };
+                            $severityLabel = match($group->severity) {
+                                'high'   => 'High',
+                                'medium' => 'Medium',
+                                'low'    => 'Low',
+                                default  => $group->severity,
+                            };
+                        @endphp
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                            <div class="card h-100 border shadow-sm group-card" style="cursor:pointer;"
+                                 onclick="window.location='{{ route($routePrefix.'.group-assets.show', $group) }}'">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <span class="badge bg-secondary fs-6">{{ $group->group_id }}</span>
+                                        <span class="badge bg-{{ $badgeColor }}">{{ $severityLabel }}</span>
+                                    </div>
+                                    <h6 class="card-title fw-semibold mb-1">{{ $group->group_name }}</h6>
+                                    <small class="text-muted">
+                                        @if($group->creator)
+                                            Created by {{ $group->creator->name }}
+                                        @endif
+                                    </small>
+                                </div>
+                                <div class="card-footer bg-transparent border-top-0 d-flex gap-2 justify-content-end" onclick="event.stopPropagation()">
+                                    <a href="{{ route($routePrefix.'.group-assets.edit', $group) }}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <form action="{{ route($routePrefix.'.group-assets.destroy', $group) }}"
+                                          method="POST"
+                                          onsubmit="return confirm('Delete group {{ $group->group_id }} - {{ $group->group_name }}?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+
+<style>
+.group-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+    transform: translateY(-2px);
+    transition: all 0.2s ease;
+}
+.group-card {
+    transition: all 0.2s ease;
+}
+</style>
+@endsection

@@ -370,6 +370,9 @@ Route::middleware(['auth'])->group(function () {
             // Resource routes (must come AFTER custom routes)
             Route::resource('assets', App\Http\Controllers\Admin\AssetController::class);
 
+            // Group Assets
+            Route::resource('group-assets', App\Http\Controllers\Admin\GroupAssetController::class);
+
             // Purchase Orders (Multi-Item Shopping Cart System)
             Route::prefix('purchase-orders')
                 ->name('purchase-orders.')
