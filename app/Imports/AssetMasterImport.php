@@ -15,7 +15,7 @@ class AssetMasterImport
             $spreadsheet = IOFactory::load($filePath);
             $sheetNames  = $spreadsheet->getSheetNames();
 
-            foreach ($sheetNames as $sheetIndex => $sheetName) {
+            foreach ($sheetNames as $sheetName) {
                 $this->processSheet($spreadsheet, $sheetName);
             }
 
@@ -36,10 +36,8 @@ class AssetMasterImport
     protected function processSheet($spreadsheet, $sheetName)
     {
         try {
-            $sheet         = $spreadsheet->getSheetByName($sheetName);
-            $location      = $sheet->getCell('A1')->getValue();
-            $equipmentType = $sheetName;
-            $highestRow    = $sheet->getHighestRow();
+            $sheet      = $spreadsheet->getSheetByName($sheetName);
+            $highestRow = $sheet->getHighestRow();
 
             for ($row = 2; $row <= $highestRow; $row++) {
                 try {
@@ -49,14 +47,12 @@ class AssetMasterImport
                     if (empty($assetName)) continue;
 
                     \DB::table('assets_master')->insert([
-                        'equipment_id'   => $equipmentId,
-                        'asset_name'     => $assetName,
-                        'location'       => $location,
-                        'equipment_type' => $equipmentType,
-                        'status'         => 'active',
-                        'created_by'     => auth()->check() ? auth()->id() : null,
-                        'created_at'     => now(),
-                        'updated_at'     => now(),
+                        'equipment_id' => $equipmentId,
+                        'asset_name'   => $assetName,
+                        'status'       => 'active',
+                        'created_by'   => auth()->check() ? auth()->id() : null,
+                        'created_at'   => now(),
+                        'updated_at'   => now(),
                     ]);
 
                     $this->importedCount++;

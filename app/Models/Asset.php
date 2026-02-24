@@ -15,8 +15,6 @@ class Asset extends TenantModels
     protected $fillable = [
         'equipment_id',
         'asset_name',
-        'location',
-        'equipment_type',
         'status',
         'notes',
         'created_by',
