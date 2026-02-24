@@ -26,7 +26,6 @@
         </div>
     @endif
 
-    <!-- Master Data Section -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Master Data Assets</h5>
@@ -40,33 +39,12 @@
             </div>
         </div>
         <div class="card-body">
-            <!-- Filter Section -->
             <form method="GET" action="{{ route($routePrefix.'.assets.index') }}">
                 <div class="row mb-3 g-2">
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-6">
                         <input type="text" name="search" class="form-control form-control-sm" placeholder="Search Equipment ID, Name..." value="{{ request('search') }}">
                     </div>
                     <div class="col-6 col-md-3">
-                        <select name="equipment_type" class="form-select form-select-sm">
-                            <option value="">All Equipment Types</option>
-                            @foreach($equipmentTypes as $type)
-                                <option value="{{ $type }}" {{ request('equipment_type') == $type ? 'selected' : '' }}>
-                                    {{ ucfirst($type) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <select name="location" class="form-select form-select-sm">
-                            <option value="">All Locations</option>
-                            @foreach($locations as $location)
-                                <option value="{{ $location }}" {{ request('location') == $location ? 'selected' : '' }}>
-                                    {{ $location }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-6 col-md-2">
                         <select name="status" class="form-select form-select-sm">
                             <option value="">All Status</option>
                             <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
@@ -75,7 +53,7 @@
                             <option value="disposed" {{ request('status') == 'disposed' ? 'selected' : '' }}>Disposed</option>
                         </select>
                     </div>
-                    <div class="col-6 col-md-1">
+                    <div class="col-6 col-md-2">
                         <button type="submit" class="btn btn-primary btn-sm w-100">
                             <i class="fas fa-filter"></i> Filter
                         </button>
@@ -83,38 +61,17 @@
                 </div>
             </form>
 
-            <!-- Active Filters Display -->
-            @if(request('search') || request('equipment_type') || request('location') || request('status'))
+            @if(request('search') || request('status'))
                 <div class="mb-3">
                     <small class="text-muted">Active filters:</small>
                     <div class="d-inline-flex gap-2 ms-2 flex-wrap">
                         @if(request('search'))
-                            <span class="badge bg-info">
-                                Search: {{ request('search') }}
-                                <a href="{{ route($routePrefix.'.assets.index', array_filter(request()->except('search'))) }}" class="text-white text-decoration-none ms-1">×</a>
-                            </span>
-                        @endif
-                        @if(request('equipment_type'))
-                            <span class="badge bg-info">
-                                Type: {{ ucfirst(request('equipment_type')) }}
-                                <a href="{{ route($routePrefix.'.assets.index', array_filter(request()->except('equipment_type'))) }}" class="text-white text-decoration-none ms-1">×</a>
-                            </span>
-                        @endif
-                        @if(request('location'))
-                            <span class="badge bg-info">
-                                Location: {{ request('location') }}
-                                <a href="{{ route($routePrefix.'.assets.index', array_filter(request()->except('location'))) }}" class="text-white text-decoration-none ms-1">×</a>
-                            </span>
+                            <span class="badge bg-info">Search: {{ request('search') }} <a href="{{ route($routePrefix.'.assets.index', array_filter(request()->except('search'))) }}" class="text-white text-decoration-none ms-1">x</a></span>
                         @endif
                         @if(request('status'))
-                            <span class="badge bg-info">
-                                Status: {{ ucfirst(request('status')) }}
-                                <a href="{{ route($routePrefix.'.assets.index', array_filter(request()->except('status'))) }}" class="text-white text-decoration-none ms-1">×</a>
-                            </span>
+                            <span class="badge bg-info">Status: {{ ucfirst(request('status')) }} <a href="{{ route($routePrefix.'.assets.index', array_filter(request()->except('status'))) }}" class="text-white text-decoration-none ms-1">x</a></span>
                         @endif
-                        <a href="{{ route($routePrefix.'.assets.index') }}" class="badge bg-secondary text-decoration-none">
-                            Clear All
-                        </a>
+                        <a href="{{ route($routePrefix.'.assets.index') }}" class="badge bg-secondary text-decoration-none">Clear All</a>
                     </div>
                 </div>
             @endif
@@ -125,8 +82,6 @@
                         <tr>
                             <th>Equipment ID</th>
                             <th>Asset Name</th>
-                            <th>Equipment Type</th>
-                            <th>Location</th>
                             <th class="text-center">Status</th>
                             <th class="text-center">Actions</th>
                         </tr>
@@ -136,8 +91,6 @@
                         <tr>
                             <td><span class="badge bg-info">{{ $asset->equipment_id ?? '-' }}</span></td>
                             <td>{{ $asset->asset_name }}</td>
-                            <td><span class="badge bg-secondary">{{ $asset->equipment_type }}</span></td>
-                            <td>{{ $asset->location }}</td>
                             <td class="text-center">
                                 @if($asset->status == 'active')
                                     <span class="badge bg-success">Active</span>
@@ -151,37 +104,24 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
-                                    <a href="{{ route($routePrefix.'.assets.show', $asset) }}" class="btn btn-sm btn-info" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route($routePrefix.'.assets.edit', $asset) }}" class="btn btn-sm btn-warning" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ route($routePrefix.'.assets.destroy', $asset) }}" method="POST" class="d-inline"
-                                        onsubmit="return confirm('Are you sure you want to delete this asset?')">
+                                    <a href="{{ route($routePrefix.'.assets.show', $asset) }}" class="btn btn-sm btn-info" title="View"><i class="fas fa-eye"></i></a>
+                                    <a href="{{ route($routePrefix.'.assets.edit', $asset) }}" class="btn btn-sm btn-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                                    <form action="{{ route($routePrefix.'.assets.destroy', $asset) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this asset?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="6" class="text-center">No assets found</td>
-                        </tr>
+                        <tr><td colspan="4" class="text-center">No assets found</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <div class="mt-3">
-                {{ $assets->appends(request()->query())->links() }}
-            </div>
+            <div class="mt-3">{{ $assets->appends(request()->query())->links() }}</div>
         </div>
     </div>
 </div>
-
 @endsection

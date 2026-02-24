@@ -28,16 +28,6 @@ class AssetController extends Controller
             });
         }
 
-        // Filter by equipment type
-        if ($request->has('equipment_type') && $request->equipment_type != '') {
-            $query->where('equipment_type', $request->equipment_type);
-        }
-
-        // Filter by location
-        if ($request->has('location') && $request->location != '') {
-            $query->where('location', $request->location);
-        }
-
         // Filter by status
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
@@ -45,11 +35,7 @@ class AssetController extends Controller
 
         $assets = $query->orderBy('created_at', 'desc')->paginate(20)->appends($request->except('page'));
 
-        // Get unique values for filters
-        $equipmentTypes = Asset::select('equipment_type')->distinct()->pluck('equipment_type');
-        $locations = Asset::select('location')->distinct()->pluck('location');
-
-        return view('admin.assets.index', compact('assets', 'equipmentTypes', 'locations'));
+        return view('admin.assets.index', compact('assets'));
     }
 
     /**
@@ -110,14 +96,12 @@ class AssetController extends Controller
     {
         $request->validate([
             'equipment_id' => 'nullable|string|max:100',
-            'asset_name' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'equipment_type' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive,maintenance,disposed',
-            'notes' => 'nullable|string',
+            'asset_name'   => 'required|string|max:255',
+            'status'       => 'required|in:active,inactive,maintenance,disposed',
+            'notes'        => 'nullable|string',
         ]);
 
-        Asset::create($request->all());
+        Asset::create($request->only(['equipment_id', 'asset_name', 'status', 'notes']));
 
         return redirect()->route('admin.assets.index')
             ->with('success', 'Asset created successfully.');
@@ -147,14 +131,12 @@ class AssetController extends Controller
     {
         $request->validate([
             'equipment_id' => 'nullable|string|max:100',
-            'asset_name' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'equipment_type' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive,maintenance,disposed',
-            'notes' => 'nullable|string',
+            'asset_name'   => 'required|string|max:255',
+            'status'       => 'required|in:active,inactive,maintenance,disposed',
+            'notes'        => 'nullable|string',
         ]);
 
-        $asset->update($request->all());
+        $asset->update($request->only(['equipment_id', 'asset_name', 'status', 'notes']));
 
         return redirect()->route('admin.assets.index')
             ->with('success', 'Asset updated successfully.');
