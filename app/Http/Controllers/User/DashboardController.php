@@ -201,7 +201,7 @@ class DashboardController extends Controller
             // Get PM Tasks count — dynamic shift membership (Opsi 3)
             $pmTasksCount = PmTask::whereNotNull('assigned_shift_id')
                 ->whereDate('task_date', $date)
-                ->whereExists(function ($sub) use ($userId, $date) {
+                ->whereExists(function ($sub) use ($userId, $date, $dayOfWeek) {
                     $sub->select(\DB::raw(1))
                         ->from('shift_assignments as sa')
                         ->join('shift_schedules as ss', 'ss.id', '=', 'sa.shift_schedule_id')
