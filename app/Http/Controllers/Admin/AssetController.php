@@ -22,9 +22,7 @@ class AssetController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('equipment_id', 'like', "%{$search}%")
-                    ->orWhere('asset_name', 'like', "%{$search}%")
-                    ->orWhere('location', 'like', "%{$search}%")
-                    ->orWhere('equipment_type', 'like', "%{$search}%");
+                    ->orWhere('asset_name', 'like', "%{$search}%");
             });
         }
 
@@ -47,38 +45,105 @@ class AssetController extends Controller
     }
 
     /**
-     * Import assets from Excel file
+     * Import assets from CSV file (columns: EquipmentID, AssetName, BOMID, GroupID)
      */
     public function import(Request $request)
     {
         $request->validate([
-            'excel_file' => 'required|file|mimes:xlsx,xls|max:10240', // Max 10MB
+            'csv_file' => 'required|file|mimes:csv,txt|max:10240',
         ]);
 
-        try {
-            $file = $request->file('excel_file');
-            $filePath = $file->getRealPath();
+        $file     = $request->file('csv_file');
+        $handle   = fopen($file->getRealPath(), 'r');
+        $imported = 0;
+        $errors   = [];
+        $row      = 0;
 
-            // Process import
-            $importer = new AssetMasterImport();
-            $result = $importer->importFromFile($filePath);
-
-            if ($result['success']) {
-                $message = "Successfully imported {$result['imported']} assets.";
-
-                if (!empty($result['errors'])) {
-                    $message .= " With " . count($result['errors']) . " errors.";
-                }
-
-                return redirect()->route('admin.assets.index')
-                    ->with('success', $message)
-                    ->with('import_errors', $result['errors']);
-            } else {
-                return back()->with('error', $result['message']);
-            }
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error importing file: ' . $e->getMessage());
+        // Read UTF-8 BOM if present
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            rewind($handle);
         }
+
+        // Read header row
+        $headers = fgetcsv($handle);
+        if (!$headers) {
+            return back()->with('error', 'CSV file is empty or invalid.');
+        }
+
+        // Normalize headers: lowercase, trim
+        $headers = array_map(fn($h) => strtolower(trim($h)), $headers);
+
+        $colEquipmentId = array_search('equipmentid', $headers);
+        $colAssetName   = array_search('assetname', $headers);
+        $colBomId       = array_search('bomid', $headers);
+        $colGroupId     = array_search('groupid', $headers);
+
+        if ($colEquipmentId === false || $colAssetName === false) {
+            fclose($handle);
+            return back()->with('error', 'CSV must have EquipmentID and AssetName columns.');
+        }
+
+        $userId = auth()->check() ? auth()->id() : null;
+
+        while (($data = fgetcsv($handle)) !== false) {
+            $row++;
+            $equipmentId = isset($data[$colEquipmentId]) ? trim($data[$colEquipmentId]) : null;
+            $assetName   = isset($data[$colAssetName])   ? trim($data[$colAssetName])   : null;
+            $bomId       = ($colBomId !== false && isset($data[$colBomId]))     ? trim($data[$colBomId])     : null;
+            $groupId     = ($colGroupId !== false && isset($data[$colGroupId])) ? trim($data[$colGroupId])   : null;
+
+            if (empty($assetName)) continue;
+
+            $equipmentId = $equipmentId ?: null;
+            $bomId       = $bomId       ?: null;
+            $groupId     = $groupId     ?: null;
+
+            try {
+                // Upsert by equipment_id; if no equipment_id, always insert
+                if ($equipmentId) {
+                    $existing = Asset::withTrashed()->where('equipment_id', $equipmentId)->first();
+                    if ($existing) {
+                        if ($existing->trashed()) $existing->restore();
+                        $existing->update([
+                            'asset_name'  => $assetName,
+                            'bom_id'      => $bomId,
+                            'group_id'    => $groupId,
+                            'updated_by'  => $userId,
+                        ]);
+                    } else {
+                        Asset::create([
+                            'equipment_id' => $equipmentId,
+                            'asset_name'   => $assetName,
+                            'bom_id'       => $bomId,
+                            'group_id'     => $groupId,
+                            'status'       => 'active',
+                        ]);
+                    }
+                } else {
+                    Asset::create([
+                        'asset_name' => $assetName,
+                        'bom_id'     => $bomId,
+                        'group_id'   => $groupId,
+                        'status'     => 'active',
+                    ]);
+                }
+                $imported++;
+            } catch (\Exception $e) {
+                $errors[] = "Row {$row} ({$equipmentId}): " . $e->getMessage();
+            }
+        }
+
+        fclose($handle);
+
+        $message = "Successfully imported {$imported} assets.";
+        if (!empty($errors)) {
+            $message .= ' With ' . count($errors) . ' errors.';
+        }
+
+        return redirect()->route('admin.assets.index')
+            ->with('success', $message)
+            ->with('import_errors', $errors);
     }
 
     /**
@@ -179,8 +244,7 @@ class AssetController extends Controller
         if ($q !== '') {
             $query->where(function ($qb) use ($q) {
                 $qb->where('asset_name', 'like', "%{$q}%")
-                    ->orWhere('equipment_id', 'like', "%{$q}%")
-                    ->orWhere('location', 'like', "%{$q}%");
+                    ->orWhere('equipment_id', 'like', "%{$q}%");
             });
         }
 
@@ -189,7 +253,7 @@ class AssetController extends Controller
         ->map(function ($asset) {
             return [
                 'id' => $asset->id,
-                'text' => ($asset->equipment_id ?? '-') . ' - ' . $asset->asset_name . ' (' . ($asset->location ?? '-') . ')',
+                'text' => ($asset->equipment_id ?? '-') . ' - ' . $asset->asset_name,
             ];
         });
 

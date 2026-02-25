@@ -47,8 +47,9 @@ class GroupAssetController extends Controller
     public function show(GroupAsset $groupAsset)
     {
         $groupAsset->load(['creator', 'updater']);
+        $assets = $groupAsset->assets()->orderBy('equipment_id')->paginate(50);
 
-        return view('admin.group-assets.show', compact('groupAsset'));
+        return view('admin.group-assets.show', compact('groupAsset', 'assets'));
     }
 
     public function edit(GroupAsset $groupAsset)
