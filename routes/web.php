@@ -369,6 +369,7 @@ Route::middleware(['auth'])->group(function () {
 
             // Resource routes (must come AFTER custom routes)
             Route::resource('assets', App\Http\Controllers\Admin\AssetController::class);
+            Route::patch('assets/{asset}/bom', [App\Http\Controllers\Admin\AssetController::class, 'updateBom'])->name('assets.update-bom');
 
             // Group Assets
             Route::post('group-assets/import', [App\Http\Controllers\Admin\GroupAssetController::class, 'import'])->name('group-assets.import');
@@ -830,6 +831,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/import/template', [App\Http\Controllers\Admin\AssetController::class, 'downloadTemplate'])->name('import.template');
             });
             Route::resource('assets', App\Http\Controllers\Admin\AssetController::class);
+            Route::patch('assets/{asset}/bom', [App\Http\Controllers\Admin\AssetController::class, 'updateBom'])->name('assets.update-bom');
 
             // Group Assets
             Route::post('group-assets/import', [App\Http\Controllers\Admin\GroupAssetController::class, 'import'])->name('group-assets.import');

@@ -67,6 +67,7 @@
                 Assets in this Group
                 <span class="badge bg-secondary ms-1">{{ $assets->total() }}</span>
             </h6>
+            <small class="text-muted"><i class="fas fa-pencil-alt me-1"></i>Click BOM ID cell to edit</small>
         </div>
         <div class="card-body p-0">
             @if($assets->count() > 0)
@@ -74,10 +75,10 @@
                     <table class="table table-hover table-bordered mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Equipment ID</th>
+                                <th style="width:130px">Equipment ID</th>
                                 <th>Asset Name</th>
-                                <th>BOM ID</th>
-                                <th class="text-center">Status</th>
+                                <th style="width:140px">BOM ID</th>
+                                <th class="text-center" style="width:100px">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -91,12 +92,30 @@
                                     @endif
                                 </td>
                                 <td>{{ $asset->asset_name }}</td>
-                                <td>
-                                    @if($asset->bom_id)
-                                        <span class="badge bg-light text-dark border">{{ $asset->bom_id }}</span>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
+                                <td class="bom-cell"
+                                    data-asset-id="{{ $asset->id }}"
+                                    data-bom="{{ $asset->bom_id ?? '' }}"
+                                    data-url="{{ route($routePrefix.'.assets.update-bom', $asset) }}"
+                                    title="Click to edit BOM ID"
+                                    style="cursor:pointer;">
+                                    <span class="bom-display">
+                                        @if($asset->bom_id)
+                                            <span class="badge bg-light text-dark border">{{ $asset->bom_id }}</span>
+                                        @else
+                                            <span class="text-muted fst-italic" style="font-size:12px;">click to add</span>
+                                        @endif
+                                    </span>
+                                    <span class="bom-edit d-none">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control form-control-sm bom-input"
+                                                   value="{{ $asset->bom_id ?? '' }}"
+                                                   placeholder="e.g. R04"
+                                                   maxlength="20"
+                                                   style="width:80px">
+                                            <button class="btn btn-success btn-sm bom-save" type="button"><i class="fas fa-check"></i></button>
+                                            <button class="btn btn-outline-secondary btn-sm bom-cancel" type="button"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </span>
                                 </td>
                                 <td class="text-center">
                                     @if($asset->status == 'active')
@@ -125,5 +144,75 @@
             @endif
         </div>
     </div>
+
+@push('scripts')
+<script>
+document.querySelectorAll('.bom-cell').forEach(function(cell) {
+    const display = cell.querySelector('.bom-display');
+    const edit    = cell.querySelector('.bom-edit');
+    const input   = cell.querySelector('.bom-input');
+    const saveBtn = cell.querySelector('.bom-save');
+    const cancelBtn = cell.querySelector('.bom-cancel');
+
+    function openEdit() {
+        display.classList.add('d-none');
+        edit.classList.remove('d-none');
+        input.focus();
+        input.select();
+    }
+
+    function closeEdit() {
+        edit.classList.add('d-none');
+        display.classList.remove('d-none');
+    }
+
+    function saveBom() {
+        const newVal = input.value.trim();
+        const url    = cell.dataset.url;
+
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch(url, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: JSON.stringify({ bom_id: newVal }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const bomId = data.bom_id;
+                input.value = bomId ?? '';
+                cell.dataset.bom = bomId ?? '';
+
+                if (bomId) {
+                    display.innerHTML = `<span class="badge bg-light text-dark border">${bomId}</span>`;
+                } else {
+                    display.innerHTML = `<span class="text-muted fst-italic" style="font-size:12px;">click to add</span>`;
+                }
+            }
+            closeEdit();
+        })
+        .catch(() => closeEdit())
+        .finally(() => {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-check"></i>';
+        });
+    }
+
+    display.addEventListener('click', openEdit);
+    saveBtn.addEventListener('click', saveBom);
+    cancelBtn.addEventListener('click', closeEdit);
+
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') saveBom();
+        if (e.key === 'Escape') closeEdit();
+    });
+});
+</script>
+@endpush
 </div>
 @endsection

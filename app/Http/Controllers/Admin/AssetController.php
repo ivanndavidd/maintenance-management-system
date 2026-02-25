@@ -233,6 +233,20 @@ class AssetController extends Controller
     }
 
     /**
+     * Update BOM ID inline via AJAX
+     */
+    public function updateBom(Request $request, Asset $asset)
+    {
+        $request->validate([
+            'bom_id' => 'nullable|string|max:20',
+        ]);
+
+        $asset->update(['bom_id' => $request->bom_id ?: null]);
+
+        return response()->json(['success' => true, 'bom_id' => $asset->bom_id]);
+    }
+
+    /**
      * Search assets for Select2 AJAX
      */
     public function search(Request $request)
