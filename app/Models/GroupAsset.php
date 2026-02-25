@@ -105,4 +105,9 @@ class GroupAsset extends TenantModels
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function assets()
+    {
+        return $this->hasMany(Asset::class, 'group_id', 'group_id');
+    }
 }

@@ -14,6 +14,8 @@ class Asset extends TenantModels
 
     protected $fillable = [
         'equipment_id',
+        'bom_id',
+        'group_id',
         'asset_name',
         'status',
         'notes',
@@ -52,5 +54,10 @@ class Asset extends TenantModels
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(GroupAsset::class, 'group_id', 'group_id');
     }
 }

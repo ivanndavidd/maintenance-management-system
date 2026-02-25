@@ -39,6 +39,31 @@
             </div>
         </div>
         <div class="card-body">
+            {{-- Search & Filter --}}
+            <div class="row mb-3 g-2">
+                <div class="col-12 col-md-6">
+                    <input type="text" id="groupSearch" class="form-control form-control-sm"
+                           placeholder="Search Group ID or Group Name...">
+                </div>
+                <div class="col-6 col-md-3">
+                    <select id="severityFilter" class="form-select form-select-sm">
+                        <option value="">All Severity</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="clearFilters">
+                        <i class="fas fa-times me-1"></i> Clear
+                    </button>
+                </div>
+            </div>
+            <div id="noResults" class="text-center text-muted py-4 d-none">
+                <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                No groups match your search.
+            </div>
+
             @if($groups->isEmpty())
                 <div class="text-center text-muted py-5">
                     <i class="fas fa-layer-group fa-3x mb-3 d-block"></i>
@@ -63,18 +88,20 @@
 
                 @foreach($severityConfig as $severityKey => $config)
                     @if($grouped->has($severityKey))
-                        <div class="severity-section mb-4">
+                        <div class="severity-section mb-4" data-severity="{{ $severityKey }}">
                             {{-- Section Header --}}
                             <div class="d-flex align-items-center gap-2 mb-3 pb-2" style="border-bottom: 2px solid {{ $config['border'] }};">
                                 <span class="badge bg-{{ $config['color'] }} fs-6 px-3 py-2">{{ $config['label'] }}</span>
                                 <span class="text-muted" style="font-size:13px;">{{ $config['desc'] }}</span>
-                                <span class="ms-auto text-muted" style="font-size:12px;">{{ $grouped[$severityKey]->count() }} groups</span>
+                                <span class="ms-auto text-muted section-count" style="font-size:12px;">{{ $grouped[$severityKey]->count() }} groups</span>
                             </div>
 
                             {{-- Cards --}}
                             <div class="row g-3">
                                 @foreach($grouped[$severityKey] as $group)
-                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 group-item"
+                                         data-severity="{{ $severityKey }}"
+                                         data-search="{{ strtolower($group->group_id . ' ' . $group->group_name) }}">
                                         <div class="card h-100 border shadow-sm group-card"
                                              style="cursor:pointer; border-color:{{ $config['border'] }} !important;"
                                              onclick="window.location='{{ route($routePrefix.'.group-assets.show', $group) }}'">
@@ -170,4 +197,68 @@
     transition: all 0.2s ease;
 }
 </style>
+
+@push('scripts')
+<script>
+(function () {
+    const searchInput    = document.getElementById('groupSearch');
+    const severitySelect = document.getElementById('severityFilter');
+    const clearBtn       = document.getElementById('clearFilters');
+    const noResults      = document.getElementById('noResults');
+
+    function applyFilters() {
+        const keyword  = searchInput.value.toLowerCase().trim();
+        const severity = severitySelect.value;
+
+        let totalVisible = 0;
+
+        document.querySelectorAll('.severity-section').forEach(section => {
+            const sectionSeverity = section.dataset.severity;
+            const items = section.querySelectorAll('.group-item');
+            let sectionVisible = 0;
+
+            // Hide whole section if severity filter doesn't match
+            if (severity && sectionSeverity !== severity) {
+                section.classList.add('d-none');
+                return;
+            }
+            section.classList.remove('d-none');
+
+            items.forEach(item => {
+                const matchSearch   = !keyword || item.dataset.search.includes(keyword);
+                const matchSeverity = !severity || item.dataset.severity === severity;
+
+                if (matchSearch && matchSeverity) {
+                    item.classList.remove('d-none');
+                    sectionVisible++;
+                    totalVisible++;
+                } else {
+                    item.classList.add('d-none');
+                }
+            });
+
+            // Hide section if no cards visible
+            if (sectionVisible === 0) {
+                section.classList.add('d-none');
+            } else {
+                const countEl = section.querySelector('.section-count');
+                if (countEl) countEl.textContent = sectionVisible + ' groups';
+            }
+        });
+
+        noResults.classList.toggle('d-none', totalVisible > 0);
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    severitySelect.addEventListener('change', applyFilters);
+
+    clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        severitySelect.value = '';
+        applyFilters();
+    });
+})();
+</script>
+@endpush
+
 @endsection

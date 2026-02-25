@@ -59,16 +59,70 @@
         </div>
     </div>
 
-    {{-- Assets in this group (placeholder for when asset-group link is implemented) --}}
+    {{-- Assets in this group --}}
     <div class="card">
-        <div class="card-header">
-            <h6 class="mb-0">Assets in this Group</h6>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+                <i class="fas fa-sitemap me-1"></i>
+                Assets in this Group
+                <span class="badge bg-secondary ms-1">{{ $assets->total() }}</span>
+            </h6>
         </div>
-        <div class="card-body">
-            <div class="text-center text-muted py-4">
-                <i class="fas fa-link fa-2x mb-2 d-block"></i>
-                Asset linking to groups will be available after the assets table is updated.
-            </div>
+        <div class="card-body p-0">
+            @if($assets->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Equipment ID</th>
+                                <th>Asset Name</th>
+                                <th>BOM ID</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($assets as $asset)
+                            <tr>
+                                <td>
+                                    @if($asset->equipment_id)
+                                        <span class="badge bg-info">{{ $asset->equipment_id }}</span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>{{ $asset->asset_name }}</td>
+                                <td>
+                                    @if($asset->bom_id)
+                                        <span class="badge bg-light text-dark border">{{ $asset->bom_id }}</span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($asset->status == 'active')
+                                        <span class="badge bg-success">Active</span>
+                                    @elseif($asset->status == 'inactive')
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    @elseif($asset->status == 'maintenance')
+                                        <span class="badge bg-warning text-dark">Maintenance</span>
+                                    @else
+                                        <span class="badge bg-danger">Disposed</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @if($assets->hasPages())
+                    <div class="p-3">{{ $assets->links() }}</div>
+                @endif
+            @else
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                    No assets linked to this group yet.
+                </div>
+            @endif
         </div>
     </div>
 </div>
