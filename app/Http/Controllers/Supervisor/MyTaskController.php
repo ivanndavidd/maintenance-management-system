@@ -216,14 +216,20 @@ class MyTaskController extends Controller
             }
         }
 
+        // Calculate day diff: submitted date minus task date (negative=early, 0=on time, positive=late)
+        $submittedDate = now()->startOfDay();
+        $taskDate      = \Carbon\Carbon::parse($task->task_date)->startOfDay();
+        $dayDiff       = $submittedDate->diffInDays($taskDate, false) * -1;
+
         // Create report
         $report = PmTaskReport::create([
-            'pm_task_id' => $task->id,
-            'description' => $request->description,
-            'photos' => $photos ?: null,
-            'status' => 'submitted',
-            'submitted_by' => auth()->id(),
-            'submitted_at' => now(),
+            'pm_task_id'         => $task->id,
+            'description'        => $request->description,
+            'photos'             => $photos ?: null,
+            'status'             => 'submitted',
+            'submitted_by'       => auth()->id(),
+            'submitted_at'       => now(),
+            'submitted_day_diff' => (int) $dayDiff,
         ]);
 
         // Attach further repair assets

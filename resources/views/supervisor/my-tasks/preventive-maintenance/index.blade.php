@@ -181,6 +181,12 @@
                                             <span class="badge {{ $latestReport->getStatusBadgeClass() }} mt-1" style="font-size: 10px;">
                                                 <i class="fas fa-file-alt"></i> {{ $latestReport->getStatusLabel() }}
                                             </span>
+                                            @if($latestReport->timing_label)
+                                                <br>
+                                                <span class="badge {{ $latestReport->timing_badge_class }} mt-1" style="font-size: 10px;" title="Submitted on {{ $latestReport->submitted_at?->format('d M Y') }}">
+                                                    <i class="fas fa-clock"></i> {{ $latestReport->timing_label }}
+                                                </span>
+                                            @endif
                                         @endif
                                     </td>
                                     <td>

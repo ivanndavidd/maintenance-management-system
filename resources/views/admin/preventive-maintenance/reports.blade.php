@@ -144,6 +144,12 @@
                                             <span class="badge {{ $latestReport->getStatusBadgeClass() }}">
                                                 {{ $latestReport->getStatusLabel() }}
                                             </span>
+                                            @if($latestReport->timing_label)
+                                                <br>
+                                                <span class="badge {{ $latestReport->timing_badge_class }} mt-1" style="font-size: 10px;" title="Submitted on {{ $latestReport->submitted_at?->format('d M Y') }}">
+                                                    <i class="fas fa-clock"></i> {{ $latestReport->timing_label }}
+                                                </span>
+                                            @endif
                                         @else
                                             <span class="badge bg-secondary">No Report</span>
                                         @endif
@@ -255,6 +261,7 @@ function viewReport(reportId) {
                     <div class="col-md-6 text-md-end">
                         <small class="text-muted">Assigned to: <strong>${r.task.assigned_to}</strong></small><br>
                         <small class="text-muted">Submitted by: ${r.submitted_by} on ${r.submitted_at}</small>
+                        ${r.timing_label ? `<br><span class="badge ${r.timing_badge}" style="font-size:10px;"><i class="fas fa-clock me-1"></i>${r.timing_label}</span>` : ''}
                     </div>
                 </div>
             </div>`;

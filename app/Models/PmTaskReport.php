@@ -18,6 +18,7 @@ class PmTaskReport extends TenantModels
         'admin_comments',
         'submitted_by',
         'submitted_at',
+        'submitted_day_diff',
         'reviewed_by',
         'reviewed_at',
     ];
@@ -68,5 +69,34 @@ class PmTaskReport extends TenantModels
             'revision_needed' => 'Revision Needed',
             default => ucfirst($this->status),
         };
+    }
+
+    /**
+     * Get timing label: Early X days / On Time / Late X days
+     */
+    public function getTimingLabelAttribute(): ?string
+    {
+        if ($this->submitted_day_diff === null) return null;
+
+        $diff = $this->submitted_day_diff;
+
+        if ($diff === 0) return 'On Time';
+        if ($diff < 0)  return 'Early ' . abs($diff) . ' ' . (abs($diff) === 1 ? 'day' : 'days');
+        return 'Late ' . $diff . ' ' . ($diff === 1 ? 'day' : 'days');
+    }
+
+    /**
+     * Get timing badge class
+     */
+    public function getTimingBadgeClassAttribute(): ?string
+    {
+        if ($this->submitted_day_diff === null) return null;
+
+        $diff = $this->submitted_day_diff;
+
+        if ($diff === 0)  return 'bg-success';
+        if ($diff < 0)    return 'bg-info';
+        if ($diff === 1)  return 'bg-warning text-dark';
+        return 'bg-danger';
     }
 }
