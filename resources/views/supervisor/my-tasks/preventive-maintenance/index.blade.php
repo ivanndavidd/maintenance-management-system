@@ -149,7 +149,9 @@
                                         <small class="text-muted d-block">{{ \Carbon\Carbon::parse($task->task_date)->format('D') }}</small>
                                     </td>
                                     <td>
-                                        {{ $task->task_name }}
+                                        <a href="{{ route('supervisor.my-tasks.preventive-maintenance.task.show', $task->id) }}" class="text-decoration-none text-dark fw-semibold">
+                                            {{ $task->task_name }}
+                                        </a>
                                         @if($task->is_recurring || $task->parent_task_id)
                                             <i class="fas fa-sync-alt text-muted ms-1" style="font-size: 10px;" title="Recurring"></i>
                                         @endif

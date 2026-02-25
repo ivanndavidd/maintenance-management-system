@@ -12,6 +12,7 @@ use App\Models\StockOpnameSchedule;
 use App\Models\StockOpnameScheduleItem;
 use App\Imports\StockOpnameImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -22,13 +23,33 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 class MyTaskController extends Controller
 {
     /**
+     * Build a query for PM tasks that are covered by an existing active shift schedule.
+     * This prevents supervisor from accessing future tasks that have no shift schedule yet.
+     */
+    private function supervisorTasksQuery()
+    {
+        return PmTask::whereNotNull('task_date')
+            ->whereNotNull('assigned_shift_id')
+            ->whereExists(function ($sub) {
+                $sub->select(DB::raw(1))
+                    ->from('shift_assignments as sa')
+                    ->join('shift_schedules as ss', 'ss.id', '=', 'sa.shift_schedule_id')
+                    ->whereColumn('sa.shift_id', 'pm_tasks.assigned_shift_id')
+                    ->whereNull('sa.change_action')
+                    ->whereRaw("sa.day_of_week = LOWER(DAYNAME(pm_tasks.task_date))")
+                    ->whereColumn('ss.start_date', '<=', 'pm_tasks.task_date')
+                    ->whereColumn('ss.end_date', '>=', 'pm_tasks.task_date')
+                    ->where('ss.status', 'active');
+            });
+    }
+
+    /**
      * Display preventive maintenance tasks assigned to supervisor
      */
     public function preventiveMaintenance(Request $request)
     {
-        // Get ALL PM tasks assigned to this user
-        $query = PmTask::with('latestReport')
-            ->where('assigned_user_id', auth()->id())
+        // Supervisor sees all PM tasks covered by an active shift schedule
+        $query = $this->supervisorTasksQuery()->with('latestReport')
             ->whereNotNull('task_date');
 
         // Filter by month
@@ -83,6 +104,21 @@ class MyTaskController extends Controller
     }
 
     /**
+     * Show individual PM task detail (supervisor)
+     */
+    public function showPmTask(PmTask $task)
+    {
+        abort_unless(
+            $this->supervisorTasksQuery()->where('pm_tasks.id', $task->id)->exists(),
+            403
+        );
+
+        $task->load('latestReport.furtherRepairAssets', 'logs.user');
+
+        return view('supervisor.my-tasks.preventive-maintenance.show-task', compact('task'));
+    }
+
+    /**
      * Show specific PM schedule
      */
     public function showPreventiveMaintenance($id)
@@ -104,7 +140,7 @@ class MyTaskController extends Controller
      */
     public function updatePmTaskStatus(Request $request, $taskId)
     {
-        $task = PmTask::where('assigned_user_id', auth()->id())->findOrFail($taskId);
+        $task = $this->supervisorTasksQuery()->where('pm_tasks.id', $taskId)->firstOrFail();
 
         $validated = $request->validate([
             'status' => 'required|in:pending,in_progress,completed',
@@ -154,8 +190,8 @@ class MyTaskController extends Controller
      */
     public function storePmReport(Request $request, PmTask $task)
     {
-        // Verify ownership
-        if ($task->assigned_user_id !== auth()->id()) {
+        // Verify task is covered by an active shift schedule
+        if (!$this->supervisorTasksQuery()->where('pm_tasks.id', $task->id)->exists()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
