@@ -131,6 +131,11 @@
                         Submitted by {{ $latestReport->submitter->name ?? '-' }}
                         on {{ $latestReport->submitted_at?->format('d M Y, H:i') }}
                     </small>
+                    @if($latestReport->timing_label)
+                        <span class="badge {{ $latestReport->timing_badge_class }} ms-2">
+                            <i class="fas fa-clock me-1"></i>{{ $latestReport->timing_label }}
+                        </span>
+                    @endif
                 </div>
             </div>
             @endif

@@ -1091,6 +1091,8 @@ class PreventiveMaintenanceController extends Controller
                 'admin_comments' => $report->admin_comments,
                 'submitted_by' => $report->submitter->name ?? '-',
                 'submitted_at' => $report->submitted_at?->format('d M Y, H:i'),
+                'timing_label' => $report->timing_label,
+                'timing_badge' => $report->timing_badge_class,
                 'reviewed_by' => $report->reviewer->name ?? null,
                 'reviewed_at' => $report->reviewed_at?->format('d M Y, H:i'),
                 'further_repair_assets' => $report->furtherRepairAssets->map(function ($asset) {
