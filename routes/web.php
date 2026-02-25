@@ -966,6 +966,11 @@ Route::middleware(['auth'])->group(function () {
                         'showPreventiveMaintenance',
                     ])->name('preventive-maintenance.show');
 
+                    Route::get('/preventive-maintenance/task/{task}', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'showPmTask',
+                    ])->name('preventive-maintenance.task.show');
+
                     Route::post('/preventive-maintenance/task/{task}/report', [
                         App\Http\Controllers\Supervisor\MyTaskController::class,
                         'storePmReport',
