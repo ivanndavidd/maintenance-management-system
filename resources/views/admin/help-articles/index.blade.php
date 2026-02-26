@@ -138,6 +138,11 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
+                                        <a href="{{ route($routePrefix.'.help-articles.show', $article) }}"
+                                           class="btn btn-sm btn-info"
+                                           title="Preview">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                         <a href="{{ route($routePrefix.'.help-articles.edit', $article) }}"
                                            class="btn btn-sm btn-warning"
                                            title="Edit">
