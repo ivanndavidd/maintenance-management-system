@@ -259,6 +259,16 @@
         text-decoration: line-through;
     }
 
+    .article-content a {
+        color: #0d6efd;
+        text-decoration: underline;
+        word-break: break-all;
+    }
+
+    .article-content a:hover {
+        color: #0a58ca;
+    }
+
     .breadcrumb {
         background-color: transparent;
         padding: 0;
@@ -277,6 +287,44 @@
 
 @push('scripts')
 <script>
+// Auto-linkify plain URLs in article content
+(function() {
+    const urlRegex = /(\bhttps?:\/\/[^\s<>"']+)/gi;
+    const container = document.querySelector('.article-content');
+    if (!container) return;
+
+    function linkifyNode(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent;
+            if (!urlRegex.test(text)) return;
+            urlRegex.lastIndex = 0;
+
+            const frag = document.createDocumentFragment();
+            let last = 0, match;
+            while ((match = urlRegex.exec(text)) !== null) {
+                if (match.index > last) {
+                    frag.appendChild(document.createTextNode(text.slice(last, match.index)));
+                }
+                const a = document.createElement('a');
+                a.href = match[0];
+                a.textContent = match[0];
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                frag.appendChild(a);
+                last = match.index + match[0].length;
+            }
+            if (last < text.length) {
+                frag.appendChild(document.createTextNode(text.slice(last)));
+            }
+            node.parentNode.replaceChild(frag, node);
+        } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'A' && node.tagName !== 'SCRIPT') {
+            Array.from(node.childNodes).forEach(linkifyNode);
+        }
+    }
+
+    linkifyNode(container);
+})();
+
 function provideFeedback(type) {
     // Here you can add AJAX call to save feedback to database
     document.getElementById('feedback-message').style.display = 'block';
