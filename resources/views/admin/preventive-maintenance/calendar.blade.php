@@ -58,17 +58,20 @@
                 <h5 class="modal-title" id="eventModalTitle">
                     <i class="fas fa-calendar-plus me-2"></i><span id="modalTitleText">New PM Task</span>
                 </h5>
-                <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-sm btn-light" id="btnPasteTask" style="display:none;" title="Paste copied parameters">
-                        <i class="fas fa-paste me-1"></i> Paste
-                    </button>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="eventForm">
                 <div class="modal-body">
                     <input type="hidden" id="taskId" name="task_id">
                     <input type="hidden" id="isEdit" name="is_edit" value="0">
+
+                    <!-- Paste Banner -->
+                    <div id="pasteBanner" style="display:none;" class="d-flex align-items-center justify-content-between bg-light border rounded px-3 py-2 mb-3">
+                        <span style="font-size:13px;"><i class="fas fa-clipboard text-secondary me-2"></i><span id="pasteBannerText"></span></span>
+                        <button type="button" class="btn btn-sm btn-primary" id="btnPasteTask">
+                            <i class="fas fa-paste me-1"></i>Paste
+                        </button>
+                    </div>
 
                     <!-- Task Title -->
                     <div class="mb-3">
@@ -228,13 +231,6 @@
             <!-- Detail Info -->
             <div id="eventActionDetail" class="mb-3 border-top pt-2" style="font-size: 12px; display: none;"></div>
 
-            <!-- Copy Button -->
-            <div class="mb-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="btnCopyTask">
-                    <i class="fas fa-copy me-1"></i> Copy Parameters
-                </button>
-            </div>
-
             <!-- Action Buttons -->
             <div class="d-flex gap-2">
                 <div class="flex-fill position-relative">
@@ -259,6 +255,9 @@
                         <a class="custom-dropdown-item" href="#" data-delete-type="all">All events in the series</a>
                     </div>
                 </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnCopyTask" title="Copy task parameters">
+                    <i class="fas fa-copy"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -840,13 +839,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updatePasteBtn() {
         const data = localStorage.getItem(COPY_KEY);
-        const btn = document.getElementById('btnPasteTask');
+        const banner = document.getElementById('pasteBanner');
+        const bannerText = document.getElementById('pasteBannerText');
+        if (!banner) return;
         if (data) {
             const d = JSON.parse(data);
-            btn.style.display = 'inline-flex';
-            btn.title = `Paste: "${d.task_name}"`;
+            bannerText.textContent = `Copied: "${d.task_name}"`;
+            banner.style.display = 'flex';
         } else {
-            btn.style.display = 'none';
+            banner.style.display = 'none';
         }
     }
 
@@ -862,10 +863,10 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem(COPY_KEY, JSON.stringify(data));
 
         // Visual feedback
-        this.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+        this.innerHTML = '<i class="fas fa-check"></i>';
         this.classList.replace('btn-outline-secondary', 'btn-success');
         setTimeout(() => {
-            this.innerHTML = '<i class="fas fa-copy me-1"></i> Copy Parameters';
+            this.innerHTML = '<i class="fas fa-copy"></i>';
             this.classList.replace('btn-success', 'btn-outline-secondary');
         }, 1500);
     });
@@ -881,14 +882,14 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('equipmentType').value   = data.equipment_type || '';
 
         // Visual feedback
-        this.innerHTML = '<i class="fas fa-check me-1"></i> Pasted!';
-        setTimeout(() => { this.innerHTML = '<i class="fas fa-paste me-1"></i> Paste'; }, 1500);
+        this.innerHTML = '<i class="fas fa-check me-1"></i>Pasted!';
+        this.classList.replace('btn-primary', 'btn-success');
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-paste me-1"></i>Paste';
+            this.classList.replace('btn-success', 'btn-primary');
+        }, 1500);
     });
 
-    // Show paste button whenever the new-task modal opens (not edit)
-    document.getElementById('eventModal').addEventListener('show.bs.modal', function() {
-        updatePasteBtn();
-    });
     // ──────────────────────────────────────────────────────────────────────────
 
     // Store currently selected event for action popover
@@ -1560,8 +1561,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const recurringSection = document.querySelector('.form-check.form-switch');
         const recurringLabel = recurringSection.querySelector('.form-check-label');
 
-        // Show Paste button only in New mode
-        document.getElementById('btnPasteTask').style.display = event ? 'none' : (localStorage.getItem(COPY_KEY) ? 'inline-flex' : 'none');
+        // Show Paste banner only in New mode
+        const pasteBanner = document.getElementById('pasteBanner');
+        if (pasteBanner) {
+            if (!event && localStorage.getItem(COPY_KEY)) {
+                updatePasteBtn();
+            } else {
+                pasteBanner.style.display = 'none';
+            }
+        }
 
         if (event) {
             // Edit mode
