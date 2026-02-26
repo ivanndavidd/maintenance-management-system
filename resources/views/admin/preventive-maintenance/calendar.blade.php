@@ -220,6 +220,9 @@
                 <button type="button" class="btn-close btn-sm ms-2" id="closePopover" style="font-size: 0.7rem;"></button>
             </div>
 
+            <!-- Detail Info -->
+            <div id="eventActionDetail" class="mb-3 border-top pt-2" style="font-size: 12px; display: none;"></div>
+
             <!-- Action Buttons -->
             <div class="d-flex gap-2">
                 <div class="flex-fill position-relative">
@@ -771,6 +774,45 @@ document.addEventListener('DOMContentLoaded', function() {
         globalLoading.classList.remove('show');
     }
 
+    // Fill event detail section in popover
+    function fillEventDetail(props) {
+        const shiftNames = { 1: 'Shift 1 (22:00–05:00)', 2: 'Shift 2 (06:00–13:00)', 3: 'Shift 3 (14:00–21:00)' };
+        const statusLabels = { pending: 'Pending', in_progress: 'In Progress', completed: 'Completed', skipped: 'Skipped' };
+        const statusColors = { pending: 'secondary', in_progress: 'warning', completed: 'success', skipped: 'dark' };
+        const frequencyLabels = {
+            '1_week': '1 Minggu', '2_weeks': '2 Minggu', '3_weeks': '3 Minggu',
+            '1_month': '1 Bulan', '2_months': '2 Bulan', '3_months': '3 Bulan',
+            '6_months': '6 Bulan', '1_year': '1 Tahun'
+        };
+
+        let html = '<div class="d-flex flex-column gap-1">';
+
+        if (props.status) {
+            html += `<div><i class="fas fa-circle text-${statusColors[props.status] || 'secondary'} me-1" style="font-size:8px;"></i><span class="text-muted">Status:</span> <strong>${statusLabels[props.status] || props.status}</strong></div>`;
+        }
+        if (props.assigned_shift_id) {
+            html += `<div><i class="fas fa-clock me-1 text-muted"></i><span class="text-muted">Shift:</span> <strong>${shiftNames[props.assigned_shift_id] || 'Shift ' + props.assigned_shift_id}</strong></div>`;
+        }
+        if (props.equipment_type) {
+            html += `<div><i class="fas fa-tools me-1 text-muted"></i><span class="text-muted">Equipment:</span> <strong>${props.equipment_type}</strong></div>`;
+        }
+        if (props.description) {
+            html += `<div><i class="fas fa-align-left me-1 text-muted"></i><span class="text-muted">Desc:</span> ${props.description}</div>`;
+        }
+        if (props.is_recurring || props.parent_task_id) {
+            const freq = frequencyLabels[props.recurrence_pattern] || props.recurrence_pattern || '';
+            html += `<div><i class="fas fa-sync-alt me-1 text-muted"></i><span class="text-muted">Recurring:</span> <strong>${freq}</strong>`;
+            if (props.recurrence_end_date) html += ` <span class="text-muted">until ${props.recurrence_end_date}</span>`;
+            html += `</div>`;
+        }
+
+        html += '</div>';
+
+        const detailEl = document.getElementById('eventActionDetail');
+        detailEl.innerHTML = html;
+        detailEl.style.display = 'block';
+    }
+
     const calendarEl = document.getElementById('calendar');
     const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
     const eventActionPopover = document.getElementById('eventActionPopover');
@@ -940,6 +982,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             document.getElementById('eventActionDateTime').textContent = dateTimeText;
+
+            // Fill detail info
+            fillEventDetail(info.event.extendedProps);
 
             // Show/hide dropdowns based on recurring status
             const isRecurring = info.event.extendedProps.is_recurring || info.event.extendedProps.parent_task_id;
@@ -1135,6 +1180,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('deleteChevron').style.display = isRecurring ? 'inline-block' : 'none';
                     document.getElementById('editRecurringOptions').style.display = 'none';
                     document.getElementById('deleteRecurringOptions').style.display = 'none';
+                    fillEventDetail(ev.extendedProps);
                     eventActionPopover.style.display = 'block';
                     eventActionPopover.style.left = (rect.left + window.scrollX) + 'px';
                     eventActionPopover.style.top = (rect.bottom + window.scrollY + 4) + 'px';
