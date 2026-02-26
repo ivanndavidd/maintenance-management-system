@@ -6,8 +6,8 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="fas fa-tools me-2"></i>My CM Tasks</h4>
-            <p class="text-muted mb-0">Tickets assigned to you based on your shift schedule</p>
+            <h4 class="mb-1"><i class="fas fa-tools me-2"></i>CM Tasks</h4>
+            <p class="text-muted mb-0">All corrective maintenance tickets</p>
         </div>
     </div>
 
@@ -55,8 +55,11 @@
                     <label class="form-label">Status</label>
                     <select name="status" class="form-select">
                         <option value="">All Status</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="received" {{ request('status') == 'received' ? 'selected' : '' }}>Received</option>
                         <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="done" {{ request('status') == 'done' ? 'selected' : '' }}>Done</option>
+                        <option value="further_repair" {{ request('status') == 'further_repair' ? 'selected' : '' }}>Further Repair</option>
                         <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Failed</option>
                     </select>
                 </div>
@@ -132,7 +135,7 @@
                             <tr>
                                 <td colspan="6" class="text-center py-4">
                                     <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted mb-0">No tickets assigned to you</p>
+                                    <p class="text-muted mb-0">No tickets found</p>
                                 </td>
                             </tr>
                         @endforelse
