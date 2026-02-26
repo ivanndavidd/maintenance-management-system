@@ -201,10 +201,9 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ route('user.help.show', $helpArticle) }}"
-                           class="btn btn-outline-info btn-sm"
-                           target="_blank">
-                            <i class="fas fa-external-link-alt"></i> Preview Article
+                        <a href="{{ route($routePrefix.'.help-articles.show', $helpArticle) }}"
+                           class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-eye"></i> Preview Article
                         </a>
                         <form action="{{ route($routePrefix.'.help-articles.toggle-publish', $helpArticle) }}"
                               method="POST">
