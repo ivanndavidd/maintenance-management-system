@@ -1005,6 +1005,21 @@ class PreventiveMaintenanceController extends Controller
             }
         }
 
+        // Filter by timing (submitted_day_diff)
+        if ($request->filled('timing')) {
+            $timing = $request->timing;
+            if ($timing === 'on_time') {
+                $query->whereHas('latestReport', fn($q) => $q->where('submitted_day_diff', 0));
+            } elseif ($timing === 'early') {
+                $query->whereHas('latestReport', fn($q) => $q->where('submitted_day_diff', '<', 0));
+            } elseif ($timing === 'late') {
+                $query->whereHas('latestReport', fn($q) => $q->where('submitted_day_diff', '>', 0));
+            } elseif (str_starts_with($timing, 'late_gte_')) {
+                $days = (int) str_replace('late_gte_', '', $timing);
+                $query->whereHas('latestReport', fn($q) => $q->where('submitted_day_diff', '>=', $days));
+            }
+        }
+
         $tasks = $query->orderBy('task_date', 'asc')->get();
 
         // Build shift-user lookup: {shiftId}_{YYYY-MM-DD} => "User A, User B"

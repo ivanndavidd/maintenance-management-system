@@ -15,11 +15,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Filter by Month</label>
                     <input type="month" name="month" class="form-control" value="{{ $selectedMonth }}">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Report Status</label>
                     <select name="report_status" class="form-select">
                         <option value="">All</option>
@@ -29,7 +29,21 @@
                         <option value="no_report" {{ request('report_status') == 'no_report' ? 'selected' : '' }}>No Report</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Timing</label>
+                    <select name="timing" class="form-select">
+                        <option value="">All</option>
+                        <option value="on_time" {{ request('timing') == 'on_time' ? 'selected' : '' }}>On Time</option>
+                        <option value="early" {{ request('timing') == 'early' ? 'selected' : '' }}>Early</option>
+                        <option value="late" {{ request('timing') == 'late' ? 'selected' : '' }}>Late (any)</option>
+                        <option value="late_gte_1" {{ request('timing') == 'late_gte_1' ? 'selected' : '' }}>Late ≥ 1 day</option>
+                        <option value="late_gte_2" {{ request('timing') == 'late_gte_2' ? 'selected' : '' }}>Late ≥ 2 days</option>
+                        <option value="late_gte_3" {{ request('timing') == 'late_gte_3' ? 'selected' : '' }}>Late ≥ 3 days</option>
+                        <option value="late_gte_5" {{ request('timing') == 'late_gte_5' ? 'selected' : '' }}>Late ≥ 5 days</option>
+                        <option value="late_gte_7" {{ request('timing') == 'late_gte_7' ? 'selected' : '' }}>Late ≥ 7 days</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
                     <button type="submit" class="btn btn-outline-primary me-2">
                         <i class="fas fa-search"></i> Filter
                     </button>
