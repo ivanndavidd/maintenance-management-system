@@ -21,8 +21,8 @@
             <form action="{{ route($routePrefix.'.help-articles.index') }}" method="GET">
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text">
+                        <div class="input-group" style="flex-wrap: nowrap; align-items: stretch;">
+                            <span class="input-group-text d-flex align-items-center">
                                 <i class="fas fa-search"></i>
                             </span>
                             <input type="text" name="search" class="form-control" placeholder="Search articles..." value="{{ $search }}">
