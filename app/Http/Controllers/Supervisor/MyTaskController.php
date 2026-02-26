@@ -309,14 +309,7 @@ class MyTaskController extends Controller
      */
     public function correctiveMaintenance(Request $request)
     {
-        $userId = auth()->id();
-
-        $assignedScope = fn($query) => $query->where(function ($q) use ($userId) {
-            $q->whereHas('technicians', fn($sub) => $sub->where('user_id', $userId))
-              ->orWhere('assigned_to', $userId);
-        });
-
-        $query = $assignedScope(CorrectiveMaintenanceRequest::query())->with(['technicians']);
+        $query = CorrectiveMaintenanceRequest::query()->with(['technicians']);
 
         // Status filter
         if ($request->filled('status')) {
@@ -330,12 +323,11 @@ class MyTaskController extends Controller
 
         $tickets = $query->latest()->paginate(15)->appends($request->except('page'));
 
-        // Statistics for current user
         $stats = [
-            'total' => $assignedScope(CorrectiveMaintenanceRequest::query())->count(),
-            'in_progress' => $assignedScope(CorrectiveMaintenanceRequest::query())->where('status', 'in_progress')->count(),
-            'done' => $assignedScope(CorrectiveMaintenanceRequest::query())->whereIn('status', ['done', 'completed'])->count(),
-            'further_repair' => $assignedScope(CorrectiveMaintenanceRequest::query())->whereIn('status', ['further_repair', 'failed'])->count(),
+            'total' => CorrectiveMaintenanceRequest::count(),
+            'in_progress' => CorrectiveMaintenanceRequest::where('status', 'in_progress')->count(),
+            'done' => CorrectiveMaintenanceRequest::whereIn('status', ['done', 'completed'])->count(),
+            'further_repair' => CorrectiveMaintenanceRequest::whereIn('status', ['further_repair', 'failed'])->count(),
         ];
 
         return view('supervisor.my-tasks.corrective-maintenance.index', compact('tickets', 'stats'));
@@ -346,8 +338,6 @@ class MyTaskController extends Controller
      */
     public function showCorrectiveMaintenance($id)
     {
-        $userId = auth()->id();
-
         $ticket = CorrectiveMaintenanceRequest::with([
                 'technicians',
                 'report.asset',
@@ -356,10 +346,6 @@ class MyTaskController extends Controller
                 'childTickets.report',
                 'parentTicket.report.asset'
             ])
-            ->where(function ($q) use ($userId) {
-                $q->whereHas('technicians', fn($sub) => $sub->where('user_id', $userId))
-                  ->orWhere('assigned_to', $userId);
-            })
             ->findOrFail($id);
 
         $assets = \App\Models\Asset::where('status', 'active')->orderBy('asset_name')->get();
@@ -372,9 +358,7 @@ class MyTaskController extends Controller
      */
     public function updateCmNotes(Request $request, $id)
     {
-        $ticket = CorrectiveMaintenanceRequest::whereHas('technicians', function ($q) {
-            $q->where('user_id', auth()->id());
-        })->findOrFail($id);
+        $ticket = CorrectiveMaintenanceRequest::findOrFail($id);
 
         $validated = $request->validate([
             'work_notes' => 'required|string',
@@ -394,15 +378,7 @@ class MyTaskController extends Controller
     {
         $userId = auth()->id();
 
-        $ticket = CorrectiveMaintenanceRequest::where(function ($q) use ($userId) {
-            $q->whereHas('technicians', fn($sub) => $sub->where('user_id', $userId))
-              ->orWhere('assigned_to', $userId);
-        })->findOrFail($id);
-
-        // Verify user is assigned
-        if (!$ticket->technicians()->where('user_id', $userId)->exists() && $ticket->assigned_to !== $userId) {
-            abort(403, 'You are not assigned to this ticket.');
-        }
+        $ticket = CorrectiveMaintenanceRequest::findOrFail($id);
 
         if ($ticket->status !== 'in_progress') {
             return redirect()->back()->with('error', 'Report can only be submitted for in-progress tickets.');
@@ -481,22 +457,15 @@ class MyTaskController extends Controller
     {
         $userId = auth()->id();
 
-        $ticket = CorrectiveMaintenanceRequest::where(function ($q) use ($userId) {
-            $q->whereHas('technicians', fn($sub) => $sub->where('user_id', $userId))
-              ->orWhere('assigned_to', $userId);
-        })->findOrFail($id);
+        $ticket = CorrectiveMaintenanceRequest::findOrFail($id);
 
-        // Verify user is assigned
         $pivot = $ticket->technicians()->where('user_id', $userId)->first();
 
-        if (!$pivot) {
-            return redirect()->back()->with('error', 'You are not assigned to this ticket.');
+        if ($pivot) {
+            $ticket->technicians()->updateExistingPivot($userId, [
+                'acknowledged_at' => now(),
+            ]);
         }
-
-        // Update acknowledged_at
-        $ticket->technicians()->updateExistingPivot($userId, [
-            'acknowledged_at' => now(),
-        ]);
 
         return redirect()->back()->with('success', 'Assignment acknowledged.');
     }
