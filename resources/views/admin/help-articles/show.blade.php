@@ -87,11 +87,6 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ route('user.help.show', $helpArticle) }}"
-                           class="btn btn-outline-info btn-sm"
-                           target="_blank">
-                            <i class="fas fa-external-link-alt"></i> View as User
-                        </a>
                         <a href="{{ route($routePrefix.'.help-articles.edit', $helpArticle) }}"
                            class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-edit"></i> Edit Article
@@ -103,15 +98,6 @@
                             <button type="submit" class="btn btn-outline-{{ $helpArticle->is_published ? 'secondary' : 'success' }} btn-sm w-100">
                                 <i class="fas {{ $helpArticle->is_published ? 'fa-eye-slash' : 'fa-eye' }}"></i>
                                 {{ $helpArticle->is_published ? 'Unpublish' : 'Publish' }}
-                            </button>
-                        </form>
-                        <form action="{{ route($routePrefix.'.help-articles.destroy', $helpArticle) }}"
-                              method="POST"
-                              onsubmit="return confirm('Are you sure you want to delete this article permanently?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                                <i class="fas fa-trash"></i> Delete Article
                             </button>
                         </form>
                     </div>
