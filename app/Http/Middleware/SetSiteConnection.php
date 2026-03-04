@@ -26,14 +26,15 @@ class SetSiteConnection
             return $next($request);
         }
 
-        // Allow auth routes if site not selected yet
+        // Allow auth routes only if site is already selected
+        // If no site selected, redirect to site selection (root)
         if (
             !$siteCode &&
             ($request->routeIs('login') ||
                 $request->routeIs('register') ||
                 $request->routeIs('password.*'))
         ) {
-            return $next($request);
+            return redirect()->route('site.select');
         }
 
         if (!$siteCode) {
