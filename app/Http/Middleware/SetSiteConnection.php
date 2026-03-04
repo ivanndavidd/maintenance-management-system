@@ -37,6 +37,20 @@ class SetSiteConnection
         }
 
         if (!$siteCode) {
+            // For public maintenance request form, auto-use the first active site
+            if ($request->routeIs('maintenance-request.*')) {
+                try {
+                    $site = Site::on('central')->where('is_active', true)->orderBy('id')->first();
+                    if ($site) {
+                        $this->configureSiteConnection($site);
+                        view()->share('currentSite', $site);
+                        return $next($request);
+                    }
+                } catch (\Exception $e) {
+                    // fall through to site.select
+                }
+            }
+
             return redirect()->route('site.select');
         }
 
