@@ -15,6 +15,20 @@ class BomController extends Controller
         return auth()->user()->hasRole('supervisor_maintenance') ? 'supervisor' : 'admin';
     }
 
+    private function parsePrice(string $value): ?float
+    {
+        $value = trim($value);
+        if ($value === '' || strtolower($value) === 'rp-' || $value === '-') {
+            return null;
+        }
+        // Remove Rp prefix, spaces, dots as thousand separator, then parse
+        $value = preg_replace('/[Rp\s]/i', '', $value);
+        $value = str_replace('.', '', $value);  // remove thousand dots
+        $value = str_replace(',', '.', $value); // convert decimal comma to dot
+        $value = preg_replace('/[^0-9.]/', '', $value);
+        return $value !== '' ? (float) $value : null;
+    }
+
     public function index(Request $request)
     {
         $query = Bom::withCount(['items', 'assets']);
@@ -149,32 +163,59 @@ class BomController extends Controller
         $file   = $request->file('csv_file');
         $handle = fopen($file->getRealPath(), 'r');
 
-        // Skip header row
-        $header = fgetcsv($handle);
+        // Skip first header row
+        fgetcsv($handle);
 
-        $rows    = [];
-        $skipped = 0;
+        $rows          = [];
+        $skipped       = 0;
+        $currentBomId  = null;
+
         while (($row = fgetcsv($handle)) !== false) {
-            if (count($row) < 4) {
-                $skipped++;
-                continue;
-            }
-            [$bomId, $no, $materialCode, $materialDescription] = array_pad($row, 8, null);
-            $qty       = isset($row[4]) && $row[4] !== '' ? (float) $row[4] : 1;
-            $unit      = isset($row[5]) && $row[5] !== '' ? trim($row[5]) : 'Pcs';
-            $priceUnit = isset($row[6]) && $row[6] !== '' ? (float) str_replace([',', ' '], '', $row[6]) : null;
-            $price     = isset($row[7]) && $row[7] !== '' ? (float) str_replace([',', ' '], '', $row[7]) : null;
-
-            $bomId = strtoupper(trim($bomId));
-            if (empty($bomId) || empty($materialDescription)) {
-                $skipped++;
+            // Skip empty rows
+            if (count(array_filter($row, fn($v) => trim($v) !== '')) === 0) {
                 continue;
             }
 
-            $rows[$bomId][] = [
-                'no'                   => (int) $no,
-                'material_code'        => trim($materialCode) ?: null,
-                'material_description' => trim($materialDescription),
+            $col0 = trim($row[0] ?? '');
+            $col1 = trim($row[1] ?? '');
+
+            // Detect repeated header rows (e.g. "No.,No. Material,...")
+            if (strtolower($col1) === 'no. material' || strtolower($col0) === 'no.') {
+                continue;
+            }
+
+            // If col0 looks like a BOM ID (e.g. R07, R08), update current BOM
+            if (preg_match('/^[A-Za-z]\d+$/', $col0)) {
+                $currentBomId = strtoupper($col0);
+                // col1 is now the line No.
+                $no = is_numeric($col1) ? (int) $col1 : 0;
+                $materialCode        = trim($row[2] ?? '');
+                $materialDescription = trim($row[3] ?? '');
+                $qty                 = isset($row[4]) && trim($row[4]) !== '' ? (float) trim($row[4]) : 1;
+                $unit                = isset($row[5]) && trim($row[5]) !== '' ? trim($row[5]) : 'Pcs';
+                $priceUnit           = $this->parsePrice($row[6] ?? '');
+                $price               = $this->parsePrice($row[7] ?? '');
+            } else {
+                // Continuation row — use current BOM ID
+                if (!$currentBomId) { $skipped++; continue; }
+                $no                  = is_numeric($col0) ? (int) $col0 : 0;
+                $materialCode        = trim($row[1] ?? '');
+                $materialDescription = trim($row[2] ?? '');
+                $qty                 = isset($row[3]) && trim($row[3]) !== '' ? (float) trim($row[3]) : 1;
+                $unit                = isset($row[4]) && trim($row[4]) !== '' ? trim($row[4]) : 'Pcs';
+                $priceUnit           = $this->parsePrice($row[5] ?? '');
+                $price               = $this->parsePrice($row[6] ?? '');
+            }
+
+            if (empty($materialDescription)) {
+                $skipped++;
+                continue;
+            }
+
+            $rows[$currentBomId][] = [
+                'no'                   => $no,
+                'material_code'        => $materialCode ?: null,
+                'material_description' => $materialDescription,
                 'qty'                  => $qty,
                 'unit'                 => $unit,
                 'price_unit'           => $priceUnit,
