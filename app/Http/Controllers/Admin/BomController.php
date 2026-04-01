@@ -202,15 +202,15 @@ class BomController extends Controller
                 $priceUnit           = $this->parsePrice($row[6] ?? '');
                 $price               = $this->parsePrice($row[7] ?? '');
             } else {
-                // Continuation row — use current BOM ID
+                // Continuation row — col0 is empty, col1=no, col2=material_code, col3=description...
                 if (!$currentBomId) { $skipped++; continue; }
-                $no                  = is_numeric($col0) ? (int) $col0 : 0;
-                $materialCode        = trim($row[1] ?? '');
-                $materialDescription = trim($row[2] ?? '');
-                $qty                 = isset($row[3]) && trim($row[3]) !== '' ? (float) trim($row[3]) : 1;
-                $unit                = isset($row[4]) && trim($row[4]) !== '' ? trim($row[4]) : 'Pcs';
-                $priceUnit           = $this->parsePrice($row[5] ?? '');
-                $price               = $this->parsePrice($row[6] ?? '');
+                $no                  = is_numeric($col1) ? (int) $col1 : 0;
+                $materialCode        = trim($row[2] ?? '');
+                $materialDescription = trim($row[3] ?? '');
+                $qty                 = isset($row[4]) && trim($row[4]) !== '' ? (float) trim($row[4]) : 1;
+                $unit                = isset($row[5]) && trim($row[5]) !== '' ? trim($row[5]) : 'Pcs';
+                $priceUnit           = $this->parsePrice($row[6] ?? '');
+                $price               = $this->parsePrice($row[7] ?? '');
             }
 
             if (empty($materialDescription)) {
