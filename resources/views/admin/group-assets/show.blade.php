@@ -106,11 +106,9 @@
                                     <span class="bom-display d-flex align-items-center gap-1">
                                         @if($asset->bom_id)
                                             <span class="badge bg-light text-dark border bom-badge" style="cursor:pointer;" title="Click to edit BOM ID">{{ $asset->bom_id }}</span>
-                                            @if($bomShowUrl)
-                                                <a href="{{ $bomShowUrl }}" class="bom-link text-primary" title="View BOM details" style="line-height:1;">
-                                                    <i class="fas fa-external-link-alt" style="font-size:11px;"></i>
-                                                </a>
-                                            @endif
+                                            <a href="{{ $bomShowUrl ?? route($routePrefix.'.bom-management.index') . '?search=' . urlencode($asset->bom_id) }}" class="bom-link text-primary" title="View BOM details" style="line-height:1;">
+                                                <i class="fas fa-external-link-alt" style="font-size:11px;"></i>
+                                            </a>
                                         @else
                                             <span class="text-muted fst-italic bom-badge" style="font-size:12px;cursor:pointer;" title="Click to add BOM ID">click to add</span>
                                         @endif
