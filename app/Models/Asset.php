@@ -60,4 +60,9 @@ class Asset extends TenantModels
     {
         return $this->belongsTo(GroupAsset::class, 'group_id', 'group_id');
     }
+
+    public function bomRecord()
+    {
+        return $this->belongsTo(Bom::class, 'bom_id', 'bom_id');
+    }
 }

@@ -67,7 +67,7 @@
                 Assets in this Group
                 <span class="badge bg-secondary ms-1">{{ $assets->total() }}</span>
             </h6>
-            <small class="text-muted"><i class="fas fa-pencil-alt me-1"></i>Click BOM ID cell to edit</small>
+            <small class="text-muted"><i class="fas fa-pencil-alt me-1"></i>Click badge to edit BOM ID &nbsp;|&nbsp; <i class="fas fa-external-link-alt me-1"></i>Link icon to view BOM details</small>
         </div>
         <div class="card-body p-0">
             @if($assets->count() > 0)
@@ -77,12 +77,17 @@
                             <tr>
                                 <th style="width:130px">Equipment ID</th>
                                 <th>Asset Name</th>
-                                <th style="width:140px">BOM ID</th>
+                                <th style="width:160px">BOM ID</th>
                                 <th class="text-center" style="width:100px">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($assets as $asset)
+                            @php
+                                $bomShowUrl = $asset->bomRecord
+                                    ? route($routePrefix.'.bom-management.show', $asset->bomRecord)
+                                    : null;
+                            @endphp
                             <tr>
                                 <td>
                                     @if($asset->equipment_id)
@@ -96,13 +101,18 @@
                                     data-asset-id="{{ $asset->id }}"
                                     data-bom="{{ $asset->bom_id ?? '' }}"
                                     data-url="{{ route($routePrefix.'.assets.update-bom', $asset) }}"
-                                    title="Click to edit BOM ID"
-                                    style="cursor:pointer;">
-                                    <span class="bom-display">
+                                    data-bom-index-url="{{ route($routePrefix.'.bom-management.index') }}"
+                                    style="vertical-align:middle;">
+                                    <span class="bom-display d-flex align-items-center gap-1">
                                         @if($asset->bom_id)
-                                            <span class="badge bg-light text-dark border">{{ $asset->bom_id }}</span>
+                                            <span class="badge bg-light text-dark border bom-badge" style="cursor:pointer;" title="Click to edit BOM ID">{{ $asset->bom_id }}</span>
+                                            @if($bomShowUrl)
+                                                <a href="{{ $bomShowUrl }}" class="bom-link text-primary" title="View BOM details" style="line-height:1;">
+                                                    <i class="fas fa-external-link-alt" style="font-size:11px;"></i>
+                                                </a>
+                                            @endif
                                         @else
-                                            <span class="text-muted fst-italic" style="font-size:12px;">click to add</span>
+                                            <span class="text-muted fst-italic bom-badge" style="font-size:12px;cursor:pointer;" title="Click to add BOM ID">click to add</span>
                                         @endif
                                     </span>
                                     <span class="bom-edit d-none">
@@ -147,6 +157,8 @@
 
 @push('scripts')
 <script>
+const bomIndexUrl = {{ Js::from(route($routePrefix.'.bom-management.index')) }};
+
 document.querySelectorAll('.bom-cell').forEach(function(cell) {
     const display = cell.querySelector('.bom-display');
     const edit    = cell.querySelector('.bom-edit');
@@ -167,7 +179,7 @@ document.querySelectorAll('.bom-cell').forEach(function(cell) {
     }
 
     function saveBom() {
-        const newVal = input.value.trim();
+        const newVal = input.value.trim().toUpperCase();
         const url    = cell.dataset.url;
 
         saveBtn.disabled = true;
@@ -189,10 +201,18 @@ document.querySelectorAll('.bom-cell').forEach(function(cell) {
                 cell.dataset.bom = bomId ?? '';
 
                 if (bomId) {
-                    display.innerHTML = `<span class="badge bg-light text-dark border">${bomId}</span>`;
+                    // Show badge + link icon (link goes to BOM index filtered, or just index)
+                    display.innerHTML =
+                        `<span class="badge bg-light text-dark border bom-badge" style="cursor:pointer;" title="Click to edit BOM ID">${bomId}</span>` +
+                        `<a href="${bomIndexUrl}?search=${encodeURIComponent(bomId)}" class="bom-link text-primary ms-1" title="View BOM details" style="line-height:1;" target="_blank">` +
+                        `<i class="fas fa-external-link-alt" style="font-size:11px;"></i></a>`;
                 } else {
-                    display.innerHTML = `<span class="text-muted fst-italic" style="font-size:12px;">click to add</span>`;
+                    display.innerHTML = `<span class="text-muted fst-italic bom-badge" style="font-size:12px;cursor:pointer;" title="Click to add BOM ID">click to add</span>`;
                 }
+
+                // Re-bind click on new badge
+                const newBadge = display.querySelector('.bom-badge');
+                if (newBadge) newBadge.addEventListener('click', openEdit);
             }
             closeEdit();
         })
@@ -203,7 +223,10 @@ document.querySelectorAll('.bom-cell').forEach(function(cell) {
         });
     }
 
-    display.addEventListener('click', openEdit);
+    // Only open edit when clicking the badge, not the link icon
+    const badge = display.querySelector('.bom-badge');
+    if (badge) badge.addEventListener('click', openEdit);
+
     saveBtn.addEventListener('click', saveBom);
     cancelBtn.addEventListener('click', closeEdit);
 
