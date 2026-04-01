@@ -227,10 +227,14 @@ class BomController extends Controller
         $imported = 0;
         DB::transaction(function () use ($rows, &$imported) {
             foreach ($rows as $bomId => $items) {
-                $bom = Bom::updateOrCreate(
-                    ['bom_id' => $bomId],
-                    ['bom_id' => $bomId]
-                );
+                $bom = Bom::withTrashed()->where('bom_id', $bomId)->first();
+                if ($bom) {
+                    if ($bom->trashed()) {
+                        $bom->restore();
+                    }
+                } else {
+                    $bom = Bom::create(['bom_id' => $bomId]);
+                }
 
                 // Replace all items
                 $bom->items()->delete();
