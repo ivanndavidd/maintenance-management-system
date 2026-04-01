@@ -14,7 +14,7 @@
             <a href="{{ route($routePrefix . '.bom-management.edit', $bom) }}" class="btn btn-warning">
                 <i class="fas fa-edit me-1"></i> Edit
             </a>
-            <a href="{{ route($routePrefix . '.bom-management.index') }}" class="btn btn-secondary">
+            <a href="javascript:history.back()" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Back
             </a>
         </div>
