@@ -187,6 +187,12 @@ class BomController extends Controller
             // If col0 looks like a BOM ID (e.g. R07, R08), update current BOM
             if (preg_match('/^[A-Za-z]\d+$/', $col0)) {
                 $currentBomId = strtoupper($col0);
+
+                // If col1 is "No." this row is just a BOM header line, skip to next row
+                if (strtolower($col1) === 'no.') {
+                    continue;
+                }
+
                 // col1 is now the line No.
                 $no = is_numeric($col1) ? (int) $col1 : 0;
                 $materialCode        = trim($row[2] ?? '');
