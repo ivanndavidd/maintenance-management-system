@@ -43,7 +43,6 @@
                     <thead class="table-light">
                         <tr>
                             <th>BOM ID</th>
-                            <th>Description</th>
                             <th class="text-center">Items</th>
                             <th class="text-center">Linked Assets</th>
                             <th>Last Updated</th>
@@ -58,7 +57,6 @@
                                     {{ $bom->bom_id }}
                                 </a>
                             </td>
-                            <td class="text-muted">{{ $bom->description ?? '-' }}</td>
                             <td class="text-center">
                                 <span class="badge bg-info">{{ $bom->items_count }}</span>
                             </td>
