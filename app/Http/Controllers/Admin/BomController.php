@@ -21,10 +21,37 @@ class BomController extends Controller
         if ($value === '' || strtolower($value) === 'rp-' || $value === '-') {
             return null;
         }
-        // Remove Rp prefix, spaces, dots as thousand separator, then parse
+        // Remove Rp prefix and spaces
         $value = preg_replace('/[Rp\s]/i', '', $value);
-        $value = str_replace('.', '', $value);  // remove thousand dots
-        $value = str_replace(',', '.', $value); // convert decimal comma to dot
+
+        $lastDot   = strrpos($value, '.');
+        $lastComma = strrpos($value, ',');
+
+        if ($lastDot !== false && $lastComma !== false) {
+            if ($lastDot > $lastComma) {
+                // Format: 10,209,850.00 — dot is decimal separator
+                $value = str_replace(',', '', $value);
+            } else {
+                // Format: 10.209.850,00 — comma is decimal separator
+                $value = str_replace('.', '', $value);
+                $value = str_replace(',', '.', $value);
+            }
+        } elseif ($lastComma !== false) {
+            // Only comma — treat as decimal if last part <= 2 digits, else thousand
+            $parts = explode(',', $value);
+            if (strlen(end($parts)) <= 2) {
+                $value = implode('', array_slice($parts, 0, -1)) . '.' . end($parts);
+            } else {
+                $value = str_replace(',', '', $value);
+            }
+        } elseif ($lastDot !== false) {
+            // Only dot — treat as decimal if last part <= 2 digits, else thousand
+            $parts = explode('.', $value);
+            if (strlen(end($parts)) > 2) {
+                $value = str_replace('.', '', $value);
+            }
+        }
+
         $value = preg_replace('/[^0-9.]/', '', $value);
         return $value !== '' ? (float) $value : null;
     }
