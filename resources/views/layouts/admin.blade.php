@@ -517,12 +517,12 @@
 
  <!-- Inventory Management Dropdown -->
  <div class="sidebar-dropdown" onclick="toggleInventoryMenu()">
- <a class="{{ request()->routeIs('admin.spareparts.*') || request()->routeIs('admin.tools.*') || request()->routeIs('admin.group-assets.*') || request()->routeIs('supervisor.spareparts.*') || request()->routeIs('supervisor.tools.*') || request()->routeIs('supervisor.group-assets.*') ? 'active' : '' }}">
+ <a class="{{ request()->routeIs('admin.spareparts.*') || request()->routeIs('admin.tools.*') || request()->routeIs('admin.group-assets.*') || request()->routeIs('admin.bom-management.*') || request()->routeIs('supervisor.spareparts.*') || request()->routeIs('supervisor.tools.*') || request()->routeIs('supervisor.group-assets.*') || request()->routeIs('supervisor.bom-management.*') ? 'active' : '' }}">
  <i class="fas fa-warehouse"></i><span class="menu-text"> Inventory Mgmt</span>
  <i class="fas fa-chevron-down float-end" id="inventoryChevron"></i>
  </a>
  </div>
- <div class="sidebar-submenu {{ request()->routeIs('admin.spareparts.*') || request()->routeIs('admin.tools.*') || request()->routeIs('admin.group-assets.*') || request()->routeIs('supervisor.spareparts.*') || request()->routeIs('supervisor.tools.*') || request()->routeIs('supervisor.group-assets.*') ? 'show' : '' }}" id="inventorySubmenu">
+ <div class="sidebar-submenu {{ request()->routeIs('admin.spareparts.*') || request()->routeIs('admin.tools.*') || request()->routeIs('admin.group-assets.*') || request()->routeIs('admin.bom-management.*') || request()->routeIs('supervisor.spareparts.*') || request()->routeIs('supervisor.tools.*') || request()->routeIs('supervisor.group-assets.*') || request()->routeIs('supervisor.bom-management.*') ? 'show' : '' }}" id="inventorySubmenu">
  <a href="{{ route($routePrefix . '.spareparts.index') }}" class="{{ request()->routeIs('admin.spareparts.*') || request()->routeIs('supervisor.spareparts.*') ? 'active' : '' }}">
  <i class="fas fa-cubes"></i><span class="menu-text"> Spareparts</span>
  </a>
@@ -531,6 +531,9 @@
  </a>
  <a href="{{ route($routePrefix . '.group-assets.index') }}" class="{{ request()->routeIs('admin.group-assets.*') || request()->routeIs('supervisor.group-assets.*') ? 'active' : '' }}">
  <i class="fas fa-layer-group"></i><span class="menu-text"> Assets</span>
+ </a>
+ <a href="{{ route($routePrefix . '.bom-management.index') }}" class="{{ request()->routeIs('admin.bom-management.*') || request()->routeIs('supervisor.bom-management.*') ? 'active' : '' }}">
+ <i class="fas fa-list-alt"></i><span class="menu-text"> BOM Mgmt</span>
  </a>
  </div>
 

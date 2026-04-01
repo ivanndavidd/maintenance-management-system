@@ -375,6 +375,10 @@ Route::middleware(['auth'])->group(function () {
             Route::post('group-assets/import', [App\Http\Controllers\Admin\GroupAssetController::class, 'import'])->name('group-assets.import');
             Route::resource('group-assets', App\Http\Controllers\Admin\GroupAssetController::class);
 
+            // BOM Management
+            Route::post('bom-management/import', [App\Http\Controllers\Admin\BomController::class, 'import'])->name('bom-management.import');
+            Route::resource('bom-management', App\Http\Controllers\Admin\BomController::class);
+
             // Purchase Orders (Multi-Item Shopping Cart System)
             Route::prefix('purchase-orders')
                 ->name('purchase-orders.')
@@ -836,6 +840,10 @@ Route::middleware(['auth'])->group(function () {
             // Group Assets
             Route::post('group-assets/import', [App\Http\Controllers\Admin\GroupAssetController::class, 'import'])->name('group-assets.import');
             Route::resource('group-assets', App\Http\Controllers\Admin\GroupAssetController::class);
+
+            // BOM Management
+            Route::post('bom-management/import', [App\Http\Controllers\Admin\BomController::class, 'import'])->name('bom-management.import');
+            Route::resource('bom-management', App\Http\Controllers\Admin\BomController::class);
 
             // Purchase Orders (mirrors admin PO routes)
             Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
