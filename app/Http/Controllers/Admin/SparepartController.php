@@ -570,8 +570,11 @@ class SparepartController extends Controller
                 while (($row = fgetcsv($handle)) !== false) {
                     $rowNumber++;
 
-                    // Skip empty rows
+                    // Skip empty rows or rows without sparepart name (col3)
                     if (empty(array_filter($row))) {
+                        continue;
+                    }
+                    if (empty(trim($row[3] ?? ''))) {
                         continue;
                     }
 
