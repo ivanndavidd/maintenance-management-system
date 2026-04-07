@@ -544,7 +544,7 @@ class SparepartController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:csv,txt|max:2048',
+            'file' => 'required|mimes:csv,txt|max:10240',
         ]);
 
         try {
@@ -558,11 +558,14 @@ class SparepartController extends Controller
             DB::beginTransaction();
 
             if (($handle = fopen($path, 'r')) !== false) {
+                // Strip UTF-8 BOM if present
+                $bom = fread($handle, 3);
+                if ($bom !== "\xEF\xBB\xBF") {
+                    rewind($handle);
+                }
+
                 // Skip header row
                 $header = fgetcsv($handle);
-
-                // Validate header
-                $expectedHeaders = ['equipment_type', 'sparepart_name', 'brand', 'model', 'quantity', 'minimum_stock', 'unit', 'parts_price', 'vulnerability', 'location'];
 
                 while (($row = fgetcsv($handle)) !== false) {
                     $rowNumber++;
@@ -578,38 +581,36 @@ class SparepartController extends Controller
                             return trim($value);
                         }, $row);
 
-                        // Get equipment type directly from CSV (no mapping)
-                        // Column 1: Equipment (CBS, Singulator, Belt Conveyor, Roller Conveyor, Consumable, Panel, Tools, etc)
+                        // Skip rows where col0 is not a number (malformed rows like row 461 in CSV)
+                        if (!empty($row[0]) && !is_numeric($row[0])) {
+                            $skipped = ($skipped ?? 0) + 1;
+                            continue;
+                        }
+
+                        // Column 1: Equipment Type (CBS, Singulator, Belt Conveyor, etc.)
                         $equipmentType = !empty($row[1]) ? trim($row[1]) : null;
 
                         // Get quantity and unit (separate columns)
-                        $quantity = !empty($row[6]) ? intval($row[6]) : 0;
-                        $rawUnit = !empty($row[7]) ? strtolower(trim($row[7])) : 'pcs';
+                        $quantity = isset($row[6]) && trim($row[6]) !== '' ? intval($row[6]) : 0;
+                        $rawUnit = isset($row[7]) && trim($row[7]) !== '' ? strtolower(trim($row[7])) : 'pcs';
 
                         // Map unit to valid values
-                        $validUnits = ['pcs', 'unit', 'set', 'box', 'pack', 'kg', 'liter', 'meter', 'piece', 'lot', 'roll', 'pair'];
-                        if (!in_array($rawUnit, $validUnits)) {
-                            // Try to map common variations
-                            if (in_array($rawUnit, ['pc', 'piece', 'pieces'])) {
-                                $unit = 'pcs';
-                            } elseif (in_array($rawUnit, ['units', 'ea'])) {
-                                $unit = 'unit';
-                            } elseif (in_array($rawUnit, ['sets'])) {
-                                $unit = 'set';
-                            } elseif (in_array($rawUnit, ['boxes'])) {
-                                $unit = 'box';
-                            } elseif (in_array($rawUnit, ['packs'])) {
-                                $unit = 'pack';
-                            } else {
-                                // Default to pcs for unknown units
-                                $unit = 'pcs';
-                            }
-                        } else {
-                            $unit = $rawUnit;
-                        }
+                        $unitMap = [
+                            'pcs' => 'pcs', 'pc' => 'pcs', 'piece' => 'pcs', 'pieces' => 'pcs',
+                            'unit' => 'unit', 'units' => 'unit', 'ea' => 'unit',
+                            'set' => 'set', 'sets' => 'set',
+                            'box' => 'box', 'boxes' => 'box',
+                            'pack' => 'pack', 'packs' => 'pack',
+                            'kg' => 'kg', 'liter' => 'liter', 'ltr' => 'liter',
+                            'meter' => 'meter', 'lot' => 'lot', 'roll' => 'roll', 'pair' => 'pair',
+                        ];
+                        $unit = $unitMap[$rawUnit] ?? 'pcs';
 
-                        // Map vulnerability
-                        $vulnerability = !empty($row[8]) ? strtolower(trim($row[8])) : null;
+                        // Map vulnerability (handle capitalized values from CSV)
+                        $vulnerability = isset($row[8]) && trim($row[8]) !== '' ? strtolower(trim($row[8])) : null;
+                        if (!in_array($vulnerability, ['low', 'medium', 'high', 'critical'])) {
+                            $vulnerability = null;
+                        }
 
                         // Map CSV data to array
                         // Format: No | Equipment | Material Code | Sparepart Name | Brand | Model | Quantity | Unit | Vulnerability | Location | Parts Price | Minimum | Item Type | Path
@@ -620,9 +621,9 @@ class SparepartController extends Controller
                             'brand' => !empty($row[4]) ? $row[4] : null,
                             'model' => !empty($row[5]) ? $row[5] : null,
                             'quantity' => $quantity,
-                            'minimum_stock' => !empty($row[11]) ? intval($row[11]) : 1,
+                            'minimum_stock' => isset($row[11]) && trim($row[11]) !== '' ? intval($row[11]) : 0,
                             'unit' => $unit,
-                            'parts_price' => !empty($row[10]) ? floatval($row[10]) : 0,
+                            'parts_price' => isset($row[10]) && trim($row[10]) !== '' ? floatval(preg_replace('/[^0-9.]/', '', $row[10])) : 0,
                             'vulnerability' => $vulnerability,
                             'location' => !empty($row[9]) ? $row[9] : null,
                         ];
