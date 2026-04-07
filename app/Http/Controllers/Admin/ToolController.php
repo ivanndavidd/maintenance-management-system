@@ -193,7 +193,7 @@ class ToolController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:csv,txt|max:2048',
+            'file' => 'required|mimes:csv,txt|max:10240',
         ]);
 
         try {
@@ -207,14 +207,23 @@ class ToolController extends Controller
             \DB::beginTransaction();
 
             if (($handle = fopen($path, 'r')) !== false) {
+                // Strip UTF-8 BOM if present
+                $bom = fread($handle, 3);
+                if ($bom !== "\xEF\xBB\xBF") {
+                    rewind($handle);
+                }
+
                 // Skip header row
                 $header = fgetcsv($handle);
 
                 while (($row = fgetcsv($handle)) !== false) {
                     $rowNumber++;
 
-                    // Skip empty rows
+                    // Skip empty rows or rows without sparepart name (col3)
                     if (empty(array_filter($row))) {
+                        continue;
+                    }
+                    if (empty(trim($row[3] ?? ''))) {
                         continue;
                     }
 
@@ -224,48 +233,43 @@ class ToolController extends Controller
                             return trim($value);
                         }, $row);
 
-                        // Map CSV data to array
-                        // Format: Equipment Type | Material Code | Sparepart Name | Brand | Model | Quantity | Unit | Vulnerability | Location | Parts Price | Minimum | Item Type | Path
-                        // Index:  0               | 1             | 2              | 3     | 4     | 5        | 6    | 7             | 8        | 9           | 10      | 11        | 12
-                        $data = [
-                            'equipment_type' => !empty($row[0]) ? $row[0] : 'Tools',
-                            'material_code' => !empty($row[1]) ? $row[1] : null,
-                            'tool_name' => !empty($row[2]) ? $row[2] : null,
-                            'brand' => !empty($row[3]) ? $row[3] : null,
-                            'model' => !empty($row[4]) ? $row[4] : null,
-                            'quantity' => !empty($row[5]) ? intval($row[5]) : 0,
-                            'unit' => !empty($row[6]) ? strtolower(trim($row[6])) : 'pcs',
-                            'vulnerability' => !empty($row[7]) ? strtolower(trim($row[7])) : null,
-                            'location' => !empty($row[8]) ? $row[8] : null,
-                            'parts_price' => !empty($row[9]) ? floatval($row[9]) : 0,
-                            'minimum_stock' => !empty($row[10]) ? intval($row[10]) : 1,
+                        // Skip rows where col0 is not a number (malformed rows)
+                        if (!empty($row[0]) && !is_numeric($row[0])) {
+                            continue;
+                        }
+
+                        // Format: No | Equipment Type | Material Code | Spare Parts Name | Brand | Model | Quantity | Unit | Vulnerability | Location | Parts Price | Minimum Stock | Item Type | Path
+                        // Index:  0  | 1              | 2             | 3                | 4     | 5     | 6        | 7    | 8             | 9        | 10          | 11            | 12        | 13
+                        $unitMap = [
+                            'pcs' => 'pcs', 'pc' => 'pcs', 'piece' => 'pcs', 'pieces' => 'pcs',
+                            'unit' => 'unit', 'units' => 'unit', 'ea' => 'unit',
+                            'set' => 'set', 'sets' => 'set',
+                            'box' => 'box', 'boxes' => 'box',
+                            'pack' => 'pack', 'packs' => 'pack',
+                            'kg' => 'kg', 'liter' => 'liter', 'ltr' => 'liter',
+                            'meter' => 'meter', 'lot' => 'lot', 'roll' => 'roll', 'pair' => 'pair',
                         ];
+                        $rawUnit = isset($row[7]) && trim($row[7]) !== '' ? strtolower(trim($row[7])) : 'pcs';
+                        $unit = $unitMap[$rawUnit] ?? 'pcs';
 
-                        // Map unit to valid values
-                        $validUnits = ['pcs', 'unit', 'set', 'box', 'pack'];
-                        if (!in_array($data['unit'], $validUnits)) {
-                            // Try to map common variations
-                            if (in_array($data['unit'], ['pc', 'piece', 'pieces'])) {
-                                $data['unit'] = 'pcs';
-                            } elseif (in_array($data['unit'], ['units', 'ea'])) {
-                                $data['unit'] = 'unit';
-                            } elseif (in_array($data['unit'], ['sets'])) {
-                                $data['unit'] = 'set';
-                            } elseif (in_array($data['unit'], ['boxes'])) {
-                                $data['unit'] = 'box';
-                            } elseif (in_array($data['unit'], ['packs'])) {
-                                $data['unit'] = 'pack';
-                            } else {
-                                // Default to pcs for unknown units
-                                $data['unit'] = 'pcs';
-                            }
+                        $vulnerability = isset($row[8]) && trim($row[8]) !== '' ? strtolower(trim($row[8])) : null;
+                        if (!in_array($vulnerability, ['low', 'medium', 'high', 'critical'])) {
+                            $vulnerability = null;
                         }
 
-                        // Normalize vulnerability value
-                        if (!empty($data['vulnerability']) && !in_array($data['vulnerability'], ['low', 'medium', 'high', 'critical'])) {
-                            // Set to null if invalid
-                            $data['vulnerability'] = null;
-                        }
+                        $data = [
+                            'equipment_type' => !empty($row[1]) ? $row[1] : 'Tools',
+                            'material_code' => !empty($row[2]) ? $row[2] : null,
+                            'tool_name' => $row[3],
+                            'brand' => !empty($row[4]) ? $row[4] : null,
+                            'model' => !empty($row[5]) ? $row[5] : null,
+                            'quantity' => isset($row[6]) && trim($row[6]) !== '' ? intval($row[6]) : 0,
+                            'unit' => $unit,
+                            'vulnerability' => $vulnerability,
+                            'location' => !empty($row[9]) ? $row[9] : null,
+                            'parts_price' => isset($row[10]) && trim($row[10]) !== '' ? floatval(preg_replace('/[^0-9.]/', '', $row[10])) : 0,
+                            'minimum_stock' => isset($row[11]) && trim($row[11]) !== '' ? intval($row[11]) : 0,
+                        ];
 
                         // Validate data
                         $validator = \Validator::make($data, [
@@ -274,7 +278,7 @@ class ToolController extends Controller
                             'brand' => 'nullable|string|max:255',
                             'model' => 'nullable|string|max:255',
                             'quantity' => 'required|integer|min:0',
-                            'unit' => 'required|in:pcs,unit,set,box,pack',
+                            'unit' => 'required|in:pcs,unit,set,box,pack,kg,liter,meter,lot,roll,pair',
                             'vulnerability' => 'nullable|in:low,medium,high,critical',
                             'minimum_stock' => 'required|integer|min:0',
                             'location' => 'nullable|string|max:255',
