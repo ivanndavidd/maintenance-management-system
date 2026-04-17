@@ -87,6 +87,7 @@
                                 <td><small class="text-muted">{{ $usage->notes ?? '-' }}</small></td>
                                 <td><small>{{ $usage->usedByUser?->name ?? '-' }}</small></td>
                                 <td class="text-center">
+                                    @if(auth()->user()->isSuper())
                                     <form action="{{ route($routePrefix . '.sparepart-usage.destroy', $usage) }}" method="POST"
                                           onsubmit="return confirm('Delete this usage record? Stock will be restored.')">
                                         @csrf
@@ -95,6 +96,9 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach

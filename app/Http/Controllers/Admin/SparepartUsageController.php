@@ -70,6 +70,10 @@ class SparepartUsageController extends Controller
 
     public function destroy(SparepartUsage $sparepartUsage)
     {
+        if (!auth()->user()->isSuper()) {
+            abort(403, 'Only super admin can delete sparepart usage records.');
+        }
+
         // Restore stock
         $sparepartUsage->sparepart->increment('quantity', $sparepartUsage->quantity_used);
         $sparepartUsage->delete();
