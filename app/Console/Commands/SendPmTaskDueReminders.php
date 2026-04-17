@@ -13,7 +13,7 @@ class SendPmTaskDueReminders extends Command
 {
     use IteratesOverSites;
 
-    protected $signature = 'pm:send-due-reminders {--shift= : Only send for specific shift (1, 2, or 3)}';
+    protected $signature = 'pm:send-due-reminders {--shift= : Only send for specific shift (1, 2, or 3)} {--date= : Override today\'s date for testing (Y-m-d)}';
 
     protected $description = 'Send email reminders for PM tasks due today based on shift schedule';
 
@@ -42,7 +42,8 @@ class SendPmTaskDueReminders extends Command
         // but shift starts at 22:00 the night before (Sunday).
         // So when this runs at 22:00, we look for tomorrow's Shift 1 tasks.
         // Shift 2 & 3 run on the same day as task_date.
-        $targetDate = ($shiftId === 1) ? Carbon::tomorrow() : Carbon::today();
+        $baseDate = $this->option('date') ? Carbon::parse($this->option('date')) : Carbon::today();
+        $targetDate = ($shiftId === 1) ? $baseDate->copy()->addDay() : $baseDate->copy();
 
         $query = PmTask::with('assignedUser')
             ->where('task_date', $targetDate)
