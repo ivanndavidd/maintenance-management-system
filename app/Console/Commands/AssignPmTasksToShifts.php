@@ -4,12 +4,10 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Concerns\IteratesOverSites;
-use App\Mail\PmTaskAssigned;
 use App\Models\PmTask;
 use App\Models\ShiftAssignment;
 use App\Models\ShiftSchedule;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Mail;
 
 class AssignPmTasksToShifts extends Command
 {
@@ -107,15 +105,7 @@ class AssignPmTasksToShifts extends Command
                 'notes' => "Auto-assigned to {$shiftAssignment->user->name} via command"
             ]);
 
-            // Send email notification
-            try {
-                $user = $shiftAssignment->user;
-                if ($user && $user->email) {
-                    Mail::to($user->email)->send(new PmTaskAssigned($task));
-                }
-            } catch (\Exception $e) {
-                $this->error("  Failed to send email for task #{$task->id}: {$e->getMessage()}");
-            }
+            // No immediate email — day-of reminders are sent by pm:send-due-reminders
 
             $assignedCount++;
         }
