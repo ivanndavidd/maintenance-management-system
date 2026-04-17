@@ -108,9 +108,11 @@ class CorrectiveMaintenanceController extends Controller
             return redirect()->back()->with('error', 'Report can only be submitted for in-progress tickets.');
         }
 
+        $isLiftCategory = in_array($ticket->problem_category, ['lift_merah', 'lift_kuning']);
+
         $request->validate([
             'status' => 'required|in:done,further_repair,failed',
-            'asset_id' => 'required|exists:assets_master,id',
+            'asset_id' => $isLiftCategory ? 'nullable|exists:assets_master,id' : 'required|exists:assets_master,id',
             'problem_detail' => 'required|string|max:2000',
             'work_done' => 'required|string|max:2000',
             'notes' => 'nullable|string|max:1000',

@@ -387,7 +387,7 @@
                                value="{{ $parentAsset->asset_name }} ({{ $parentAsset->asset_id }}) - {{ $parentAsset->location ?? 'No location' }}">
                         <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Asset inherited from parent ticket</small>
                     </div>
-                    @else
+                    @elseif(!in_array($ticket->problem_category, ['lift_merah', 'lift_kuning']))
                     <div class="mb-3">
                         <label class="form-label fw-bold">Group Asset <span class="text-danger">*</span></label>
                         <select id="groupAssetSelect_usr" class="form-select">
