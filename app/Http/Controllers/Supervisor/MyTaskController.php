@@ -350,8 +350,9 @@ class MyTaskController extends Controller
 
         $assets = \App\Models\Asset::where('status', 'active')->orderBy('asset_name')->get();
         $groupAssets = \App\Models\GroupAsset::orderBy('group_name')->get();
+        $spareparts = \App\Models\Sparepart::orderBy('sparepart_name')->get();
 
-        return view('supervisor.my-tasks.corrective-maintenance.show', compact('ticket', 'assets', 'groupAssets'));
+        return view('supervisor.my-tasks.corrective-maintenance.show', compact('ticket', 'assets', 'groupAssets', 'spareparts'));
     }
 
     /**
@@ -387,19 +388,25 @@ class MyTaskController extends Controller
 
         $isLiftCategory = in_array($ticket->problem_category, ['lift_merah', 'lift_kuning']);
 
-        $request->validate([
+        $rules = [
             'status' => 'required|in:done,further_repair,failed',
             'asset_id' => $isLiftCategory ? 'nullable|exists:assets_master,id' : 'required|exists:assets_master,id',
             'problem_detail' => 'required|string|max:2000',
             'work_done' => 'required|string|max:2000',
             'notes' => 'nullable|string|max:1000',
-        ]);
+        ];
+        if (!$isLiftCategory) {
+            $rules['sparepart_usage'] = 'required|in:yes,no';
+            $rules['spareparts'] = 'required_if:sparepart_usage,yes|array|min:1';
+            $rules['spareparts.*.sparepart_id'] = 'required_with:spareparts|exists:spareparts,id';
+            $rules['spareparts.*.quantity_used'] = 'required_with:spareparts|integer|min:1';
+        }
+        $request->validate($rules);
 
         // Calculate severity from group asset + duration
         $severity = null;
         $asset = \App\Models\Asset::with('group')->find($request->asset_id);
         if ($asset && $asset->group) {
-            $ticket->report_submitted_at = now();
             $durationMinutes = $ticket->in_progress_at
                 ? $ticket->in_progress_at->diffInMinutes(now())
                 : 0;
@@ -407,7 +414,7 @@ class MyTaskController extends Controller
         }
 
         // Create report
-        CmReport::create([
+        $report = CmReport::create([
             'cm_request_id' => $ticket->id,
             'asset_id' => $request->asset_id,
             'severity' => $severity,
@@ -418,6 +425,11 @@ class MyTaskController extends Controller
             'submitted_by' => $userId,
             'submitted_at' => now(),
         ]);
+
+        // Process sparepart usages
+        if (!$isLiftCategory && $request->sparepart_usage === 'yes' && $request->filled('spareparts')) {
+            $this->processSparepartUsages($report, $ticket, $request->spareparts, $userId);
+        }
 
         // Update ticket status
         $ticket->status = $request->status;
@@ -463,6 +475,72 @@ class MyTaskController extends Controller
         $statusText = $statusLabels[$request->status] ?? ucfirst($request->status);
         return redirect()->route('supervisor.my-tasks.corrective-maintenance')
             ->with('success', "Report submitted successfully. Status: {$statusText}.");
+    }
+
+    private function processSparepartUsages(CmReport $report, CorrectiveMaintenanceRequest $ticket, array $spareparts, int $userId): void
+    {
+        $usageData = [];
+
+        foreach ($spareparts as $item) {
+            $sparepart = \App\Models\Sparepart::find($item['sparepart_id']);
+            if (!$sparepart) continue;
+
+            $qty = min((int)$item['quantity_used'], $sparepart->quantity);
+            if ($qty <= 0) continue;
+
+            \App\Models\SparepartUsage::create([
+                'cm_report_id'  => $report->id,
+                'ticket_number' => $ticket->ticket_number,
+                'sparepart_id'  => $sparepart->id,
+                'quantity_used' => $qty,
+                'used_at'       => now()->toDateString(),
+                'notes'         => 'Used in CM ticket: ' . $ticket->ticket_number,
+                'used_by'       => $userId,
+            ]);
+
+            $sparepart->decrement('quantity', $qty);
+
+            $usageData[] = [
+                'name'          => $sparepart->sparepart_name,
+                'material_code' => $sparepart->material_code,
+                'qty'           => $qty,
+                'unit'          => $sparepart->unit,
+                'remaining'     => $sparepart->quantity - $qty,
+                'minimum_stock' => $sparepart->minimum_stock,
+            ];
+        }
+
+        if (empty($usageData)) return;
+
+        try {
+            $report->load(['cmRequest', 'asset', 'submitter']);
+            $supervisors = \App\Models\User::role('supervisor_maintenance')->where('id', '!=', $userId)->get();
+            $admins = \App\Models\User::role('admin')->get();
+            $recipients = $supervisors->merge($admins)->unique('id');
+
+            foreach ($recipients as $recipient) {
+                \Mail::to($recipient->email)->send(new \App\Mail\SparepartUsedInCm($report, $usageData));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send sparepart usage notification: ' . $e->getMessage());
+        }
+    }
+
+    public function reportSparepartOutOfStock(\App\Models\Sparepart $sparepart)
+    {
+        try {
+            $supervisors = \App\Models\User::role('supervisor_maintenance')->where('id', '!=', auth()->id())->get();
+            $admins = \App\Models\User::role('admin')->get();
+            $recipients = $supervisors->merge($admins)->unique('id');
+
+            foreach ($recipients as $recipient) {
+                \Mail::to($recipient->email)->send(new \App\Mail\SparepartOutOfStock($sparepart, auth()->user()));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send out-of-stock notification: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Supervisor and admin have been notified about the out-of-stock sparepart.');
     }
 
     /**

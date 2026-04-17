@@ -434,6 +434,11 @@
                         <label for="reportNotes" class="form-label fw-bold">Additional Notes</label>
                         <textarea name="notes" id="reportNotes" class="form-control" rows="2" placeholder="Any additional notes (optional)..."></textarea>
                     </div>
+
+                    @include('admin.corrective-maintenance.partials.sparepart-usage-section', [
+                        'formId' => 'sup',
+                        'reportOutOfStockBaseUrl' => 'supervisor/my-tasks/sparepart/report-out-of-stock',
+                    ])
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

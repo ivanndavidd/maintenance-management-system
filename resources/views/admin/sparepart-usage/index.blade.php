@@ -48,6 +48,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Date</th>
+                                <th>CM Ticket</th>
                                 <th>Sparepart</th>
                                 <th>Material Code</th>
                                 <th class="text-center">Qty Used</th>
@@ -60,6 +61,13 @@
                             @foreach($usages as $usage)
                             <tr>
                                 <td><small>{{ $usage->used_at->format('d M Y') }}</small></td>
+                                <td>
+                                    @if($usage->ticket_number)
+                                        <small class="badge bg-light text-dark border">{{ $usage->ticket_number }}</small>
+                                    @else
+                                        <small class="text-muted">-</small>
+                                    @endif
+                                </td>
                                 <td>
                                     <div class="fw-semibold">{{ $usage->sparepart->sparepart_name ?? '-' }}</div>
                                     <small class="text-muted">{{ $usage->sparepart->equipment_type ?? '' }}</small>
