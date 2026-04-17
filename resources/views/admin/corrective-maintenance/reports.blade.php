@@ -47,6 +47,7 @@
                             <th>Ticket #</th>
                             <th>Asset</th>
                             <th>Status</th>
+                            <th>Severity</th>
                             <th>Problem</th>
                             <th>Submitted By</th>
                             <th>Duration</th>
@@ -63,6 +64,13 @@
                             <td>{{ $report->asset->asset_name ?? '-' }}</td>
                             <td>
                                 <span class="badge {{ $report->getStatusBadgeClass() }}">{{ $report->getStatusLabel() }}</span>
+                            </td>
+                            <td>
+                                @if($report->severity)
+                                    <span class="badge {{ $report->getSeverityBadgeClass() }}">{{ $report->getSeverityLabel() }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
                             </td>
                             <td>{{ Str::limit($report->problem_detail, 50) }}</td>
                             <td>{{ $report->submitter->name ?? '-' }}</td>
@@ -84,7 +92,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">No reports found.</td>
+                            <td colspan="9" class="text-center text-muted py-4">No reports found.</td>
                         </tr>
                         @endforelse
                     </tbody>
