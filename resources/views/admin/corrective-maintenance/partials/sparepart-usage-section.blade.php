@@ -56,6 +56,18 @@
     </div>
 </div>
 
+@php
+$sparepartsJson = json_encode($spareparts->map(function($sp) {
+    return [
+        'id' => $sp->id,
+        'name' => $sp->sparepart_name,
+        'material_code' => $sp->material_code,
+        'unit' => $sp->unit,
+        'quantity' => $sp->quantity,
+        'minimum_stock' => $sp->minimum_stock,
+    ];
+})->values());
+@endphp
 <script>
 (function(){
     const formId = '{{ $formId }}';
@@ -64,16 +76,7 @@
     const section = document.getElementById('sparepartUsageSection_' + formId);
     let rowIndex = 0;
 
-    const spareparts = @json($spareparts->map(function($sp) {
-        return [
-            'id' => $sp->id,
-            'name' => $sp->sparepart_name,
-            'material_code' => $sp->material_code,
-            'unit' => $sp->unit,
-            'quantity' => $sp->quantity,
-            'minimum_stock' => $sp->minimum_stock,
-        ];
-    }));
+    const spareparts = {!! $sparepartsJson !!};
 
     function buildOptions() {
         return spareparts.map(sp => {
