@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\PmTaskAssigned;
 use App\Models\PmTask;
 use App\Models\ShiftSchedule;
 use App\Models\ShiftAssignment;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class ShiftController extends Controller
@@ -347,18 +345,7 @@ class ShiftController extends Controller
                 'notes' => "Auto-assigned to {$shiftAssignment->user->name} on shift activation",
             ]);
 
-            // Send email notification
-            try {
-                $user = $shiftAssignment->user;
-                if ($user && $user->email) {
-                    Mail::to($user->email)->send(new PmTaskAssigned($task));
-                }
-            } catch (\Exception $e) {
-                \Log::error('Failed to send PM task assignment email: ' . $e->getMessage(), [
-                    'task_id' => $task->id,
-                    'assigned_user_id' => $shiftAssignment->user_id,
-                ]);
-            }
+            // No immediate email — day-of reminders sent by pm:send-due-reminders
 
             $assignedCount++;
         }

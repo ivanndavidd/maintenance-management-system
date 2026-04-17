@@ -620,30 +620,7 @@ class PreventiveMaintenanceController extends Controller
                 $this->generateRecurringTasks($task);
             }
 
-            // Send notification email to all users in the shift (Opsi 3)
-            if ($task->assigned_shift_id && $task->task_date) {
-                try {
-                    $taskDateStr = $task->task_date instanceof \Carbon\Carbon
-                        ? $task->task_date->format('Y-m-d')
-                        : $task->task_date;
-                    $shiftUsers = $this->getUsersForShiftOnDate($task->assigned_shift_id, $taskDateStr);
-                    foreach ($shiftUsers as $user) {
-                        if ($user->email) {
-                            \Mail::to($user->email)->send(new \App\Mail\PmTaskAssigned($task));
-                            \Log::info('PM task assignment email sent', [
-                                'task_id' => $task->id,
-                                'task_name' => $task->task_name,
-                                'user' => $user->name,
-                                'user_email' => $user->email,
-                            ]);
-                        }
-                    }
-                } catch (\Exception $e) {
-                    \Log::error('Failed to send PM task assignment emails: ' . $e->getMessage(), [
-                        'task_id' => $task->id,
-                    ]);
-                }
-            }
+            // No immediate email — day-of reminders sent by pm:send-due-reminders
 
             DB::commit();
 
@@ -699,24 +676,7 @@ class PreventiveMaintenanceController extends Controller
 
         $task->update($validated);
 
-        // Send email notification if shift changed (Opsi 3 — all users in new shift)
-        if ($task->assigned_shift_id && $task->assigned_shift_id != $previousShiftId) {
-            try {
-                $taskDateStr = $task->task_date instanceof \Carbon\Carbon
-                    ? $task->task_date->format('Y-m-d')
-                    : $task->task_date;
-                $shiftUsers = $this->getUsersForShiftOnDate($task->assigned_shift_id, $taskDateStr);
-                foreach ($shiftUsers as $user) {
-                    if ($user->email) {
-                        \Mail::to($user->email)->send(new \App\Mail\PmTaskAssigned($task));
-                    }
-                }
-            } catch (\Exception $e) {
-                \Log::error('Failed to send PM task assignment emails: ' . $e->getMessage(), [
-                    'task_id' => $task->id,
-                ]);
-            }
-        }
+        // No immediate email — day-of reminders sent by pm:send-due-reminders
 
         return response()->json([
             'success' => true,
