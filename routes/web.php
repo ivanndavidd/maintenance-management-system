@@ -1027,6 +1027,11 @@ Route::middleware(['auth'])->group(function () {
                         'submitCmReport',
                     ])->name('corrective-maintenance.submit-report');
 
+                    Route::post('/sparepart/report-out-of-stock/{sparepart}', [
+                        App\Http\Controllers\Supervisor\MyTaskController::class,
+                        'reportSparepartOutOfStock',
+                    ])->name('sparepart.report-out-of-stock');
+
                     Route::patch('/corrective-maintenance/{ticket}/acknowledge', [
                         App\Http\Controllers\Supervisor\MyTaskController::class,
                         'acknowledgeCm',
@@ -1150,6 +1155,11 @@ Route::middleware(['auth'])->group(function () {
                         'acknowledge',
                     ])->name('acknowledge');
                 });
+
+            Route::post('/sparepart/report-out-of-stock/{sparepart}', [
+                App\Http\Controllers\User\CorrectiveMaintenanceController::class,
+                'reportSparepartOutOfStock',
+            ])->name('sparepart.report-out-of-stock');
 
             // Stock Opname
             Route::prefix('stock-opname')
