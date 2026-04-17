@@ -64,14 +64,16 @@
     const section = document.getElementById('sparepartUsageSection_' + formId);
     let rowIndex = 0;
 
-    const spareparts = @json($spareparts->map(fn($sp) => [
-        'id' => $sp->id,
-        'name' => $sp->sparepart_name,
-        'material_code' => $sp->material_code,
-        'unit' => $sp->unit,
-        'quantity' => $sp->quantity,
-        'minimum_stock' => $sp->minimum_stock,
-    ]));
+    const spareparts = @json($spareparts->map(function($sp) {
+        return [
+            'id' => $sp->id,
+            'name' => $sp->sparepart_name,
+            'material_code' => $sp->material_code,
+            'unit' => $sp->unit,
+            'quantity' => $sp->quantity,
+            'minimum_stock' => $sp->minimum_stock,
+        ];
+    }));
 
     function buildOptions() {
         return spareparts.map(sp => {
