@@ -379,6 +379,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('bom-management/import', [App\Http\Controllers\Admin\BomController::class, 'import'])->name('bom-management.import');
             Route::resource('bom-management', App\Http\Controllers\Admin\BomController::class);
 
+            // Sparepart Usage
+            Route::resource('sparepart-usage', App\Http\Controllers\Admin\SparepartUsageController::class)->only(['index', 'create', 'store', 'destroy']);
+
             // Purchase Orders (Multi-Item Shopping Cart System)
             Route::prefix('purchase-orders')
                 ->name('purchase-orders.')
@@ -844,6 +847,9 @@ Route::middleware(['auth'])->group(function () {
             // BOM Management
             Route::post('bom-management/import', [App\Http\Controllers\Admin\BomController::class, 'import'])->name('bom-management.import');
             Route::resource('bom-management', App\Http\Controllers\Admin\BomController::class);
+
+            // Sparepart Usage
+            Route::resource('sparepart-usage', App\Http\Controllers\Admin\SparepartUsageController::class)->only(['index', 'create', 'store', 'destroy']);
 
             // Purchase Orders (mirrors admin PO routes)
             Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
