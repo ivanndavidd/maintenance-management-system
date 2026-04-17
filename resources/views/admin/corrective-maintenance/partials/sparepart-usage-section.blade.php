@@ -76,7 +76,7 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
             </div>
             <div class="col-md-3">
                 <div class="input-group input-group-sm">
-                    <input type="number" name="spareparts[${idx}][quantity_used]" class="form-control sp-qty" min="1" placeholder="Qty">
+                    <input type="number" name="spareparts[${idx}][quantity_used]" class="form-control sp-qty" min="1" placeholder="Qty" required>
                     <span class="input-group-text sp-unit-label">-</span>
                 </div>
                 <small class="sp-stock-info text-muted"></small>
@@ -202,7 +202,41 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
         if (yesRadio.checked && document.getElementById('sparepartRows_' + formId).children.length === 0) {
             window['addSparepartRow_' + formId]();
         }
+        checkSubmitState();
     }));
+
+    // Intercept form submit — remove out-of-stock rows, validate at least 1 valid row
+    const modalForm = document.querySelector('#submitReportModal form');
+    if (modalForm) {
+        modalForm.addEventListener('submit', function(e) {
+            if (!yesRadio || !yesRadio.checked) return;
+
+            const container = document.getElementById('sparepartRows_' + formId);
+            const rows = Array.from(container.querySelectorAll('.sp-row'));
+
+            // Remove rows where qty is disabled (out of stock)
+            rows.forEach(row => {
+                const qty = row.querySelector('.sp-qty');
+                if (qty && qty.disabled) row.remove();
+            });
+
+            // Check remaining rows
+            const remaining = container.querySelectorAll('.sp-row');
+            if (remaining.length === 0) {
+                e.preventDefault();
+                alert('Please add at least one sparepart with available stock.');
+                return;
+            }
+
+            // Re-index names to avoid gaps
+            Array.from(remaining).forEach((row, i) => {
+                const spSelect = row.querySelector('.sp-select');
+                const qtyInput = row.querySelector('.sp-qty');
+                if (spSelect) spSelect.name = `spareparts[${i}][sparepart_id]`;
+                if (qtyInput) qtyInput.name = `spareparts[${i}][quantity_used]`;
+            });
+        });
+    }
 })();
 </script>
 @endif
