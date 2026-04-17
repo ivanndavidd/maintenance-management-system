@@ -82,7 +82,7 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
                 <small class="sp-stock-info text-muted"></small>
             </div>
             <div class="col-md-3 d-flex gap-1 align-items-center">
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById('spRow_${formId}_${idx}').remove(); checkSubmitState_${formId}();">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById('spRow_${formId}_${idx}').remove()">
                     <i class="fas fa-trash"></i>
                 </button>
                 <button type="button" class="btn btn-sm btn-danger sp-report-btn d-none" title="Report out of stock to SPV"
@@ -92,29 +92,6 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
             </div>`;
         container.appendChild(div);
     };
-
-    window['checkSubmitState_' + formId] = checkSubmitState;
-
-    function getSubmitBtn() {
-        const modal = document.getElementById('submitReportModal');
-        return modal ? modal.querySelector('button[type="submit"]') : null;
-    }
-
-    function checkSubmitState() {
-        if (!yesRadio || !yesRadio.checked) return;
-        const container = document.getElementById('sparepartRows_' + formId);
-        const rows = container.querySelectorAll('.sp-row');
-        const validRows = Array.from(rows).filter(r => {
-            const qty = r.querySelector('.sp-qty');
-            return qty && !qty.disabled && qty.value > 0;
-        });
-        const outOfStockOnly = rows.length > 0 && validRows.length === 0;
-        const submitBtn = getSubmitBtn();
-        if (submitBtn) {
-            submitBtn.disabled = outOfStockOnly;
-            submitBtn.title = outOfStockOnly ? 'All selected spareparts are out of stock' : '';
-        }
-    }
 
     window['onSpSelect_' + formId] = function(select, idx) {
         const opt = select.options[select.selectedIndex];
@@ -135,12 +112,11 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
             stockInfo.textContent = '';
             qtyInput.disabled = false;
             qtyInput.removeAttribute('max');
-            checkSubmitState();
             return;
         }
 
         if (stock <= 0) {
-            stockInfo.innerHTML = '<span class="text-danger">Out of stock — cannot use</span>';
+            stockInfo.innerHTML = '<span class="text-danger">Out of stock — please remove this row or report to SPV</span>';
             qtyInput.disabled = true;
             qtyInput.value = '';
             qtyInput.removeAttribute('required');
@@ -151,7 +127,6 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
             qtyInput.max = stock;
             qtyInput.setAttribute('required', 'required');
         }
-        checkSubmitState();
     };
 
     window['reportOutOfStock_' + formId] = function(idx) {
@@ -171,24 +146,9 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
             },
         })
         .then(() => {
-            // Check if there are other valid rows
-            const container = document.getElementById('sparepartRows_' + formId);
-            const allRows = container.querySelectorAll('.sp-row');
-            const validRows = Array.from(allRows).filter(r => {
-                const qty = r.querySelector('.sp-qty');
-                return r.id !== row.id && qty && !qty.disabled;
-            });
-
-            if (validRows.length > 0) {
-                // Other valid rows exist — remove this out-of-stock row
-                row.remove();
-                checkSubmitState();
-            } else {
-                // Only row — show as reported, keep disabled
-                btn.innerHTML = '<i class="fas fa-check me-1"></i> Reported';
-                btn.classList.remove('btn-danger');
-                btn.classList.add('btn-success');
-            }
+            btn.innerHTML = '<i class="fas fa-check me-1"></i> Reported';
+            btn.classList.remove('btn-danger');
+            btn.classList.add('btn-success');
         })
         .catch(() => {
             btn.disabled = false;
@@ -202,10 +162,9 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
         if (yesRadio.checked && document.getElementById('sparepartRows_' + formId).children.length === 0) {
             window['addSparepartRow_' + formId]();
         }
-        checkSubmitState();
     }));
 
-    // Intercept form submit — remove out-of-stock rows, validate at least 1 valid row
+    // Intercept form submit — block if any out-of-stock row still exists
     const modalForm = document.querySelector('#submitReportModal form');
     if (modalForm) {
         modalForm.addEventListener('submit', function(e) {
@@ -214,22 +173,20 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
             const container = document.getElementById('sparepartRows_' + formId);
             const rows = Array.from(container.querySelectorAll('.sp-row'));
 
-            // Remove rows where qty is disabled (out of stock)
-            rows.forEach(row => {
+            // Check if any row is out of stock (qty disabled)
+            const hasOutOfStock = rows.some(row => {
                 const qty = row.querySelector('.sp-qty');
-                if (qty && qty.disabled) row.remove();
+                return qty && qty.disabled;
             });
 
-            // Check remaining rows
-            const remaining = container.querySelectorAll('.sp-row');
-            if (remaining.length === 0) {
+            if (hasOutOfStock) {
                 e.preventDefault();
-                alert('Please add at least one sparepart with available stock.');
+                alert('Please remove out-of-stock spareparts from the list before submitting.');
                 return;
             }
 
-            // Re-index names to avoid gaps
-            Array.from(remaining).forEach((row, i) => {
+            // Re-index to avoid array gaps
+            rows.forEach((row, i) => {
                 const spSelect = row.querySelector('.sp-select');
                 const qtyInput = row.querySelector('.sp-qty');
                 if (spSelect) spSelect.name = `spareparts[${i}][sparepart_id]`;
