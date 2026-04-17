@@ -378,26 +378,39 @@
                     </div>
 
                     <!-- Asset Selection -->
+                    @if($ticket->parent_ticket_id && $ticket->parentTicket && $ticket->parentTicket->report && $ticket->parentTicket->report->asset_id)
+                    @php $parentAsset = $ticket->parentTicket->report->asset; @endphp
                     <div class="mb-3">
-                        <label for="assetId" class="form-label fw-bold">Asset</label>
-                        @if($ticket->parent_ticket_id && $ticket->parentTicket && $ticket->parentTicket->report && $ticket->parentTicket->report->asset_id)
-                        {{-- For child ticket, show parent's asset as disabled --}}
-                        @php $parentAsset = $ticket->parentTicket->report->asset; @endphp
+                        <label class="form-label fw-bold">Asset</label>
                         <input type="hidden" name="asset_id" value="{{ $parentAsset->id }}">
                         <input type="text" class="form-control" disabled
                                value="{{ $parentAsset->asset_name }} ({{ $parentAsset->asset_id }}) - {{ $parentAsset->location ?? 'No location' }}">
                         <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Asset inherited from parent ticket</small>
-                        @else
-                        <select name="asset_id" id="assetId" class="form-select">
-                            <option value="">-- Select Asset (Optional) --</option>
+                    </div>
+                    @else
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Group Asset <span class="text-danger">*</span></label>
+                        <select id="groupAssetSelect_usr" class="form-select">
+                            <option value="">-- Select Group Asset --</option>
+                            @foreach($groupAssets as $group)
+                                <option value="{{ $group->group_id }}" data-severity="{{ $group->severity }}">
+                                    {{ $group->group_name }} ({{ strtoupper($group->severity) }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Asset <span class="text-danger">*</span></label>
+                        <select name="asset_id" id="assetId_usr" class="form-select" required disabled>
+                            <option value="">-- Select Group Asset first --</option>
                             @foreach($assets as $asset)
-                                <option value="{{ $asset->id }}">
+                                <option value="{{ $asset->id }}" data-group="{{ $asset->group_id }}">
                                     {{ $asset->asset_name }} ({{ $asset->asset_id }}) - {{ $asset->location ?? 'No location' }}
                                 </option>
                             @endforeach
                         </select>
-                        @endif
                     </div>
+                    @endif
 
                     <!-- Problem Detail -->
                     <div class="mb-3">
@@ -465,4 +478,28 @@
     border-radius: 50%;
 }
 </style>
+<script>
+(function() {
+    const groupSel = document.getElementById('groupAssetSelect_usr');
+    const assetSel = document.getElementById('assetId_usr');
+    if (!groupSel || !assetSel) return;
+
+    const allOptions = Array.from(assetSel.options).slice(1);
+
+    groupSel.addEventListener('change', function() {
+        const groupId = this.value;
+        assetSel.innerHTML = '<option value="">-- Select Asset --</option>';
+        if (!groupId) {
+            assetSel.disabled = true;
+            return;
+        }
+        const filtered = allOptions.filter(o => o.dataset.group === groupId);
+        filtered.forEach(o => assetSel.appendChild(o.cloneNode(true)));
+        assetSel.disabled = filtered.length === 0;
+        if (filtered.length === 0) {
+            assetSel.innerHTML = '<option value="">No assets in this group</option>';
+        }
+    });
+})();
+</script>
 @endsection

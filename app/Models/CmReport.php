@@ -13,6 +13,7 @@ class CmReport extends TenantModels
     protected $fillable = [
         'cm_request_id',
         'asset_id',
+        'severity',
         'status',
         'problem_detail',
         'work_done',
@@ -56,5 +57,40 @@ class CmReport extends TenantModels
             'further_repair' => 'Further Repair',
             default => ucfirst($this->status),
         };
+    }
+
+    public function getSeverityBadgeClass(): string
+    {
+        return match ($this->severity) {
+            'critical' => 'bg-danger',
+            'medium'   => 'bg-warning text-dark',
+            'minor'    => 'bg-success',
+            default    => 'bg-secondary',
+        };
+    }
+
+    public function getSeverityLabel(): string
+    {
+        return match ($this->severity) {
+            'critical' => 'Critical',
+            'medium'   => 'Medium',
+            'minor'    => 'Minor',
+            default    => '-',
+        };
+    }
+
+    public static function calculateSeverity(string $groupSeverity, int $durationMinutes): string
+    {
+        if ($groupSeverity === 'high') {
+            return 'critical';
+        }
+        // medium and low follow same duration rules
+        if ($durationMinutes < 15) {
+            return $groupSeverity === 'medium' ? 'medium' : 'minor';
+        }
+        if ($durationMinutes <= 90) {
+            return 'medium';
+        }
+        return 'critical';
     }
 }

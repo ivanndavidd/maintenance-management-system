@@ -69,8 +69,9 @@ class CorrectiveMaintenanceController extends Controller
         ]);
 
         $assets = Asset::where('status', 'active')->orderBy('asset_name')->get();
+        $groupAssets = \App\Models\GroupAsset::orderBy('group_name')->get();
 
-        return view('user.corrective-maintenance.show', compact('ticket', 'assets'));
+        return view('user.corrective-maintenance.show', compact('ticket', 'assets', 'groupAssets'));
     }
 
     /**
@@ -109,16 +110,27 @@ class CorrectiveMaintenanceController extends Controller
 
         $request->validate([
             'status' => 'required|in:done,further_repair,failed',
-            'asset_id' => 'nullable|exists:assets_master,id',
+            'asset_id' => 'required|exists:assets_master,id',
             'problem_detail' => 'required|string|max:2000',
             'work_done' => 'required|string|max:2000',
             'notes' => 'nullable|string|max:1000',
         ]);
 
+        // Calculate severity from group asset + duration
+        $severity = null;
+        $asset = Asset::with('group')->find($request->asset_id);
+        if ($asset && $asset->group) {
+            $durationMinutes = $ticket->in_progress_at
+                ? $ticket->in_progress_at->diffInMinutes(now())
+                : 0;
+            $severity = CmReport::calculateSeverity($asset->group->severity, $durationMinutes);
+        }
+
         // Create report
         CmReport::create([
             'cm_request_id' => $ticket->id,
             'asset_id' => $request->asset_id,
+            'severity' => $severity,
             'status' => $request->status,
             'problem_detail' => $request->problem_detail,
             'work_done' => $request->work_done,
