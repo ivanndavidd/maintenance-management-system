@@ -29,33 +29,6 @@
     </div>
 </div>
 
-{{-- Out of Stock Reporter --}}
-<div class="mb-2">
-    <button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById('outOfStockPanel_{{ $formId }}').classList.toggle('d-none')">
-        <i class="fas fa-exclamation-triangle me-1"></i> Report Out of Stock Sparepart
-    </button>
-    <div id="outOfStockPanel_{{ $formId }}" class="d-none mt-2 border rounded p-3 bg-light">
-        <p class="mb-2 text-muted small">Select a sparepart that is out of stock to notify Supervisor & Admin:</p>
-        <div class="d-flex gap-2 align-items-center">
-            <select id="outOfStockSelect_{{ $formId }}" class="form-select form-select-sm">
-                <option value="">-- Select Sparepart --</option>
-                @foreach($spareparts->where('quantity', 0) as $sp)
-                    <option value="{{ $sp->id }}" data-name="{{ $sp->sparepart_name }}">
-                        {{ $sp->sparepart_name }} {{ $sp->material_code ? '('.$sp->material_code.')' : '' }} — Stock: 0 {{ $sp->unit }}
-                    </option>
-                @endforeach
-            </select>
-            <form method="POST" id="outOfStockForm_{{ $formId }}" style="display:inline;">
-                @csrf
-                <button type="button" class="btn btn-sm btn-danger text-nowrap"
-                        onclick="submitOutOfStock_{{ $formId }}()">
-                    <i class="fas fa-bell me-1"></i> Report to SPV
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-
 @php
 $sparepartsJson = json_encode($spareparts->map(function($sp) {
     return [
@@ -74,6 +47,7 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
     const noRadio = document.getElementById('spUsageNo_' + formId);
     const yesRadio = document.getElementById('spUsageYes_' + formId);
     const section = document.getElementById('sparepartUsageSection_' + formId);
+    const outOfStockUrl = '{{ url($reportOutOfStockBaseUrl) }}';
     let rowIndex = 0;
 
     const spareparts = {!! $sparepartsJson !!};
@@ -81,7 +55,7 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
     function buildOptions() {
         return spareparts.map(sp => {
             const outOfStock = sp.quantity <= 0;
-            return `<option value="${sp.id}" data-unit="${sp.unit}" data-stock="${sp.quantity}" data-min="${sp.minimum_stock}" ${outOfStock ? 'class="text-danger"' : ''}>
+            return `<option value="${sp.id}" data-unit="${sp.unit}" data-stock="${sp.quantity}" data-min="${sp.minimum_stock}">
                 ${sp.name}${sp.material_code ? ' ('+sp.material_code+')' : ''} — Stock: ${sp.quantity} ${sp.unit}${outOfStock ? ' ⚠ OUT OF STOCK' : ''}
             </option>`;
         }).join('');
@@ -102,14 +76,18 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
             </div>
             <div class="col-md-3">
                 <div class="input-group input-group-sm">
-                    <input type="number" name="spareparts[${idx}][quantity_used]" class="form-control sp-qty" min="1" placeholder="Qty" required>
+                    <input type="number" name="spareparts[${idx}][quantity_used]" class="form-control sp-qty" min="1" placeholder="Qty">
                     <span class="input-group-text sp-unit-label">-</span>
                 </div>
                 <small class="sp-stock-info text-muted"></small>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 d-flex gap-1 align-items-center">
                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="document.getElementById('spRow_${formId}_${idx}').remove()">
                     <i class="fas fa-trash"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-danger sp-report-btn d-none" title="Report out of stock to SPV"
+                        onclick="reportOutOfStock_${formId}(${idx})">
+                    <i class="fas fa-bell me-1"></i> Report to SPV
                 </button>
             </div>`;
         container.appendChild(div);
@@ -121,18 +99,48 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
         const qtyInput = row.querySelector('.sp-qty');
         const unitLabel = row.querySelector('.sp-unit-label');
         const stockInfo = row.querySelector('.sp-stock-info');
+        const reportBtn = row.querySelector('.sp-report-btn');
         const stock = parseInt(opt.dataset.stock || 0);
         const unit = opt.dataset.unit || '-';
+        const spId = opt.value;
+
         unitLabel.textContent = unit;
-        qtyInput.max = stock > 0 ? stock : 0;
+        reportBtn.classList.add('d-none');
+        reportBtn.dataset.spId = spId;
+
+        if (!spId) {
+            stockInfo.textContent = '';
+            qtyInput.disabled = false;
+            qtyInput.removeAttribute('max');
+            return;
+        }
+
         if (stock <= 0) {
             stockInfo.innerHTML = '<span class="text-danger">Out of stock — cannot use</span>';
             qtyInput.disabled = true;
             qtyInput.value = '';
+            qtyInput.removeAttribute('required');
+            reportBtn.classList.remove('d-none');
         } else {
             stockInfo.textContent = 'Stock: ' + stock + ' ' + unit;
             qtyInput.disabled = false;
+            qtyInput.max = stock;
+            qtyInput.setAttribute('required', 'required');
         }
+    };
+
+    window['reportOutOfStock_' + formId] = function(idx) {
+        const row = document.getElementById('spRow_' + formId + '_' + idx);
+        const btn = row.querySelector('.sp-report-btn');
+        const spId = btn.dataset.spId;
+        if (!spId) return;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = outOfStockUrl + '/' + spId;
+        form.innerHTML = '<input type="hidden" name="_token" value="{{ csrf_token() }}">';
+        document.body.appendChild(form);
+        form.submit();
     };
 
     [noRadio, yesRadio].forEach(r => r && r.addEventListener('change', function() {
@@ -141,19 +149,6 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
             window['addSparepartRow_' + formId]();
         }
     }));
-
-    window['submitOutOfStock_' + formId] = function() {
-        const select = document.getElementById('outOfStockSelect_' + formId);
-        const spId = select.value;
-        if (!spId) { alert('Please select a sparepart first.'); return; }
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ url($reportOutOfStockBaseUrl) }}/' + spId;
-        form.innerHTML = `@csrf`;
-        document.body.appendChild(form);
-        form.submit();
-    };
 })();
 </script>
 @endif
