@@ -9,9 +9,6 @@
             <h4 class="mb-1"><i class="fas fa-history me-2"></i>Sparepart Usage</h4>
             <p class="text-muted mb-0">Record and track sparepart usage history</p>
         </div>
-        <a href="{{ route($routePrefix . '.sparepart-usage.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i> Record Usage
-        </a>
     </div>
 
     {{-- Search --}}
