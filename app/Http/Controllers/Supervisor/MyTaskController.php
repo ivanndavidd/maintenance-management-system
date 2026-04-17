@@ -540,6 +540,9 @@ class MyTaskController extends Controller
             \Log::error('Failed to send out-of-stock notification: ' . $e->getMessage());
         }
 
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
         return back()->with('success', 'Supervisor and admin have been notified about the out-of-stock sparepart.');
     }
 

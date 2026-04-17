@@ -135,12 +135,26 @@ $sparepartsJson = json_encode($spareparts->map(function($sp) {
         const spId = btn.dataset.spId;
         if (!spId) return;
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = outOfStockUrl + '/' + spId;
-        form.innerHTML = '<input type="hidden" name="_token" value="{{ csrf_token() }}">';
-        document.body.appendChild(form);
-        form.submit();
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
+
+        fetch(outOfStockUrl + '/' + spId, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+            },
+        })
+        .then(() => {
+            btn.innerHTML = '<i class="fas fa-check me-1"></i> Reported';
+            btn.classList.remove('btn-danger');
+            btn.classList.add('btn-success');
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-bell me-1"></i> Report to SPV';
+            alert('Failed to send notification. Please try again.');
+        });
     };
 
     [noRadio, yesRadio].forEach(r => r && r.addEventListener('change', function() {
