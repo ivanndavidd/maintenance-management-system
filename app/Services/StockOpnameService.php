@@ -175,7 +175,8 @@ class StockOpnameService
 
         // Add assets if included
         if ($schedule->include_assets && !empty($data['asset_locations'])) {
-            $assets = Asset::whereIn('location', $data['asset_locations'])
+            $groupIds = GroupAsset::whereIn('group_name', $data['asset_locations'])->pluck('group_id');
+            $assets = Asset::whereIn('group_id', $groupIds)
                 ->where('status', 'active')
                 ->get();
 
@@ -251,7 +252,8 @@ class StockOpnameService
         }
 
         if (!empty($data['include_assets']) && !empty($data['asset_locations'])) {
-            $counts['assets'] = Asset::whereIn('location', $data['asset_locations'])
+            $groupIds = GroupAsset::whereIn('group_name', $data['asset_locations'])->pluck('group_id');
+            $counts['assets'] = Asset::whereIn('group_id', $groupIds)
                 ->where('status', 'active')
                 ->count();
         }
