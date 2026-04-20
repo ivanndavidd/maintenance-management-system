@@ -50,8 +50,7 @@ class StockOpnameController extends Controller
         $sparepartLocations = $this->stockOpnameService->getSparepartLocations();
         $assetLocations = $this->stockOpnameService->getAssetLocations();
 
-        // Get all active users with staff_maintenance role for assignment
-        $users = User::role('staff_maintenance')
+        $users = User::role(['staff_maintenance', 'supervisor_maintenance'])
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
@@ -192,8 +191,7 @@ class StockOpnameController extends Controller
         $sparepartLocations = $this->stockOpnameService->getSparepartLocations();
         $assetLocations = $this->stockOpnameService->getAssetLocations();
 
-        // Get all active users with staff_maintenance role for assignment
-        $users = User::role('staff_maintenance')
+        $users = User::role(['staff_maintenance', 'supervisor_maintenance'])
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
