@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
@@ -221,27 +222,125 @@ class UserController extends Controller
     }
 
     /**
-     * Remove the specified user
+     * Remove the specified user — checks for linked data first
      */
     public function destroy(User $user)
     {
-        // Verify user has allowed role or no role
         if (!$this->canManageUser($user)) {
             abort(403, 'You are not authorized to delete this user.');
         }
 
-        // Prevent deleting own account
         if ($user->id === auth()->id()) {
-            return redirect()
-                ->route('supervisor.users.index')
+            return redirect()->route('supervisor.users.index')
                 ->with('error', 'You cannot delete your own account!');
+        }
+
+        $linked = $this->checkLinkedData($user);
+
+        if ($linked['has_linked']) {
+            return redirect()->route('supervisor.users.reassign-form', $user)
+                ->with('warning', 'This user has linked data. Please reassign before deleting.');
         }
 
         $user->delete();
 
-        return redirect()
-            ->route('supervisor.users.index')
+        return redirect()->route('supervisor.users.index')
             ->with('success', 'User deleted successfully!');
+    }
+
+    /**
+     * Show reassign form before deleting user
+     */
+    public function reassignForm(User $user)
+    {
+        if (!$this->canManageUser($user)) {
+            abort(403, 'You are not authorized to manage this user.');
+        }
+
+        $linked = $this->checkLinkedData($user);
+        $candidates = User::where('id', '!=', $user->id)
+            ->where('is_active', true)
+            ->whereHas('roles', fn($q) => $q->whereIn('name', $this->allowedRoles))
+            ->orderBy('name')
+            ->get();
+
+        return view('supervisor.users.reassign', compact('user', 'linked', 'candidates'));
+    }
+
+    /**
+     * Reassign linked data to another user then delete
+     */
+    public function reassign(Request $request, User $user)
+    {
+        if (!$this->canManageUser($user)) {
+            abort(403, 'You are not authorized to manage this user.');
+        }
+
+        $request->validate([
+            'reassign_to' => 'required|exists:users,id|different:' . $user->id,
+        ]);
+
+        $toId = $request->reassign_to;
+
+        DB::connection('site')->transaction(function () use ($user, $toId) {
+            // CM reports submitted_by
+            DB::connection('site')->table('cm_reports')
+                ->where('submitted_by', $user->id)->update(['submitted_by' => $toId]);
+
+            // Corrective maintenance assigned_to
+            DB::connection('site')->table('corrective_maintenance_requests')
+                ->where('assigned_to', $user->id)->update(['assigned_to' => $toId]);
+
+            // PM tasks assigned_user_id
+            DB::connection('site')->table('pm_tasks')
+                ->where('assigned_user_id', $user->id)->update(['assigned_user_id' => $toId]);
+
+            // Sparepart usages used_by
+            DB::connection('site')->table('sparepart_usages')
+                ->where('used_by', $user->id)->update(['used_by' => $toId]);
+
+            // Shift assignments — just delete (will be reassigned via shift schedule)
+            DB::connection('site')->table('shift_assignments')
+                ->where('user_id', $user->id)->delete();
+
+            $user->delete();
+        });
+
+        return redirect()->route('supervisor.users.index')
+            ->with('success', 'User data reassigned and user deleted successfully.');
+    }
+
+    /**
+     * Check if user has any linked records that would block deletion
+     */
+    private function checkLinkedData(User $user): array
+    {
+        $cmReports = DB::connection('site')->table('cm_reports')
+            ->where('submitted_by', $user->id)->count();
+
+        $cmRequests = DB::connection('site')->table('corrective_maintenance_requests')
+            ->where('assigned_to', $user->id)->count();
+
+        $pmTasks = DB::connection('site')->table('pm_tasks')
+            ->where('assigned_user_id', $user->id)->count();
+
+        $sparepartUsages = DB::connection('site')->table('sparepart_usages')
+            ->where('used_by', $user->id)->count();
+
+        $shiftAssignments = DB::connection('site')->table('shift_assignments')
+            ->where('user_id', $user->id)->count();
+
+        $linked = [
+            'cm_reports'       => $cmReports,
+            'cm_requests'      => $cmRequests,
+            'pm_tasks'         => $pmTasks,
+            'sparepart_usages' => $sparepartUsages,
+            'shift_assignments'=> $shiftAssignments,
+        ];
+
+        $linked['has_linked'] = collect($linked)->sum() > 0;
+
+        return $linked;
     }
 
     /**
