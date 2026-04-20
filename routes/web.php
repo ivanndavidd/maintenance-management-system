@@ -817,6 +817,16 @@ Route::middleware(['auth'])->group(function () {
                         App\Http\Controllers\Supervisor\UserController::class,
                         'resetPassword',
                     ])->name('reset-password');
+
+                    Route::get('/{user}/reassign', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'reassignForm',
+                    ])->name('reassign-form');
+
+                    Route::post('/{user}/reassign', [
+                        App\Http\Controllers\Supervisor\UserController::class,
+                        'reassign',
+                    ])->name('reassign');
                 });
 
             // Inventory Management - Spareparts (using same controller as admin)
