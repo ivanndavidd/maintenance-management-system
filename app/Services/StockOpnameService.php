@@ -9,6 +9,7 @@ use App\Models\ShiftAssignment;
 use App\Models\Sparepart;
 use App\Models\Tool;
 use App\Models\Asset;
+use App\Models\GroupAsset;
 use Illuminate\Support\Facades\DB;
 
 class StockOpnameService
@@ -220,13 +221,8 @@ class StockOpnameService
      */
     public function getAssetLocations()
     {
-        return Asset::where('status', 'active')
-            ->whereNotNull('location')
-            ->where('location', '!=', '')
-            ->distinct()
-            ->pluck('location')
-            ->sort()
-            ->values()
+        return GroupAsset::orderBy('group_name')
+            ->pluck('group_name')
             ->toArray();
     }
 
