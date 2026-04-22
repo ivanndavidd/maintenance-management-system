@@ -153,7 +153,7 @@
                     @if($ticket->report->asset)
                     <div class="mb-3">
                         <strong><i class="fas fa-cogs me-1"></i> Asset:</strong>
-                        <span class="ms-1">{{ $ticket->report->asset->asset_name }} ({{ $ticket->report->asset->asset_id }})</span>
+                        <span class="ms-1">{{ $ticket->report->asset->asset_name }}{{ $ticket->report->asset->equipment_id ? ' ('.$ticket->report->asset->equipment_id.')' : '' }}</span>
                     </div>
                     @endif
 
@@ -384,7 +384,7 @@
                         <label class="form-label fw-bold">Asset</label>
                         <input type="hidden" name="asset_id" value="{{ $parentAsset->id }}">
                         <input type="text" class="form-control" disabled
-                               value="{{ $parentAsset->asset_name }} ({{ $parentAsset->asset_id }}) - {{ $parentAsset->location ?? 'No location' }}">
+                               value="{{ $parentAsset->asset_name }}{{ $parentAsset->equipment_id ? ' ('.$parentAsset->equipment_id.')' : '' }}">
                         <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Asset inherited from parent ticket</small>
                     </div>
                     @elseif(!in_array($ticket->problem_category, ['lift_merah', 'lift_kuning']))
