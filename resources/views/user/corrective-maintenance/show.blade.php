@@ -405,7 +405,7 @@
                             <option value="">-- Select Group Asset first --</option>
                             @foreach($assets as $asset)
                                 <option value="{{ $asset->id }}" data-group="{{ $asset->group_id }}">
-                                    {{ $asset->asset_name }}{{ $asset->asset_id ? ' ('.$asset->asset_id.')' : '' }}{{ $asset->location ? ' - '.$asset->location : '' }}
+                                    {{ $asset->asset_name }}{{ $asset->equipment_id ? ' ('.$asset->equipment_id.')' : '' }}
                                 </option>
                             @endforeach
                         </select>
