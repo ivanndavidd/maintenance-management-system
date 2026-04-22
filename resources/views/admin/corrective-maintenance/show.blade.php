@@ -7,8 +7,8 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <a href="{{ route($routePrefix.'.corrective-maintenance.index') }}" class="text-decoration-none">
-                <i class="fas fa-arrow-left me-2"></i>Back to Tickets
+            <a href="{{ url()->previous(route($routePrefix.'.corrective-maintenance.index')) }}" class="text-decoration-none">
+                <i class="fas fa-arrow-left me-2"></i>Back
             </a>
             <h2 class="mt-2"><i class="fas fa-ticket-alt me-2"></i>{{ $ticket->ticket_number }}</h2>
         </div>
