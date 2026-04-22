@@ -101,7 +101,7 @@
                 <div class="card-body">
                     @if($ticket->report->asset)
                     <div class="mb-3">
-                        <strong>Asset:</strong> {{ $ticket->report->asset->asset_name }} ({{ $ticket->report->asset->asset_code ?? '-' }})
+                        <strong>Asset:</strong> {{ $ticket->report->asset->asset_name }}{{ $ticket->report->asset->equipment_id ? ' ('.$ticket->report->asset->equipment_id.')' : '' }}
                     </div>
                     @endif
                     <div class="mb-3">
