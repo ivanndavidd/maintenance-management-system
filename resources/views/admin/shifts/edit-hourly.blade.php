@@ -161,7 +161,8 @@
                                                 <div class="assigned-cell cancelled-cell h-100 w-100 d-flex align-items-center justify-content-center"
                                                      style="background-color: #dc3545; color: white; font-weight: bold; font-size: 16px; cursor: pointer;"
                                                      data-assignment-id="{{ $assignment->id }}"
-                                                     data-tooltip="{{ $assignment->user->name }} - {{ $assignment->change_reason }}">
+                                                     data-tooltip="{{ $assignment->user->name }} - {{ $assignment->change_reason }}"
+                                                     title="{{ $assignment->user->name }} (Cancelled)">
                                                     ❌
                                                 </div>
                                             @elseif($assignment->change_action === 'replaced')
@@ -169,7 +170,8 @@
                                                 <div class="assigned-cell h-100 w-100 d-flex align-items-center justify-content-center"
                                                      style="background-color: {{ \App\Models\ShiftAssignment::generateColorForUser($assignment->new_user_id) }}; color: white; font-weight: bold; font-size: 11px;"
                                                      data-assignment-id="{{ $assignment->id }}"
-                                                     data-user-id="{{ $assignment->new_user_id }}">
+                                                     data-user-id="{{ $assignment->new_user_id }}"
+                                                     title="{{ $assignment->newUser->name }} (Replaced)">
                                                     {{ substr($assignment->newUser->name, 0, 1) }}
                                                 </div>
                                             @else
@@ -177,7 +179,8 @@
                                                 <div class="assigned-cell h-100 w-100 d-flex align-items-center justify-content-center"
                                                      style="background-color: {{ $assignment->color }}; color: white; font-weight: bold; font-size: 11px;"
                                                      data-assignment-id="{{ $assignment->id }}"
-                                                     data-user-id="{{ $assignment->user_id }}">
+                                                     data-user-id="{{ $assignment->user_id }}"
+                                                     title="{{ $assignment->user->name }}">
                                                     {{ substr($assignment->user->name, 0, 1) }}
                                                 </div>
                                             @endif
