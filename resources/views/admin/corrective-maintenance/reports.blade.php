@@ -61,7 +61,12 @@
                             <td>
                                 <strong>{{ $report->cmRequest->ticket_number ?? '-' }}</strong>
                             </td>
-                            <td>{{ $report->asset->asset_name ?? '-' }}</td>
+                            <td>
+                                {{ $report->asset->asset_name ?? '-' }}
+                                @if($report->asset?->equipment_id)
+                                    <br><small class="text-muted">{{ $report->asset->equipment_id }}</small>
+                                @endif
+                            </td>
                             <td>
                                 <span class="badge {{ $report->getStatusBadgeClass() }}">{{ $report->getStatusLabel() }}</span>
                             </td>
