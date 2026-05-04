@@ -67,6 +67,9 @@ class AssignPmTasksToShifts extends Command
         $assignedCount = 0;
         $skippedCount = 0;
 
+        // Track round-robin index per "date+shift" key so tasks are spread evenly
+        $roundRobinCounters = [];
+
         foreach ($tasks as $task) {
             // Find the shift schedule that covers this task date
             $shiftSchedule = ShiftSchedule::where('start_date', '<=', $task->task_date)
@@ -95,13 +98,11 @@ class AssignPmTasksToShifts extends Command
                 continue;
             }
 
-            // Round-robin: pick user based on task index among all tasks for this shift/date
-            $taskIndex = PmTask::where('task_date', $task->task_date)
-                ->where('assigned_shift_id', $task->assigned_shift_id)
-                ->whereNotNull('assigned_user_id')
-                ->count();
-
-            $shiftAssignment = $shiftAssignments[$taskIndex % $shiftAssignments->count()];
+            // Round-robin: use in-memory counter per date+shift to spread tasks evenly
+            $key = $task->task_date->toDateString() . '_' . $task->assigned_shift_id;
+            $roundRobinCounters[$key] = ($roundRobinCounters[$key] ?? 0);
+            $shiftAssignment = $shiftAssignments[$roundRobinCounters[$key] % $shiftAssignments->count()];
+            $roundRobinCounters[$key]++;
 
             // Assign the task
             $task->update([
