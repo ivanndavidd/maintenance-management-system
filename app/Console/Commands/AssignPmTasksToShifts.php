@@ -82,16 +82,26 @@ class AssignPmTasksToShifts extends Command
             // Get the day of week for the task date
             $dayOfWeek = $this->getDayOfWeekString($task->task_date);
 
-            // Find shift assignment for this day and shift
-            $shiftAssignment = ShiftAssignment::where('shift_schedule_id', $shiftSchedule->id)
+            // Find all users assigned to this shift and day
+            $shiftAssignments = ShiftAssignment::where('shift_schedule_id', $shiftSchedule->id)
                 ->where('day_of_week', $dayOfWeek)
                 ->where('shift_id', $task->assigned_shift_id)
-                ->first();
+                ->whereNull('change_action')
+                ->with('user')
+                ->get();
 
-            if (!$shiftAssignment) {
+            if ($shiftAssignments->isEmpty()) {
                 $skippedCount++;
                 continue;
             }
+
+            // Round-robin: pick user based on task index among all tasks for this shift/date
+            $taskIndex = PmTask::where('task_date', $task->task_date)
+                ->where('assigned_shift_id', $task->assigned_shift_id)
+                ->whereNotNull('assigned_user_id')
+                ->count();
+
+            $shiftAssignment = $shiftAssignments[$taskIndex % $shiftAssignments->count()];
 
             // Assign the task
             $task->update([
