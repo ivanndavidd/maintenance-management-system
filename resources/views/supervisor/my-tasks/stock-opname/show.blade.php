@@ -710,6 +710,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Disable loading overlay for download template link on this page
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('a[href*="export-template"]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.stopImmediatePropagation();
+            setTimeout(function() { hideLoading(); }, 100);
+        }, true);
+    });
+});
 </script>
 @endpush
 @endsection
