@@ -2,6 +2,12 @@
 
 @section('page-title', 'Stock Opname Details')
 
+@push('styles')
+<style>
+#globalLoading { display: none !important; }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
