@@ -1128,8 +1128,25 @@ class PreventiveMaintenanceController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        // If revision needed, revert task status to in_progress
+        // If revision needed, revert task and rollback any approved sparepart usage
         if ($request->status === 'revision_needed') {
+            // If sparepart was already approved, restore stock and delete usage records
+            if ($report->sparepart_approval_status === 'approved') {
+                $report->load('sparepartUsages.sparepart');
+                foreach ($report->sparepartUsages as $usage) {
+                    if ($usage->sparepart) {
+                        $usage->sparepart->increment('quantity', $usage->quantity_used);
+                    }
+                    $usage->delete();
+                }
+                $report->update([
+                    'sparepart_approval_status' => null,
+                    'sparepart_approval_notes'  => null,
+                    'sparepart_approved_by'     => null,
+                    'sparepart_approved_at'     => null,
+                ]);
+            }
+
             $report->task->update([
                 'status' => 'in_progress',
                 'completed_at' => null,
