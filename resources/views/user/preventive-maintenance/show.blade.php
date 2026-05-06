@@ -117,12 +117,15 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form id="reportForm" enctype="multipart/form-data">
+                    <form id="reportForm_showusr" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Detail Kegiatan <span class="text-danger">*</span></label>
                             <textarea name="description" class="form-control" rows="5" required placeholder="Jelaskan kegiatan PM yang telah dilakukan..."></textarea>
                         </div>
+
+                        @include('supervisor.my-tasks.preventive-maintenance.partials.pm-sparepart-usage', ['formId' => 'showusr'])
+
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Foto Dokumentasi</label>
                             <input type="file" name="photos[]" class="form-control" multiple accept="image/*">
@@ -188,7 +191,7 @@ function updateStatus(status) {
     .catch(() => alert('An error occurred'));
 }
 
-const reportForm = document.getElementById('reportForm');
+const reportForm = document.getElementById('reportForm_showusr');
 if (reportForm) {
     reportForm.addEventListener('submit', function(e) {
         e.preventDefault();
