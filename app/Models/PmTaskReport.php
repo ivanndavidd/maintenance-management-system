@@ -72,7 +72,7 @@ class PmTaskReport extends TenantModels
             'submitted' => 'bg-info',
             'approved' => 'bg-success',
             'revision_needed' => 'bg-warning text-dark',
-            'pending_sparepart_approval' => 'bg-purple text-white',
+            'pending_sparepart_approval' => 'bg-warning text-dark',
             'sparepart_rejected' => 'bg-danger',
             default => 'bg-secondary',
         };
