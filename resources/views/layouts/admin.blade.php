@@ -938,6 +938,11 @@
  hideLoading();
  });
 
+ // Hide loading when window regains focus (e.g. after file download dialog)
+ window.addEventListener('focus', function() {
+ hideLoading();
+ });
+
  // Hide loading when any modal is shown
  document.querySelectorAll('.modal').forEach(modal => {
  modal.addEventListener('show.bs.modal', function() {
