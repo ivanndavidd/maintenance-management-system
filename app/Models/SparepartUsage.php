@@ -37,4 +37,9 @@ class SparepartUsage extends TenantModels
     {
         return $this->belongsTo(PmTaskReport::class, 'pm_report_id');
     }
+
+    public function cmTicket()
+    {
+        return $this->belongsTo(CorrectiveMaintenanceRequest::class, 'ticket_number', 'ticket_number');
+    }
 }
