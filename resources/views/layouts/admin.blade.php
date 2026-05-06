@@ -907,17 +907,17 @@
 
  // Show loading on navigation (links)
  document.addEventListener('DOMContentLoaded', function() {
- // Add loading indicator to all navigation links
- const navLinks = document.querySelectorAll('a:not([data-no-loading]):not([data-bs-toggle])');
- navLinks.forEach(link => {
- link.addEventListener('click', function(e) {
- // Don't show loading for anchor links, javascript:void(0), or target="_blank"
- const href = this.getAttribute('href');
- const target = this.getAttribute('target');
+ // Use event delegation so data-no-loading is checked at click time, not at query time
+ document.addEventListener('click', function(e) {
+ const link = e.target.closest('a');
+ if (!link) return;
+ if (link.hasAttribute('data-no-loading')) return;
+ if (link.hasAttribute('data-bs-toggle')) return;
+ const href = link.getAttribute('href');
+ const target = link.getAttribute('target');
  if (href && href !== '#' && !href.startsWith('javascript:') && !href.startsWith('#') && target !== '_blank') {
  showLoading('Loading...');
  }
- });
  });
 
  // Add loading indicator to all form submissions
