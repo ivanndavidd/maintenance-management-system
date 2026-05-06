@@ -160,9 +160,15 @@
                                     </td>
                                     <td>
                                         @if($reportStatus)
-                                            <span class="badge {{ $latestReport->getStatusBadgeClass() }}">
+                                            <span class="badge {{ $latestReport->getStatusBadgeClass() }}"
+                                                @if($latestReport->status === 'sparepart_rejected' && $latestReport->sparepart_approval_notes)
+                                                    data-bs-toggle="tooltip" title="Alasan: {{ $latestReport->sparepart_approval_notes }}"
+                                                @endif>
                                                 {{ $latestReport->getStatusLabel() }}
                                             </span>
+                                            @if($latestReport->status === 'sparepart_rejected' && $latestReport->sparepart_approval_notes)
+                                                <br><small class="text-danger" style="font-size:10px;">{{ $latestReport->sparepart_approval_notes }}</small>
+                                            @endif
                                             @if($latestReport->timing_label)
                                                 <br>
                                                 <span class="badge {{ $latestReport->timing_badge_class }} mt-1" style="font-size: 10px;" title="Submitted on {{ $latestReport->submitted_at?->format('d M Y') }}">
