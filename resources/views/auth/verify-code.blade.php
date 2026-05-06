@@ -42,7 +42,7 @@
             width: 100%;
             max-width: 450px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px;
             position: relative;
             z-index: 1;
         }
@@ -57,23 +57,30 @@
         .verify-header {
             background: #0095DA;
             color: white;
-            padding: 30px;
+            padding: 24px 20px;
             text-align: center;
         }
 
         .verify-header h3 {
             margin: 0;
             font-weight: 600;
+            font-size: 20px;
         }
 
         .verify-header p {
-            margin: 10px 0 0 0;
+            margin: 8px 0 0 0;
             opacity: 0.9;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .verify-body {
-            padding: 40px 30px;
+            padding: 24px 16px;
+        }
+
+        @media (min-width: 480px) {
+            .verify-header { padding: 30px; }
+            .verify-header h3 { font-size: 24px; }
+            .verify-body { padding: 40px 30px; }
         }
 
         .email-display {
@@ -91,20 +98,28 @@
 
         .code-inputs {
             display: flex;
-            gap: 10px;
+            gap: 6px;
             justify-content: center;
             margin-bottom: 25px;
         }
 
         .code-input {
-            width: 50px;
-            height: 55px;
+            width: calc((100% - 30px) / 6);
+            max-width: 50px;
+            min-width: 36px;
+            height: 48px;
             text-align: center;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             transition: all 0.3s;
+            padding: 0;
+        }
+
+        @media (min-width: 400px) {
+            .code-inputs { gap: 10px; }
+            .code-input { height: 55px; font-size: 24px; }
         }
 
         .code-input:focus {

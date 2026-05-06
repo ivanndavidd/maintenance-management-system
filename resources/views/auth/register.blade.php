@@ -42,7 +42,7 @@
             width: 100%;
             max-width: 500px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px;
             position: relative;
             z-index: 1;
         }
@@ -52,32 +52,35 @@
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             overflow: hidden;
-            /* Langsung visible tanpa perlu hover */
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0) scale(1);
         }
-        
+
         .register-header {
             background: #0095DA;
             color: white;
-            padding: 30px;
+            padding: 24px 20px;
             text-align: center;
         }
-        
+
         .register-header h3 {
             margin: 0;
             font-weight: 600;
+            font-size: 20px;
         }
-        
+
         .register-header p {
-            margin: 10px 0 0 0;
+            margin: 8px 0 0 0;
             opacity: 0.9;
-            font-size: 14px;
+            font-size: 13px;
         }
-        
+
         .register-body {
-            padding: 40px 30px;
+            padding: 24px 20px;
+        }
+
+        @media (min-width: 480px) {
+            .register-header { padding: 30px; }
+            .register-header h3 { font-size: 24px; }
+            .register-body { padding: 40px 30px; }
         }
         
         .form-label {

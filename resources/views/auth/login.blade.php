@@ -42,7 +42,7 @@
             width: 100%;
             max-width: 450px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px;
             position: relative;
             z-index: 1;
         }
@@ -52,101 +52,46 @@
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             overflow: hidden;
-            /* HIDDEN BY DEFAULT */
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(30px) scale(0.95);
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            pointer-events: none;
-        }
-
-        /* Show card on container hover (when NOT permanently shown) */
-        .login-container:hover .login-card:not(.permanent-show) {
             opacity: 1;
             visibility: visible;
             transform: translateY(0) scale(1);
-            pointer-events: auto;
         }
 
-        /* Show card permanently when has .permanent-show class */
-        .login-card.permanent-show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0) scale(1);
-            pointer-events: auto;
-        }
+        .hover-hint { display: none; }
 
-        /* Add a subtle hint text */
-        .hover-hint {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 28px;
-            font-weight: 600;
-            text-align: center;
-            text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.8);
-            opacity: 1;
-            transition: opacity 0.5s ease;
-            z-index: 0;
-            pointer-events: none;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                transform: translate(-50%, -50%) scale(1);
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.05);
-            }
-        }
-
-        .login-container:hover .hover-hint {
-            opacity: 0;
-        }
-
-        .login-card.permanent-show ~ .hover-hint {
-            opacity: 0;
-            display: none;
-        }
-
-        /* Make the entire container area hoverable */
-        .login-container {
-            cursor: pointer;
-        }
-
-        .login-card * {
-            cursor: default;
-        }
-        
         .login-header {
             background: #0095DA;
             color: white;
-            padding: 40px 30px;
+            padding: 28px 20px;
             text-align: center;
         }
-        
+
         .login-header i {
-            font-size: 50px;
-            margin-bottom: 15px;
+            font-size: 40px;
+            margin-bottom: 10px;
         }
-        
+
         .login-header h3 {
             margin: 0;
             font-weight: 600;
-            font-size: 28px;
+            font-size: 22px;
         }
-        
+
         .login-header p {
-            margin: 10px 0 0 0;
+            margin: 8px 0 0 0;
             opacity: 0.9;
-            font-size: 14px;
+            font-size: 13px;
         }
-        
+
         .login-body {
-            padding: 40px 30px;
+            padding: 24px 20px;
+        }
+
+        @media (min-width: 480px) {
+            .login-header { padding: 40px 30px; }
+            .login-header i { font-size: 50px; }
+            .login-header h3 { font-size: 28px; }
+            .login-body { padding: 40px 30px; }
         }
         
         .form-label {
@@ -247,10 +192,6 @@
 </head>
 <body>
     <div class="login-container">
-        <div class="hover-hint">
-            <i class="fas fa-hand-pointer mb-3"></i><br>
-            Hover here to login
-        </div>
         <div class="login-card">
             <!-- Header -->
             <div class="login-header">
