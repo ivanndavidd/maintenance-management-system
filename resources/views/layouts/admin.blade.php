@@ -290,9 +290,29 @@
      }
      .sidebar:hover {
          left: -280px !important;
+         width: 280px !important;
      }
      .sidebar.show {
          left: 0 !important;
+     }
+     /* Show text when sidebar is open on mobile */
+     .sidebar.show .menu-text,
+     .sidebar.show a .menu-text {
+         opacity: 1 !important;
+         width: 180px !important;
+         margin-left: 12px !important;
+     }
+     .sidebar.show .sidebar-header .text-content {
+         opacity: 1 !important;
+         width: 200px !important;
+         margin-left: 12px !important;
+     }
+     .sidebar.show .badge {
+         display: inline-block !important;
+         font-size: 11px;
+         padding: 2px 6px;
+         margin-left: auto;
+         margin-right: 45px;
      }
      .main-content {
          margin-left: 0 !important;
@@ -308,9 +328,6 @@
      }
      .mobile-toggle-admin {
          display: flex !important;
-     }
-     .sidebar-backdrop {
-         display: block;
      }
  }
 
