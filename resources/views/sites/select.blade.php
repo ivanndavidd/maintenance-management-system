@@ -318,7 +318,7 @@
 
             <!-- Footer -->
             <div class="site-footer">
-                &copy; {{ date('Y') }} Blibli | Warehouse Management System
+                &copy; {{ date('Y') }} Blibli | Warehouse Maintenance System
             </div>
         </div>
     </div>
