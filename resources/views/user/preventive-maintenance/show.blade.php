@@ -92,6 +92,21 @@
                     </div>
                     @endif
 
+                    @if($latestReport->status === 'pending_sparepart_approval')
+                    <div class="alert alert-warning">
+                        <strong><i class="fas fa-clock me-1"></i> Menunggu Approval Sparepart</strong><br>
+                        Penggunaan sparepart Anda sedang menunggu persetujuan supervisor/admin.
+                    </div>
+                    @endif
+
+                    @if($latestReport->status === 'sparepart_rejected')
+                    <div class="alert alert-danger">
+                        <strong><i class="fas fa-times-circle me-1"></i> Penggunaan Sparepart Ditolak</strong><br>
+                        {{ $latestReport->sparepart_approval_notes ?? '-' }}
+                        <br><small class="text-muted">Ditolak oleh {{ $latestReport->sparepartApprover->name ?? '-' }} pada {{ $latestReport->sparepart_approved_at?->format('d M Y, H:i') }}</small>
+                    </div>
+                    @endif
+
                     @if($latestReport->admin_comments)
                     <div class="alert alert-warning">
                         <strong><i class="fas fa-comment me-1"></i> Review Comments:</strong><br>
@@ -108,7 +123,7 @@
             @endif
 
             <!-- Submit / Update Report -->
-            @if(!$latestReport || $latestReport->status === 'revision_needed')
+            @if(!$latestReport || in_array($latestReport->status, ['revision_needed', 'sparepart_rejected']))
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">

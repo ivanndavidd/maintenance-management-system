@@ -1022,6 +1022,7 @@ class PreventiveMaintenanceController extends Controller
             $submitted = $monthTasks->filter(fn($t) => $t->latestReport && $t->latestReport->status === 'submitted')->count();
             $approved = $monthTasks->filter(fn($t) => $t->latestReport && $t->latestReport->status === 'approved')->count();
             $revisionNeeded = $monthTasks->filter(fn($t) => $t->latestReport && $t->latestReport->status === 'revision_needed')->count();
+            $pendingSparepartApproval = $monthTasks->filter(fn($t) => $t->latestReport && $t->latestReport->status === 'pending_sparepart_approval')->count();
             $noReport = $total - $withReport;
 
             $monthlyStats[$month] = [
@@ -1030,6 +1031,7 @@ class PreventiveMaintenanceController extends Controller
                 'submitted' => $submitted,
                 'approved' => $approved,
                 'revision_needed' => $revisionNeeded,
+                'pending_sparepart_approval' => $pendingSparepartApproval,
                 'no_report' => $noReport,
             ];
         }
@@ -1046,7 +1048,7 @@ class PreventiveMaintenanceController extends Controller
      */
     public function showReport(PmTaskReport $report)
     {
-        $report->load(['task', 'submitter', 'reviewer', 'furtherRepairAssets']);
+        $report->load(['task', 'submitter', 'reviewer', 'furtherRepairAssets', 'sparepartUsages.sparepart', 'sparepartApprover']);
 
         return response()->json([
             'success' => true,
@@ -1079,6 +1081,18 @@ class PreventiveMaintenanceController extends Controller
                         'notes' => $asset->pivot->notes,
                     ];
                 }),
+                'sparepart_usages' => $report->sparepartUsages->map(fn($u) => [
+                    'id'            => $u->id,
+                    'name'          => $u->sparepart->sparepart_name ?? '-',
+                    'material_code' => $u->sparepart->material_code ?? '-',
+                    'unit'          => $u->sparepart->unit ?? '-',
+                    'quantity_used' => $u->quantity_used,
+                    'current_stock' => $u->sparepart->quantity ?? '-',
+                ]),
+                'sparepart_approval_status' => $report->sparepart_approval_status,
+                'sparepart_approval_notes'  => $report->sparepart_approval_notes,
+                'sparepart_approved_by'     => $report->sparepartApprover->name ?? null,
+                'sparepart_approved_at'     => $report->sparepart_approved_at?->format('d M Y, H:i'),
                 'task' => [
                     'id' => $report->task->id,
                     'task_name' => $report->task->task_name,
@@ -1134,6 +1148,84 @@ class PreventiveMaintenanceController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Report {$statusLabel} successfully!",
+        ]);
+    }
+
+    /**
+     * Approve or reject sparepart usage on a PM report
+     */
+    public function reviewSparepartUsage(Request $request, PmTaskReport $report)
+    {
+        $request->validate([
+            'action' => 'required|in:approve,reject',
+            'notes'  => 'required_if:action,reject|nullable|string',
+        ]);
+
+        $report->load(['task', 'sparepartUsages.sparepart', 'submitter']);
+
+        if ($request->action === 'approve') {
+            // Decrement stock for each usage
+            foreach ($report->sparepartUsages as $usage) {
+                $sparepart = $usage->sparepart;
+                if (!$sparepart) continue;
+                $qty = min($usage->quantity_used, $sparepart->quantity);
+                if ($qty > 0) {
+                    $sparepart->decrement('quantity', $qty);
+                }
+            }
+
+            $report->update([
+                'status'                    => 'submitted',
+                'sparepart_approval_status' => 'approved',
+                'sparepart_approved_by'     => auth()->id(),
+                'sparepart_approved_at'     => now(),
+            ]);
+
+            $report->task->update([
+                'status'       => 'completed',
+                'completed_at' => now(),
+                'completed_by' => $report->submitted_by,
+            ]);
+
+            $report->task->logs()->create([
+                'user_id' => auth()->id(),
+                'action'  => 'sparepart_usage_approved',
+                'notes'   => 'Sparepart usage approved. Stock decremented.',
+            ]);
+
+        } else {
+            // Reject — delete usage records (no stock was decremented so nothing to reverse)
+            $report->sparepartUsages()->delete();
+
+            $report->update([
+                'status'                    => 'sparepart_rejected',
+                'sparepart_approval_status' => 'rejected',
+                'sparepart_approval_notes'  => $request->notes,
+                'sparepart_approved_by'     => auth()->id(),
+                'sparepart_approved_at'     => now(),
+            ]);
+
+            // Notify submitter by email
+            try {
+                \Mail::to($report->submitter->email)->send(
+                    new \App\Mail\PmSparepartRejected($report, $request->notes)
+                );
+            } catch (\Exception $e) {
+                \Log::error('Failed to send sparepart rejection email: ' . $e->getMessage());
+            }
+
+            $report->task->logs()->create([
+                'user_id' => auth()->id(),
+                'action'  => 'sparepart_usage_rejected',
+                'notes'   => 'Sparepart usage rejected: ' . $request->notes,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->action === 'approve'
+                ? 'Sparepart usage approved. Stock has been decremented.'
+                : 'Sparepart usage rejected. User has been notified.',
         ]);
     }
 

@@ -192,54 +192,60 @@ class PreventiveMaintenanceController extends Controller
         $taskDate      = \Carbon\Carbon::parse($task->task_date)->startOfDay();
         $dayDiff       = $submittedDate->diffInDays($taskDate, false) * -1;
 
-        // Create report
+        $usesSparePart = $request->sparepart_usage === 'yes' && $request->filled('spareparts');
+
+        // Create report — if spareparts used, hold at pending_sparepart_approval before submitted
         $report = PmTaskReport::create([
-            'pm_task_id'         => $task->id,
-            'description'        => $request->description,
-            'photos'             => $photos ?: null,
-            'status'             => 'submitted',
-            'submitted_by'       => auth()->id(),
-            'submitted_at'       => now(),
-            'submitted_day_diff' => (int) $dayDiff,
+            'pm_task_id'               => $task->id,
+            'description'              => $request->description,
+            'photos'                   => $photos ?: null,
+            'status'                   => $usesSparePart ? 'pending_sparepart_approval' : 'submitted',
+            'sparepart_approval_status' => $usesSparePart ? 'pending' : null,
+            'submitted_by'             => auth()->id(),
+            'submitted_at'             => now(),
+            'submitted_day_diff'       => (int) $dayDiff,
         ]);
 
-        // Process sparepart usages
-        if ($request->sparepart_usage === 'yes' && $request->filled('spareparts')) {
+        // Record sparepart usages (stock NOT decremented yet — happens on approval)
+        if ($usesSparePart) {
             foreach ($request->spareparts as $item) {
                 $sparepart = Sparepart::find($item['sparepart_id']);
                 if (!$sparepart) continue;
 
-                $qty = min((int)$item['quantity_used'], $sparepart->quantity);
-                if ($qty <= 0) continue;
-
                 SparepartUsage::create([
                     'pm_report_id'  => $report->id,
                     'sparepart_id'  => $sparepart->id,
-                    'quantity_used' => $qty,
+                    'quantity_used' => (int) $item['quantity_used'],
                     'used_at'       => now()->toDateString(),
                     'notes'         => 'Used in PM task: ' . $task->task_name,
                     'used_by'       => auth()->id(),
                 ]);
-
-                $sparepart->decrement('quantity', $qty);
             }
         }
 
-        // Update task status to completed
-        $task->update([
-            'status' => 'completed',
-            'completed_at' => now(),
-            'completed_by' => auth()->id(),
-        ]);
+        // If sparepart pending approval, keep task in_progress; otherwise mark completed
+        if ($usesSparePart) {
+            $task->update(['status' => 'in_progress']);
+        } else {
+            $task->update([
+                'status'       => 'completed',
+                'completed_at' => now(),
+                'completed_by' => auth()->id(),
+            ]);
+        }
 
         // Log the report submission
         $task->logs()->create([
             'user_id' => auth()->id(),
-            'action' => 'report_submitted',
-            'notes' => 'Report submitted with ' . count($photos) . ' photo(s)',
+            'action'  => 'report_submitted',
+            'notes'   => 'Report submitted with ' . count($photos) . ' photo(s)' . ($usesSparePart ? ', pending sparepart approval' : ''),
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Report submitted successfully!']);
+        $message = $usesSparePart
+            ? 'Report submitted. Menunggu approval penggunaan sparepart dari supervisor/admin.'
+            : 'Report submitted successfully!';
+
+        return response()->json(['success' => true, 'message' => $message]);
     }
 
     /**
@@ -247,7 +253,7 @@ class PreventiveMaintenanceController extends Controller
      */
     public function showReport(PmTask $task, PmTaskReport $report)
     {
-        $report->load(['submitter', 'reviewer', 'furtherRepairAssets']);
+        $report->load(['submitter', 'reviewer', 'furtherRepairAssets', 'sparepartApprover']);
 
         return response()->json([
             'success' => true,
@@ -269,6 +275,10 @@ class PreventiveMaintenanceController extends Controller
                 'submitted_at' => $report->submitted_at?->format('d M Y, H:i'),
                 'reviewed_by' => $report->reviewer->name ?? null,
                 'reviewed_at' => $report->reviewed_at?->format('d M Y, H:i'),
+                'sparepart_approval_status' => $report->sparepart_approval_status,
+                'sparepart_approval_notes'  => $report->sparepart_approval_notes,
+                'sparepart_approved_by'     => $report->sparepartApprover->name ?? null,
+                'sparepart_approved_at'     => $report->sparepart_approved_at?->format('d M Y, H:i'),
                 'further_repair_assets' => $report->furtherRepairAssets->map(function ($asset) {
                     return [
                         'id' => $asset->id,

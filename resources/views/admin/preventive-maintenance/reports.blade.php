@@ -24,8 +24,10 @@
                     <select name="report_status" class="form-select">
                         <option value="">All</option>
                         <option value="submitted" {{ request('report_status') == 'submitted' ? 'selected' : '' }}>Submitted (Pending Review)</option>
+                        <option value="pending_sparepart_approval" {{ request('report_status') == 'pending_sparepart_approval' ? 'selected' : '' }}>Pending Sparepart Approval</option>
                         <option value="approved" {{ request('report_status') == 'approved' ? 'selected' : '' }}>Approved</option>
                         <option value="revision_needed" {{ request('report_status') == 'revision_needed' ? 'selected' : '' }}>Revision Needed</option>
+                        <option value="sparepart_rejected" {{ request('report_status') == 'sparepart_rejected' ? 'selected' : '' }}>Sparepart Rejected</option>
                         <option value="no_report" {{ request('report_status') == 'no_report' ? 'selected' : '' }}>No Report</option>
                     </select>
                 </div>
@@ -85,6 +87,9 @@
                     @endif
                     @if($stats['submitted'] > 0)
                         <span class="badge bg-info">{{ $stats['submitted'] }} pending review</span>
+                    @endif
+                    @if(($stats['pending_sparepart_approval'] ?? 0) > 0)
+                        <span class="badge bg-warning text-dark"><i class="fas fa-boxes me-1"></i>{{ $stats['pending_sparepart_approval'] }} sparepart approval</span>
                     @endif
                     @if($stats['revision_needed'] > 0)
                         <span class="badge bg-warning text-dark">{{ $stats['revision_needed'] }} revision</span>
@@ -245,6 +250,7 @@
 <script>
 const reportShowUrl = '{{ route($routePrefix . ".preventive-maintenance.reports.show", ":id") }}';
 const reportReviewUrl = '{{ route($routePrefix . ".preventive-maintenance.reports.review", ":id") }}';
+const reportReviewSparepartUrl = '{{ route($routePrefix . ".preventive-maintenance.reports.review-sparepart", ":id") }}';
 const reportCreateCmUrl = '{{ route($routePrefix . ".preventive-maintenance.reports.create-cm", ":id") }}';
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
@@ -341,6 +347,70 @@ function viewReport(reportId) {
                 html += `</tbody></table></div></div>`;
             }
 
+            // Sparepart usages — pending approval
+            if (r.status === 'pending_sparepart_approval' && r.sparepart_usages && r.sparepart_usages.length > 0) {
+                html += `<hr><div class="mb-3">
+                    <label class="fw-semibold text-warning"><i class="fas fa-boxes me-1"></i> Sparepart Usage — Menunggu Approval</label>
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-warning">
+                                <tr><th>Nama Sparepart</th><th>Material Code</th><th>Qty Digunakan</th><th>Unit</th><th>Stock Saat Ini</th></tr>
+                            </thead>
+                            <tbody>`;
+                r.sparepart_usages.forEach(u => {
+                    const stockBadge = u.current_stock < u.quantity_used
+                        ? `<span class="text-danger fw-bold">${u.current_stock} ⚠ Kurang!</span>`
+                        : `<span class="text-success">${u.current_stock}</span>`;
+                    html += `<tr>
+                        <td>${u.name}</td>
+                        <td>${u.material_code || '-'}</td>
+                        <td><strong>${u.quantity_used}</strong></td>
+                        <td>${u.unit}</td>
+                        <td>${stockBadge}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>
+                    <div class="mb-2">
+                        <textarea id="sparepartRejectNotes" class="form-control" rows="2" placeholder="Alasan penolakan (wajib diisi jika reject)"></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-success" onclick="reviewSparepart(${r.id}, 'approve')">
+                            <i class="fas fa-check me-1"></i> Approve Sparepart
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="reviewSparepart(${r.id}, 'reject')">
+                            <i class="fas fa-times me-1"></i> Reject Sparepart
+                        </button>
+                    </div>
+                </div>`;
+            }
+
+            // Sparepart rejected info
+            if (r.status === 'sparepart_rejected') {
+                html += `<div class="alert alert-danger mb-3">
+                    <strong><i class="fas fa-times-circle me-1"></i> Sparepart Usage Ditolak</strong><br>
+                    ${r.sparepart_approval_notes || '-'}
+                    <br><small class="text-muted">Ditolak oleh ${r.sparepart_approved_by || '-'} pada ${r.sparepart_approved_at || '-'}</small>
+                </div>`;
+            }
+
+            // Sparepart approved info
+            if (r.sparepart_approval_status === 'approved' && r.sparepart_usages && r.sparepart_usages.length > 0) {
+                html += `<div class="mb-3">
+                    <label class="fw-semibold text-success"><i class="fas fa-boxes me-1"></i> Sparepart Digunakan (Approved)</label>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-success">
+                                <tr><th>Nama Sparepart</th><th>Material Code</th><th>Qty</th><th>Unit</th></tr>
+                            </thead>
+                            <tbody>`;
+                r.sparepart_usages.forEach(u => {
+                    html += `<tr><td>${u.name}</td><td>${u.material_code || '-'}</td><td>${u.quantity_used}</td><td>${u.unit}</td></tr>`;
+                });
+                html += `</tbody></table></div>
+                    <small class="text-muted">Approved oleh ${r.sparepart_approved_by || '-'} pada ${r.sparepart_approved_at || '-'}</small>
+                </div>`;
+            }
+
             // Review actions (only if status is 'submitted')
             if (r.status === 'submitted') {
                 html += `<hr>
@@ -395,6 +465,41 @@ function reviewReport(reportId, status) {
             location.reload();
         } else {
             alert(data.message || 'Failed to review report');
+        }
+    })
+    .catch(() => alert('An error occurred'))
+    .finally(() => { btn.disabled = false; btn.innerHTML = originalHtml; });
+}
+
+function reviewSparepart(reportId, action) {
+    const notes = document.getElementById('sparepartRejectNotes')?.value || '';
+
+    if (action === 'reject' && !notes.trim()) {
+        alert('Mohon isi alasan penolakan.');
+        return;
+    }
+
+    const btn = event.target;
+    btn.disabled = true;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    fetch(reportReviewSparepartUrl.replace(':id', reportId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ action, notes }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('reportDetailModal')).hide();
+            location.reload();
+        } else {
+            alert(data.message || 'Failed');
         }
     })
     .catch(() => alert('An error occurred'))

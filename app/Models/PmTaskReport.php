@@ -21,12 +21,17 @@ class PmTaskReport extends TenantModels
         'submitted_day_diff',
         'reviewed_by',
         'reviewed_at',
+        'sparepart_approval_status',
+        'sparepart_approval_notes',
+        'sparepart_approved_by',
+        'sparepart_approved_at',
     ];
 
     protected $casts = [
         'photos' => 'array',
         'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',
+        'sparepart_approved_at' => 'datetime',
     ];
 
     public function task(): BelongsTo
@@ -49,6 +54,11 @@ class PmTaskReport extends TenantModels
         return $this->hasMany(SparepartUsage::class, 'pm_report_id');
     }
 
+    public function sparepartApprover()
+    {
+        return $this->belongsTo(User::class, 'sparepart_approved_by');
+    }
+
     public function furtherRepairAssets(): BelongsToMany
     {
         return $this->belongsToMany(Asset::class, 'pm_task_report_assets')
@@ -62,6 +72,8 @@ class PmTaskReport extends TenantModels
             'submitted' => 'bg-info',
             'approved' => 'bg-success',
             'revision_needed' => 'bg-warning text-dark',
+            'pending_sparepart_approval' => 'bg-purple text-white',
+            'sparepart_rejected' => 'bg-danger',
             default => 'bg-secondary',
         };
     }
@@ -72,8 +84,15 @@ class PmTaskReport extends TenantModels
             'submitted' => 'Submitted',
             'approved' => 'Approved',
             'revision_needed' => 'Revision Needed',
+            'pending_sparepart_approval' => 'Pending Sparepart Approval',
+            'sparepart_rejected' => 'Sparepart Rejected',
             default => ucfirst($this->status),
         };
+    }
+
+    public function hasPendingSparepartApproval(): bool
+    {
+        return $this->status === 'pending_sparepart_approval';
     }
 
     /**
