@@ -15,8 +15,11 @@
             background: url('{{ asset('assets/maxresdefault.jpg') }}') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
-            padding: 30px 0;
+            padding: 16px 0;
             position: relative;
+        }
+        @media (min-width: 480px) {
+            body { padding: 30px 0; }
         }
         body::before {
             content: '';
@@ -41,27 +44,40 @@
         .track-header {
             background: #0095DA;
             color: white;
-            padding: 30px;
+            padding: 20px 16px;
             text-align: center;
+        }
+        .track-header h2 {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
         }
         .search-box {
             background: rgba(255,255,255,0.2);
             border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
+            padding: 14px;
+            margin-top: 16px;
         }
         .search-box input {
             border: none;
-            padding: 15px 20px;
+            padding: 10px 14px;
             border-radius: 8px;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
         }
         .search-box button {
-            padding: 15px 30px;
+            padding: 10px 16px;
             border-radius: 8px;
+            white-space: nowrap;
         }
         .track-body {
-            padding: 30px;
+            padding: 20px 16px;
+        }
+        @media (min-width: 480px) {
+            .track-header { padding: 30px; }
+            .track-header h2 { font-size: 1.75rem; }
+            .search-box { padding: 20px; margin-top: 20px; }
+            .search-box input { padding: 15px 20px; font-size: 1.1rem; }
+            .search-box button { padding: 15px 30px; }
+            .track-body { padding: 30px; }
         }
         .timeline {
             position: relative;
@@ -123,19 +139,27 @@
         }
         .info-row {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             padding: 8px 0;
             border-bottom: 1px solid #eee;
+            gap: 2px;
         }
         .info-row:last-child {
             border-bottom: none;
         }
         .info-label {
             color: #7f8c8d;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
         .info-value {
             font-weight: 500;
             color: #2c3e50;
+        }
+        @media (min-width: 480px) {
+            .info-row { flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 0; }
+            .info-label { font-size: inherit; text-transform: none; letter-spacing: 0; }
         }
         .status-badge {
             padding: 8px 20px;
@@ -154,11 +178,14 @@
         .status-cancelled { background: #95a5a6; color: white; }
         .child-ticket-card {
             border-left: 3px solid #0095DA;
-            margin-left: 20px;
-            padding: 15px;
+            margin-left: 8px;
+            padding: 12px;
             background: #f8f9fa;
             border-radius: 0 8px 8px 0;
             margin-bottom: 10px;
+        }
+        @media (min-width: 480px) {
+            .child-ticket-card { margin-left: 20px; padding: 15px; }
         }
         .timeline-dot.warning {
             background: #fd7e14;
@@ -339,7 +366,7 @@
 
                                 @foreach($ticket->childTickets as $child)
                                 <div class="child-ticket-card">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
                                         <div>
                                             <strong>{{ $child->ticket_number }}</strong>
                                             <p class="text-muted small mb-0">Created: {{ $child->created_at->format('d M Y, H:i') }}</p>

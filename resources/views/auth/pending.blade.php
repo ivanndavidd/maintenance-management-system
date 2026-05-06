@@ -41,7 +41,7 @@
             width: 100%;
             max-width: 550px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px;
             position: relative;
             z-index: 1;
         }
@@ -56,16 +56,21 @@
         .pending-header {
             background: #0095DA;
             color: white;
-            padding: 40px 30px;
+            padding: 24px 20px;
             text-align: center;
         }
 
+        @media (min-width: 480px) {
+            .pending-header { padding: 40px 30px; }
+            .pending-body { padding: 35px 30px; }
+        }
+
         .pending-header .icon-container {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .pending-header i.main-icon {
-            font-size: 70px;
+            font-size: 48px;
             animation: pulse 2s infinite;
             display: inline-block;
         }
@@ -101,7 +106,7 @@
         }
 
         .pending-body {
-            padding: 35px 30px;
+            padding: 20px 16px;
         }
 
         .info-box {

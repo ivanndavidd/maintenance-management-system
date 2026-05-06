@@ -15,8 +15,11 @@
             background: url('{{ asset('assets/maxresdefault.jpg') }}') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
-            padding: 30px 0;
+            padding: 16px 0;
             position: relative;
+        }
+        @media (min-width: 480px) {
+            body { padding: 30px 0; }
         }
         body::before {
             content: '';
@@ -41,20 +44,27 @@
         .form-header {
             background: #0095DA;
             color: white;
-            padding: 30px;
+            padding: 20px 16px;
             text-align: center;
         }
         .form-header h1 {
             margin: 0;
-            font-size: 1.8rem;
+            font-size: 1.3rem;
             font-weight: 600;
         }
         .form-header p {
-            margin: 10px 0 0 0;
+            margin: 8px 0 0 0;
             opacity: 0.9;
+            font-size: 13px;
         }
         .form-body {
-            padding: 30px;
+            padding: 20px 16px;
+        }
+        @media (min-width: 480px) {
+            .form-header { padding: 30px; }
+            .form-header h1 { font-size: 1.8rem; }
+            .form-header p { font-size: 1rem; }
+            .form-body { padding: 30px; }
         }
         .section-title {
             color: #2c3e50;
@@ -66,9 +76,13 @@
         .btn-submit {
             background: #0095DA;
             border: none;
-            padding: 15px 40px;
-            font-size: 1.1rem;
+            padding: 12px 24px;
+            font-size: 1rem;
             font-weight: 600;
+            width: 100%;
+        }
+        @media (min-width: 480px) {
+            .btn-submit { padding: 15px 40px; font-size: 1.1rem; width: auto; }
         }
         .btn-submit:hover {
             background: #007AB8;
@@ -87,13 +101,13 @@
         /* Category Card Styles */
         .category-card {
             border: none;
-            border-radius: 16px;
-            padding: 20px 15px;
+            border-radius: 12px;
+            padding: 14px 10px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: center;
             width: 100%;
-            min-height: 130px;
+            min-height: 100px;
             background: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             position: relative;
@@ -102,6 +116,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+        }
+        @media (min-width: 480px) {
+            .category-card { border-radius: 16px; padding: 20px 15px; min-height: 130px; }
         }
         .category-card::before {
             content: '';
@@ -134,15 +151,18 @@
             display: none;
         }
         .category-card .icon-wrapper {
-            width: 60px;
-            height: 60px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             background: linear-gradient(135deg, #E6F7FF 0%, #B3E0F7 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 12px;
+            margin: 0 auto 8px;
             transition: all 0.3s;
+        }
+        @media (min-width: 480px) {
+            .category-card .icon-wrapper { width: 60px; height: 60px; margin-bottom: 12px; }
         }
         .category-card:hover .icon-wrapper {
             transform: scale(1.1);
@@ -151,9 +171,12 @@
             background: rgba(255,255,255,0.25);
         }
         .category-card i {
-            font-size: 1.6rem;
+            font-size: 1.3rem;
             color: #0095DA;
             transition: all 0.3s;
+        }
+        @media (min-width: 480px) {
+            .category-card i { font-size: 1.6rem; }
         }
         .category-card.selected i {
             color: white;
