@@ -150,19 +150,14 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form id="reportForm" enctype="multipart/form-data">
+                    <form id="reportForm_showspv" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Detail Kegiatan <span class="text-danger">*</span></label>
                             <textarea name="description" class="form-control" rows="5" required placeholder="Jelaskan kegiatan PM yang telah dilakukan..."></textarea>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Sparepart</label>
-                            <small class="text-muted d-block mb-2">Pilih sparepart yang digunakan (opsional)</small>
-                            <select id="assetSelect" class="form-select" multiple></select>
-                            <div id="selectedAssetsContainer" class="mt-2"></div>
-                        </div>
+                        @include('supervisor.my-tasks.preventive-maintenance.partials.pm-sparepart-usage', ['formId' => 'showspv'])
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Foto Dokumentasi</label>
@@ -232,63 +227,12 @@
     </div>
 </div>
 
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
-@endpush
-
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 const csrfToken = '{{ csrf_token() }}';
 const taskId = {{ $task->id }};
 const updateStatusUrl = '/supervisor/my-tasks/preventive-maintenance/task/' + taskId + '/status';
 const storeReportUrl = '/supervisor/my-tasks/preventive-maintenance/task/' + taskId + '/report';
-const assetSearchUrl = '{{ route("supervisor.my-tasks.preventive-maintenance.assets.search") }}';
-
-let selectedAssets = [];
-
-$(document).ready(function() {
-    $('#assetSelect').select2({
-        placeholder: 'Klik untuk memilih sparepart...',
-        allowClear: true,
-        width: '100%',
-        theme: 'bootstrap-5',
-        ajax: {
-            url: assetSearchUrl,
-            dataType: 'json',
-            delay: 250,
-            data: function(params) { return { q: params.term || '' }; },
-            processResults: function(data) { return { results: data.results }; },
-            cache: false,
-        },
-        minimumInputLength: 0,
-    });
-
-    $('#assetSelect').on('select2:select', function(e) {
-        const asset = e.params.data;
-        if (!selectedAssets.find(a => a.id == asset.id)) {
-            selectedAssets.push({ id: asset.id, text: asset.text, notes: '' });
-            renderSelectedAssets();
-        }
-        $(this).val(null).trigger('change');
-    });
-});
-
-function renderSelectedAssets() {
-    const container = document.getElementById('selectedAssetsContainer');
-    if (!container) return;
-    if (selectedAssets.length === 0) { container.innerHTML = ''; return; }
-    let html = '<div class="list-group">';
-    selectedAssets.forEach((asset, index) => {
-        html += `<div class="list-group-item"><div class="d-flex justify-content-between align-items-start"><div class="flex-grow-1"><strong>${asset.text}</strong><input type="text" class="form-control form-control-sm mt-1" placeholder="Catatan (opsional)" value="${asset.notes}" onchange="selectedAssets[${index}].notes = this.value"></div><button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="removeAsset(${index})"><i class="fas fa-times"></i></button></div></div>`;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-function removeAsset(index) { selectedAssets.splice(index, 1); renderSelectedAssets(); }
 
 document.getElementById('reportPhotos')?.addEventListener('change', function() {
     const preview = document.getElementById('photoPreview');
@@ -320,7 +264,7 @@ function updateStatus(status) {
     .catch(() => alert('An error occurred'));
 }
 
-const reportForm = document.getElementById('reportForm');
+const reportForm = document.getElementById('reportForm_showspv');
 if (reportForm) {
     reportForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -329,11 +273,6 @@ if (reportForm) {
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Submitting...';
 
         const formData = new FormData(this);
-
-        selectedAssets.forEach((asset, i) => {
-            formData.append(`assets[${i}][id]`, asset.id);
-            formData.append(`assets[${i}][notes]`, asset.notes);
-        });
 
         fetch(storeReportUrl, {
             method: 'POST',

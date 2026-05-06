@@ -10,6 +10,7 @@ class SparepartUsage extends TenantModels
 
     protected $fillable = [
         'cm_report_id',
+        'pm_report_id',
         'ticket_number',
         'sparepart_id',
         'quantity_used',
