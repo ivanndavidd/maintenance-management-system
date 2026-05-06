@@ -13,35 +13,35 @@
 
     <!-- Stats Cards -->
     @if($totalTasks > 0)
-    <div class="row mb-4">
-        <div class="col-md-3">
+    <div class="row g-2 mb-4">
+        <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h3 class="mb-1 fw-bold">{{ $totalTasks }}</h3>
+                <div class="card-body text-center py-2 py-md-3">
+                    <h4 class="mb-1 fw-bold">{{ $totalTasks }}</h4>
                     <small class="text-muted">Total Tasks</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h3 class="mb-1 fw-bold text-success">{{ $completedTasks }}</h3>
+                <div class="card-body text-center py-2 py-md-3">
+                    <h4 class="mb-1 fw-bold text-success">{{ $completedTasks }}</h4>
                     <small class="text-muted">Completed</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h3 class="mb-1 fw-bold text-primary">{{ $inProgressTasks }}</h3>
+                <div class="card-body text-center py-2 py-md-3">
+                    <h4 class="mb-1 fw-bold text-primary">{{ $inProgressTasks }}</h4>
                     <small class="text-muted">In Progress</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h3 class="mb-1 fw-bold text-warning">{{ $pendingTasks }}</h3>
+                <div class="card-body text-center py-2 py-md-3">
+                    <h4 class="mb-1 fw-bold text-warning">{{ $pendingTasks }}</h4>
                     <small class="text-muted">Pending</small>
                 </div>
             </div>
@@ -66,8 +66,8 @@
                         <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-outline-primary me-2">
+                <div class="col-12 col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-outline-primary">
                         <i class="fas fa-search"></i> Filter
                     </button>
                     <a href="{{ route('supervisor.my-tasks.preventive-maintenance') }}" class="btn btn-outline-secondary">
@@ -94,32 +94,32 @@
         $stats = $monthlyStats[$month];
     @endphp
     <div class="card mb-4">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center" role="button" data-bs-toggle="collapse" data-bs-target="#month-{{ $month }}">
-            <div>
-                <h5 class="mb-0">
-                    <i class="fas fa-calendar me-2"></i>{{ $monthDate->format('F Y') }}
-                    <span class="badge bg-secondary ms-2">{{ $stats['total'] }} tasks</span>
-                </h5>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <div class="d-flex gap-2">
-                    @if($stats['completed'] > 0)
-                        <span class="badge bg-success">{{ $stats['completed'] }} done</span>
-                    @endif
-                    @if($stats['in_progress'] > 0)
-                        <span class="badge bg-primary">{{ $stats['in_progress'] }} in progress</span>
-                    @endif
-                    @if($stats['pending'] > 0)
-                        <span class="badge bg-warning text-dark">{{ $stats['pending'] }} pending</span>
-                    @endif
-                </div>
-                <div style="width: 120px;">
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-success" style="width: {{ $stats['progress'] }}%"></div>
+        <div class="card-header bg-white" role="button" data-bs-toggle="collapse" data-bs-target="#month-{{ $month }}">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="fas fa-calendar me-1"></i>{{ $monthDate->format('M Y') }}
+                    <span class="badge bg-secondary ms-1">{{ $stats['total'] }}</span>
+                </h6>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="d-none d-sm-flex gap-1">
+                        @if($stats['completed'] > 0)
+                            <span class="badge bg-success">{{ $stats['completed'] }} done</span>
+                        @endif
+                        @if($stats['in_progress'] > 0)
+                            <span class="badge bg-primary">{{ $stats['in_progress'] }} prog</span>
+                        @endif
+                        @if($stats['pending'] > 0)
+                            <span class="badge bg-warning text-dark">{{ $stats['pending'] }} pend</span>
+                        @endif
                     </div>
-                    <small class="text-muted">{{ $stats['progress'] }}%</small>
+                    <div style="width: 80px;">
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-success" style="width: {{ $stats['progress'] }}%"></div>
+                        </div>
+                        <small class="text-muted" style="font-size:11px;">{{ $stats['progress'] }}%</small>
+                    </div>
+                    <i class="fas fa-chevron-down text-muted"></i>
                 </div>
-                <i class="fas fa-chevron-down"></i>
             </div>
         </div>
         <div class="collapse show" id="month-{{ $month }}">
@@ -207,8 +207,8 @@
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                         @elseif($task->status !== 'completed')
-                                            <div class="d-flex gap-1">
-                                                <select class="form-select form-select-sm" style="min-width: 120px;" onchange="updateTaskStatus({{ $task->id }}, this.value, this)">
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <select class="form-select form-select-sm" style="min-width: 90px; max-width: 110px;" onchange="updateTaskStatus({{ $task->id }}, this.value, this)">
                                                     <option value="" disabled selected>Status</option>
                                                     <option value="pending" {{ $task->status === 'pending' ? 'disabled' : '' }}>Pending</option>
                                                     <option value="in_progress" {{ $task->status === 'in_progress' ? 'disabled' : '' }}>In Progress</option>

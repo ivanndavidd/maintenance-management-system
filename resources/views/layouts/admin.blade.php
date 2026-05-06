@@ -281,6 +281,51 @@
  padding-right: 1.5rem;
  }
 
+ /* Mobile */
+ @media (max-width: 768px) {
+     .sidebar {
+         left: -100%;
+         transition: left 0.3s ease, width 0.3s ease;
+     }
+     .sidebar.show {
+         left: 0;
+         width: 280px;
+     }
+     .sidebar:hover {
+         width: 280px;
+     }
+     .main-content {
+         margin-left: 0 !important;
+         width: 100% !important;
+     }
+     .main-content .container-fluid {
+         padding-left: 0.75rem;
+         padding-right: 0.75rem;
+     }
+     .mobile-toggle-admin {
+         display: flex !important;
+     }
+ }
+
+ .mobile-toggle-admin {
+     display: none;
+     position: fixed;
+     bottom: 20px;
+     right: 20px;
+     width: 52px;
+     height: 52px;
+     border-radius: 50%;
+     background: #0095DA;
+     border: none;
+     color: white;
+     font-size: 20px;
+     align-items: center;
+     justify-content: center;
+     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+     z-index: 1200;
+     cursor: pointer;
+ }
+
  .navbar-top {
  background: white;
  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -763,6 +808,11 @@
  </div>
  </div>
 
+ <!-- Mobile Toggle Button -->
+ <button class="mobile-toggle-admin" id="mobileToggleAdmin" onclick="toggleAdminSidebar()">
+     <i class="fas fa-bars"></i>
+ </button>
+
  <!-- Modals (rendered outside main-content to avoid overflow/z-index issues) -->
  @stack('modals')
 
@@ -770,6 +820,22 @@
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
  <script>
+ // Mobile sidebar toggle
+ function toggleAdminSidebar() {
+     document.getElementById('sidebar').classList.toggle('show');
+ }
+
+ // Close sidebar when clicking outside on mobile
+ document.addEventListener('click', function(e) {
+     if (window.innerWidth <= 768) {
+         const sidebar = document.getElementById('sidebar');
+         const toggle = document.getElementById('mobileToggleAdmin');
+         if (sidebar && toggle && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+             sidebar.classList.remove('show');
+         }
+     }
+ });
+
  // Toggle submenu functions
  function toggleInventoryMenu() {
  const submenu = document.getElementById('inventorySubmenu');

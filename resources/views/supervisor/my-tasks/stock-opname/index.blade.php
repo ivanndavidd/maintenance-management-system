@@ -12,7 +12,7 @@
     </div>
 
     <!-- Schedules Cards -->
-    <div class="row">
+    <div class="row g-3">
         @forelse($schedules as $schedule)
             @php
                 $progressPercentage = $schedule->getProgressPercentage();
@@ -28,7 +28,7 @@
                 $statusColor = $statusColors[$schedule->status] ?? 'secondary';
             @endphp
 
-            <div class="col-md-6 mb-4">
+            <div class="col-12 col-md-6">
                 <div class="card h-100">
                     <div class="card-header bg-{{ $statusColor }} text-white">
                         <h5 class="mb-0">
