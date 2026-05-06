@@ -435,15 +435,7 @@
  @stack('styles')
 </head>
 <body>
- <!-- Global Loading Overlay -->
- <div class="loading-overlay" id="globalLoading">
- <div class="loading-spinner">
- <div class="spinner-border text-light" role="status">
- <span class="visually-hidden">Loading... 
- </div>
- <div class="loading-text">Processing...</div>
- </div>
- </div>
+ <!-- Global Loading Overlay removed -->
 
  <div class="container-fluid p-0">
  <div class="row g-0">
