@@ -711,12 +711,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Disable loading overlay for download template link on this page
+// Force hide loading overlay on this page — it gets stuck after navigation
 document.addEventListener('DOMContentLoaded', function() {
+    hideLoading();
     document.querySelectorAll('a[href*="export-template"]').forEach(function(link) {
         link.addEventListener('click', function(e) {
             e.stopImmediatePropagation();
-            setTimeout(function() { hideLoading(); }, 100);
+            setTimeout(function() { hideLoading(); }, 200);
         }, true);
     });
 });

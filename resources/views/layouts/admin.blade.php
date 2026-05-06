@@ -943,14 +943,10 @@
  });
 
  // Hide loading when page fully loads
- window.addEventListener('pageshow', function() {
- hideLoading();
- });
-
- // Hide loading when window regains focus (e.g. after file download dialog)
- window.addEventListener('focus', function() {
- hideLoading();
- });
+ window.addEventListener('pageshow', function() { hideLoading(); });
+ window.addEventListener('load', function() { hideLoading(); });
+ document.addEventListener('DOMContentLoaded', function() { hideLoading(); });
+ window.addEventListener('focus', function() { hideLoading(); });
 
  // Hide loading when any modal is shown
  document.querySelectorAll('.modal').forEach(modal => {
