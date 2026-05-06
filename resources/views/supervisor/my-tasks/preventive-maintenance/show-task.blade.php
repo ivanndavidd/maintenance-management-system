@@ -158,8 +158,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Asset yang Butuh Further Repair</label>
-                            <small class="text-muted d-block mb-2">Pilih asset yang memerlukan perbaikan lanjutan (opsional)</small>
+                            <label class="form-label fw-semibold">Sparepart</label>
+                            <small class="text-muted d-block mb-2">Pilih sparepart yang digunakan (opsional)</small>
                             <select id="assetSelect" class="form-select" multiple></select>
                             <div id="selectedAssetsContainer" class="mt-2"></div>
                         </div>
