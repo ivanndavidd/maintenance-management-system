@@ -573,9 +573,9 @@ Route::middleware(['auth'])->group(function () {
                         'createCmFromReport',
                     ])->name('reports.create-cm');
 
-                    // Asset search for report form
+                    // Sparepart search for report form
                     Route::get('/assets/search', [
-                        App\Http\Controllers\Admin\AssetController::class,
+                        App\Http\Controllers\Admin\SparepartController::class,
                         'search',
                     ])->name('assets.search');
 
@@ -1005,9 +1005,9 @@ Route::middleware(['auth'])->group(function () {
                         'showPmReport',
                     ])->name('preventive-maintenance.task.show-report');
 
-                    // Asset search for report form
+                    // Sparepart search for report form
                     Route::get('/preventive-maintenance/assets/search', [
-                        App\Http\Controllers\Admin\AssetController::class,
+                        App\Http\Controllers\Admin\SparepartController::class,
                         'search',
                     ])->name('preventive-maintenance.assets.search');
 
@@ -1240,9 +1240,9 @@ Route::middleware(['auth'])->group(function () {
                         'showReport',
                     ])->name('task.show-report');
 
-                    // Asset search for report form
+                    // Sparepart search for report form
                     Route::get('/assets/search', [
-                        App\Http\Controllers\Admin\AssetController::class,
+                        App\Http\Controllers\Admin\SparepartController::class,
                         'search',
                     ])->name('assets.search');
                 });

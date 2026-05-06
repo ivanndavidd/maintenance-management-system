@@ -699,6 +699,32 @@ class SparepartController extends Controller
         }
     }
 
+    public function search(Request $request)
+    {
+        $q = $request->get('q', '');
+
+        $query = Sparepart::query();
+
+        if ($q !== '') {
+            $query->where(function ($qb) use ($q) {
+                $qb->where('sparepart_name', 'like', "%{$q}%")
+                    ->orWhere('sparepart_id', 'like', "%{$q}%")
+                    ->orWhere('material_code', 'like', "%{$q}%");
+            });
+        }
+
+        $results = $query->orderBy('sparepart_name')
+            ->get()
+            ->map(function ($sp) {
+                return [
+                    'id' => $sp->id,
+                    'text' => ($sp->sparepart_id ?? '-') . ' - ' . $sp->sparepart_name,
+                ];
+            });
+
+        return response()->json(['results' => $results]);
+    }
+
     public function downloadTemplate()
     {
         $headers = [

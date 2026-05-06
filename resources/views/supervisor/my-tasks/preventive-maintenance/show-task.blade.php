@@ -96,7 +96,7 @@
 
                     @if($latestReport->furtherRepairAssets->count() > 0)
                     <div class="mb-3">
-                        <label class="fw-semibold d-block mb-1">Further Repair Assets</label>
+                        <label class="fw-semibold d-block mb-1">Sparepart</label>
                         <div class="table-responsive">
                             <table class="table table-sm table-bordered mb-0">
                                 <thead class="table-light">
@@ -251,7 +251,7 @@ let selectedAssets = [];
 
 $(document).ready(function() {
     $('#assetSelect').select2({
-        placeholder: 'Klik untuk memilih asset...',
+        placeholder: 'Klik untuk memilih sparepart...',
         allowClear: true,
         width: '100%',
         theme: 'bootstrap-5',
@@ -261,7 +261,7 @@ $(document).ready(function() {
             delay: 250,
             data: function(params) { return { q: params.term || '' }; },
             processResults: function(data) { return { results: data.results }; },
-            cache: true,
+            cache: false,
         },
         minimumInputLength: 0,
     });
