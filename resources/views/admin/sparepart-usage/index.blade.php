@@ -59,11 +59,17 @@
                             <tr>
                                 <td><small>{{ $usage->used_at->format('d M Y') }}</small></td>
                                 <td>
-                                    @if($usage->ticket_number)
-                                        <small class="badge bg-light text-dark border">{{ $usage->ticket_number }}</small>
+                                    @if($usage->ticket_number && $usage->cmTicket)
+                                        <a href="{{ route($routePrefix . '.corrective-maintenance.show', $usage->cmTicket) }}" class="badge bg-light text-dark border text-decoration-none">
+                                            {{ $usage->ticket_number }}
+                                        </a>
                                     @elseif($usage->pm_report_id && $usage->pmReport?->task)
                                         <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle">PM</span>
-                                        <small class="d-block text-muted mt-1" style="max-width:160px;">{{ $usage->pmReport->task->task_name }}</small>
+                                        <small class="d-block mt-1" style="max-width:160px;">
+                                            <a href="{{ route($routePrefix . '.preventive-maintenance.reports.show', $usage->pmReport) }}" class="text-muted text-decoration-none">
+                                                {{ $usage->pmReport->task->task_name }}
+                                            </a>
+                                        </small>
                                     @else
                                         <small class="text-muted">-</small>
                                     @endif

@@ -11,7 +11,7 @@ class SparepartUsageController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SparepartUsage::with(['sparepart', 'usedByUser', 'pmReport.task'])
+        $query = SparepartUsage::with(['sparepart', 'usedByUser', 'pmReport.task', 'cmTicket'])
             ->where(function ($q) {
                 $q->whereNull('pm_report_id')
                   ->orWhereExists(function ($sub) {
