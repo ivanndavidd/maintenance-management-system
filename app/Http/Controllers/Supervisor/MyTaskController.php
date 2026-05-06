@@ -98,8 +98,10 @@ class MyTaskController extends Controller
         $inProgressTasks = $tasks->where('status', 'in_progress')->count();
         $pendingTasks = $tasks->where('status', 'pending')->count();
 
+        $spareparts = \App\Models\Sparepart::orderBy('sparepart_name')->get();
+
         return view('supervisor.my-tasks.preventive-maintenance.index', compact(
-            'tasksByMonth', 'monthlyStats', 'totalTasks', 'completedTasks', 'inProgressTasks', 'pendingTasks'
+            'tasksByMonth', 'monthlyStats', 'totalTasks', 'completedTasks', 'inProgressTasks', 'pendingTasks', 'spareparts'
         ));
     }
 
@@ -115,7 +117,9 @@ class MyTaskController extends Controller
 
         $task->load('latestReport.furtherRepairAssets', 'logs.user');
 
-        return view('supervisor.my-tasks.preventive-maintenance.show-task', compact('task'));
+        $spareparts = \App\Models\Sparepart::orderBy('sparepart_name')->get();
+
+        return view('supervisor.my-tasks.preventive-maintenance.show-task', compact('task', 'spareparts'));
     }
 
     /**
@@ -198,9 +202,10 @@ class MyTaskController extends Controller
         $request->validate([
             'description' => 'required|string',
             'photos.*' => 'nullable|image|max:5120',
-            'assets' => 'nullable|array',
-            'assets.*.id' => 'required_with:assets|exists:assets_master,id',
-            'assets.*.notes' => 'nullable|string',
+            'sparepart_usage' => 'nullable|in:yes,no',
+            'spareparts' => 'required_if:sparepart_usage,yes|array|min:1',
+            'spareparts.*.sparepart_id' => 'required_with:spareparts|exists:spareparts,id',
+            'spareparts.*.quantity_used' => 'required_with:spareparts|integer|min:1',
         ]);
 
         // Store photos
@@ -232,12 +237,25 @@ class MyTaskController extends Controller
             'submitted_day_diff' => (int) $dayDiff,
         ]);
 
-        // Attach further repair assets
-        if ($request->filled('assets')) {
-            foreach ($request->assets as $assetData) {
-                $report->furtherRepairAssets()->attach($assetData['id'], [
-                    'notes' => $assetData['notes'] ?? null,
+        // Process sparepart usages
+        if ($request->sparepart_usage === 'yes' && $request->filled('spareparts')) {
+            foreach ($request->spareparts as $item) {
+                $sparepart = \App\Models\Sparepart::find($item['sparepart_id']);
+                if (!$sparepart) continue;
+
+                $qty = min((int)$item['quantity_used'], $sparepart->quantity);
+                if ($qty <= 0) continue;
+
+                \App\Models\SparepartUsage::create([
+                    'pm_report_id'  => $report->id,
+                    'sparepart_id'  => $sparepart->id,
+                    'quantity_used' => $qty,
+                    'used_at'       => now()->toDateString(),
+                    'notes'         => 'Used in PM task: ' . $task->task_name,
+                    'used_by'       => auth()->id(),
                 ]);
+
+                $sparepart->decrement('quantity', $qty);
             }
         }
 

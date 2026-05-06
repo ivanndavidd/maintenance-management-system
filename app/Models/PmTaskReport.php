@@ -44,6 +44,11 @@ class PmTaskReport extends TenantModels
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
+    public function sparepartUsages()
+    {
+        return $this->hasMany(SparepartUsage::class, 'pm_report_id');
+    }
+
     public function furtherRepairAssets(): BelongsToMany
     {
         return $this->belongsToMany(Asset::class, 'pm_task_report_assets')

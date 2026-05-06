@@ -233,7 +233,7 @@
 <div class="modal fade" id="reportModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="reportForm" enctype="multipart/form-data">
+            <form id="reportForm_spv" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>Submit PM Report</h5>
@@ -251,12 +251,7 @@
                         <textarea name="description" id="reportDescription" class="form-control" rows="4" required placeholder="Jelaskan detail kegiatan PM yang dilakukan..."></textarea>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Sparepart</label>
-                        <small class="text-muted d-block mb-2">Pilih sparepart yang digunakan (opsional)</small>
-                        <select id="assetSelect" class="form-select" multiple></select>
-                        <div id="selectedAssetsContainer" class="mt-2"></div>
-                    </div>
+                    @include('supervisor.my-tasks.preventive-maintenance.partials.pm-sparepart-usage', ['formId' => 'spv'])
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Foto Dokumentasi</label>
@@ -300,53 +295,8 @@
 @endpush
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-const assetSearchUrl = '{{ route("supervisor.my-tasks.preventive-maintenance.assets.search") }}';
 const reportBaseUrl = '/supervisor/my-tasks/preventive-maintenance/task';
-
-let selectedAssets = [];
-
-$(document).ready(function() {
-    $('#assetSelect').select2({
-        placeholder: 'Klik untuk memilih sparepart...',
-        allowClear: true,
-        width: '100%',
-        theme: 'bootstrap-5',
-        ajax: {
-            url: assetSearchUrl,
-            dataType: 'json',
-            delay: 250,
-            data: function(params) { return { q: params.term || '' }; },
-            processResults: function(data) { return { results: data.results }; },
-            cache: false,
-        },
-        minimumInputLength: 0,
-    });
-
-    $('#assetSelect').on('select2:select', function(e) {
-        const asset = e.params.data;
-        if (!selectedAssets.find(a => a.id == asset.id)) {
-            selectedAssets.push({ id: asset.id, text: asset.text, notes: '' });
-            renderSelectedAssets();
-        }
-        $(this).val(null).trigger('change');
-    });
-});
-
-function renderSelectedAssets() {
-    const container = document.getElementById('selectedAssetsContainer');
-    if (selectedAssets.length === 0) { container.innerHTML = ''; return; }
-    let html = '<div class="list-group">';
-    selectedAssets.forEach((asset, index) => {
-        html += `<div class="list-group-item"><div class="d-flex justify-content-between align-items-start"><div class="flex-grow-1"><strong>${asset.text}</strong><input type="text" class="form-control form-control-sm mt-1" placeholder="Catatan (opsional)" value="${asset.notes}" onchange="selectedAssets[${index}].notes = this.value"></div><button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="removeAsset(${index})"><i class="fas fa-times"></i></button></div></div>`;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-function removeAsset(index) { selectedAssets.splice(index, 1); renderSelectedAssets(); }
 
 function openReportModal(taskId, taskName, taskDate, shiftId) {
     document.getElementById('reportTaskId').value = taskId;
@@ -356,9 +306,12 @@ function openReportModal(taskId, taskName, taskDate, shiftId) {
     document.getElementById('reportDescription').value = '';
     document.getElementById('reportPhotos').value = '';
     document.getElementById('photoPreview').innerHTML = '';
-    selectedAssets = [];
-    renderSelectedAssets();
-    $('#assetSelect').val(null).trigger('change');
+
+    const noRadio = document.getElementById('spUsageNo_spv');
+    if (noRadio) { noRadio.checked = true; noRadio.dispatchEvent(new Event('change')); }
+    const rows = document.getElementById('sparepartRows_spv');
+    if (rows) rows.innerHTML = '';
+
     const modalEl = document.getElementById('reportModal');
     const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
     modal.show();
@@ -380,24 +333,14 @@ document.getElementById('reportPhotos').addEventListener('change', function() {
     });
 });
 
-document.getElementById('reportForm').addEventListener('submit', function(e) {
+document.getElementById('reportForm_spv').addEventListener('submit', function(e) {
     e.preventDefault();
     const taskId = document.getElementById('reportTaskId').value;
     const btn = document.getElementById('submitReportBtn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Submitting...';
 
-    const formData = new FormData();
-    formData.append('description', document.getElementById('reportDescription').value);
-    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-
-    const photos = document.getElementById('reportPhotos').files;
-    for (let i = 0; i < photos.length; i++) formData.append('photos[]', photos[i]);
-
-    selectedAssets.forEach((asset, i) => {
-        formData.append(`assets[${i}][id]`, asset.id);
-        formData.append(`assets[${i}][notes]`, asset.notes);
-    });
+    const formData = new FormData(this);
 
     fetch(`${reportBaseUrl}/${taskId}/report`, {
         method: 'POST',
