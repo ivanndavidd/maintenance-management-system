@@ -39,3 +39,19 @@ Schedule::command('pm:alert-missing-shift-schedule')
     ->daily()
     ->at('18:00')
     ->description('Alert supervisors about missing shift schedules for tomorrow');
+
+// Shift summary emails (5 minutes before each shift starts)
+Schedule::command('shift:send-summary --shift=1')
+    ->daily()
+    ->at('21:55')
+    ->description('Send shift 1 summary email (5 min before 22:00 start)');
+
+Schedule::command('shift:send-summary --shift=2')
+    ->daily()
+    ->at('05:55')
+    ->description('Send shift 2 summary email (5 min before 06:00 start)');
+
+Schedule::command('shift:send-summary --shift=3')
+    ->daily()
+    ->at('13:55')
+    ->description('Send shift 3 summary email (5 min before 14:00 start)');
