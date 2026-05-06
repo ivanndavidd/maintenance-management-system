@@ -723,7 +723,7 @@ Route::middleware(['auth'])->group(function () {
     // ========================================
     Route::prefix('supervisor')
         ->name('supervisor.')
-        ->middleware([RoleMiddleware::class . ':supervisor_maintenance'])
+        ->middleware([RoleMiddleware::class . ':supervisor_maintenance|admin'])
         ->group(function () {
             // Dashboard
             Route::get('/dashboard', [
