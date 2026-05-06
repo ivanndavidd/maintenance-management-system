@@ -32,4 +32,9 @@ class SparepartUsage extends TenantModels
     {
         return $this->belongsTo(User::class, 'used_by');
     }
+
+    public function pmReport()
+    {
+        return $this->belongsTo(PmTaskReport::class, 'pm_report_id');
+    }
 }

@@ -45,7 +45,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Date</th>
-                                <th>CM Ticket</th>
+                                <th>Ticket / Task</th>
                                 <th>Sparepart</th>
                                 <th>Material Code</th>
                                 <th class="text-center">Qty Used</th>
@@ -61,6 +61,9 @@
                                 <td>
                                     @if($usage->ticket_number)
                                         <small class="badge bg-light text-dark border">{{ $usage->ticket_number }}</small>
+                                    @elseif($usage->pm_report_id && $usage->pmReport?->task)
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle">PM</span>
+                                        <small class="d-block text-muted mt-1" style="max-width:160px;">{{ $usage->pmReport->task->task_name }}</small>
                                     @else
                                         <small class="text-muted">-</small>
                                     @endif
