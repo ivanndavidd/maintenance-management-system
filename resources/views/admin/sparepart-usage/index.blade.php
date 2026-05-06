@@ -64,9 +64,14 @@
                                             {{ $usage->ticket_number }}
                                         </a>
                                     @elseif($usage->pm_report_id && $usage->pmReport?->task)
-                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle">PM</span>
+                                        @php
+                                            $pmUrl = $routePrefix === 'admin'
+                                                ? route('admin.preventive-maintenance.reports') . '?search=' . urlencode($usage->pmReport->task->task_name)
+                                                : route('supervisor.preventive-maintenance.task.show', $usage->pmReport->task);
+                                        @endphp
+                                        <a href="{{ $pmUrl }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none">PM</a>
                                         <small class="d-block mt-1" style="max-width:160px;">
-                                            <a href="{{ route($routePrefix . '.preventive-maintenance.reports.show', $usage->pmReport) }}" class="text-muted text-decoration-none">
+                                            <a href="{{ $pmUrl }}" class="text-muted text-decoration-none">
                                                 {{ $usage->pmReport->task->task_name }}
                                             </a>
                                         </small>
