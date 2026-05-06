@@ -65,7 +65,7 @@
                                         </a>
                                     @elseif($usage->pm_report_id && $usage->pmReport?->task)
                                         @php
-                                            $pmUrl = route($routePrefix . '.preventive-maintenance.reports') . '?search=' . urlencode($usage->pmReport->task->task_name);
+                                            $pmUrl = route($routePrefix . '.preventive-maintenance.reports') . '?open_report=' . $usage->pmReport->id;
                                         @endphp
                                         <a href="{{ $pmUrl }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none">PM</a>
                                         <small class="d-block mt-1" style="max-width:160px;">
