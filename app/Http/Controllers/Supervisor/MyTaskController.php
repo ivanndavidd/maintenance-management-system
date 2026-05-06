@@ -829,83 +829,65 @@ class MyTaskController extends Controller
             ->where('execution_status', 'pending')
             ->get();
 
-        return response()->streamDownload(function() use ($items) {
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Stock Opname');
 
-            // Set sheet title
-            $sheet->setTitle('Stock Opname');
+        $headers = ['Item Type', 'Item Code', 'Item Name', 'Location', 'Physical Qty', 'Notes'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $col++;
+        }
 
-            // Define headers (tanpa Item ID dan System Qty untuk meningkatkan akurasi)
-            $headers = ['Item Type', 'Item Code', 'Item Name', 'Location', 'Physical Qty', 'Notes'];
+        $sheet->getStyle('A1:F1')->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+        ]);
 
-            // Set headers in row 1
-            $col = 'A';
-            foreach ($headers as $header) {
-                $sheet->setCellValue($col . '1', $header);
-                $col++;
+        $row = 2;
+        foreach ($items as $item) {
+            $location = '-';
+            if ($item->item_type === 'sparepart' && $item->sparepart) {
+                $location = $item->sparepart->location ?? '-';
+            } elseif ($item->item_type === 'asset' && $item->asset) {
+                $location = $item->asset->location ?? '-';
             }
 
-            // Style header row
-            $sheet->getStyle('A1:F1')->applyFromArray([
-                'font' => [
-                    'bold' => true,
-                    'color' => ['rgb' => 'FFFFFF'],
-                ],
-                'fill' => [
-                    'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '4472C4'],
-                ],
-                'alignment' => [
-                    'horizontal' => Alignment::HORIZONTAL_CENTER,
-                    'vertical' => Alignment::VERTICAL_CENTER,
-                ],
+            $sheet->setCellValue('A' . $row, ucfirst($item->item_type));
+            $sheet->setCellValueExplicit('B' . $row, $item->getItemCode(), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValue('C' . $row, $item->getItemName());
+            $sheet->setCellValue('D' . $row, $location);
+            $sheet->setCellValue('E' . $row, '');
+            $sheet->setCellValue('F' . $row, '');
+            $row++;
+        }
+
+        $sheet->getColumnDimension('A')->setWidth(12);
+        $sheet->getColumnDimension('B')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(40);
+        $sheet->getColumnDimension('D')->setWidth(15);
+        $sheet->getColumnDimension('E')->setWidth(15);
+        $sheet->getColumnDimension('F')->setWidth(30);
+
+        if ($row > 2) {
+            $sheet->getStyle('A1:F' . ($row - 1))->applyFromArray([
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '000000']]],
             ]);
+        }
 
-            // Fill data rows
-            $row = 2;
-            foreach ($items as $item) {
-                $location = '-';
-                if ($item->item_type === 'sparepart' && $item->sparepart) {
-                    $location = $item->sparepart->location ?? '-';
-                } elseif ($item->item_type === 'asset' && $item->asset) {
-                    $location = $item->asset->location ?? '-';
-                }
+        $writer = new Xlsx($spreadsheet);
+        $tempFile = tempnam(sys_get_temp_dir(), 'opname_');
+        $writer->save($tempFile);
+        $content = file_get_contents($tempFile);
+        unlink($tempFile);
 
-                $sheet->setCellValue('A' . $row, ucfirst($item->item_type));
-                // Set Item Code as text to prevent scientific notation
-                $sheet->setCellValueExplicit('B' . $row, $item->getItemCode(), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-                $sheet->setCellValue('C' . $row, $item->getItemName());
-                $sheet->setCellValue('D' . $row, $location);
-                $sheet->setCellValue('E' . $row, ''); // Physical Qty - to be filled
-                $sheet->setCellValue('F' . $row, ''); // Notes - optional
-
-                $row++;
-            }
-
-            // Set column widths
-            $sheet->getColumnDimension('A')->setWidth(12);  // Item Type
-            $sheet->getColumnDimension('B')->setWidth(20);  // Item Code
-            $sheet->getColumnDimension('C')->setWidth(40);  // Item Name
-            $sheet->getColumnDimension('D')->setWidth(15);  // Location
-            $sheet->getColumnDimension('E')->setWidth(15);  // Physical Qty
-            $sheet->getColumnDimension('F')->setWidth(30);  // Notes
-
-            // Add borders to all cells with data
-            if ($row > 2) {
-                $sheet->getStyle('A1:F' . ($row - 1))->applyFromArray([
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgb' => '000000'],
-                        ],
-                    ],
-                ]);
-            }
-
-            $writer = new Xlsx($spreadsheet);
-            $writer->save('php://output');
-        }, $filename);
+        return response($content, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Length' => strlen($content),
+        ]);
     }
 
     /**
