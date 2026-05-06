@@ -231,18 +231,8 @@
                                 <td>{{ $scheduleItem->getItemName() }}</td>
                                 <td class="physical-qty-cell">
                                     @if($scheduleItem->execution_status == 'completed')
-                                        {{-- Show value with conditional edit for negative discrepancy --}}
-                                        @if($scheduleItem->discrepancy_qty < 0)
-                                            <span class="display-value" style="display: none;">{{ $scheduleItem->physical_quantity }}</span>
-                                            <input type="number"
-                                                class="form-control form-control-sm edit-input"
-                                                min="0"
-                                                step="1"
-                                                value="{{ $scheduleItem->physical_quantity }}"
-                                                placeholder="Enter qty">
-                                        @else
-                                            <span class="display-value">{{ $scheduleItem->physical_quantity }}</span>
-                                        @endif
+                                        {{-- Completed items are always locked regardless of discrepancy --}}
+                                        <span class="display-value">{{ $scheduleItem->physical_quantity }}</span>
                                     @else
                                         {{-- Pending items: Show input directly --}}
                                         <span class="display-value" style="display: none;">-</span>
@@ -279,15 +269,7 @@
                                 </td>
                                 <td class="action-cell">
                                     @if($scheduleItem->execution_status == 'completed')
-                                        @if($scheduleItem->discrepancy_qty < 0)
-                                            {{-- Negative discrepancy: show clear button --}}
-                                            <button type="button" class="btn btn-sm btn-secondary clear-btn" title="Clear">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        @else
-                                            {{-- Positive or zero: locked --}}
-                                            <i class="fas fa-check-circle text-success"></i>
-                                        @endif
+                                        <i class="fas fa-check-circle text-success"></i>
                                     @else
                                         {{-- Pending: show clear button --}}
                                         <button type="button" class="btn btn-sm btn-secondary clear-btn" title="Clear">
