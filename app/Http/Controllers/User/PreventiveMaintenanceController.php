@@ -111,7 +111,9 @@ class PreventiveMaintenanceController extends Controller
 
         $task->load('latestReport.furtherRepairAssets', 'logs.user');
 
-        return view('user.preventive-maintenance.show', compact('task'));
+        $spareparts = Sparepart::orderBy('sparepart_name')->get();
+
+        return view('user.preventive-maintenance.show', compact('task', 'spareparts'));
     }
 
     public function updateTaskStatus(Request $request, PmTask $task)
