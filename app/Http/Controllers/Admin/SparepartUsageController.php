@@ -11,7 +11,16 @@ class SparepartUsageController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SparepartUsage::with(['sparepart', 'usedByUser'])
+        $query = SparepartUsage::with(['sparepart', 'usedByUser', 'pmReport.task'])
+            ->where(function ($q) {
+                $q->whereNull('pm_report_id')
+                  ->orWhereExists(function ($sub) {
+                      $sub->selectRaw('1')
+                          ->from('pm_task_reports')
+                          ->whereColumn('pm_task_reports.id', 'sparepart_usages.pm_report_id')
+                          ->where('pm_task_reports.sparepart_approval_status', 'approved');
+                  });
+            })
             ->latest('used_at');
 
         if ($request->filled('search')) {
