@@ -177,6 +177,11 @@
                                             <span class="badge {{ $latestReport->getStatusBadgeClass() }} mt-1" style="font-size: 10px;">
                                                 <i class="fas fa-file-alt"></i> {{ $latestReport->getStatusLabel() }}
                                             </span>
+                                            @if($reportStatus === 'sparepart_rejected' && $latestReport->sparepart_approval_notes)
+                                                <br><small class="text-danger" style="font-size:10px;" title="{{ $latestReport->sparepart_approval_notes }}">
+                                                    <i class="fas fa-exclamation-circle"></i> {{ Str::limit($latestReport->sparepart_approval_notes, 40) }}
+                                                </small>
+                                            @endif
                                         @endif
                                     </td>
                                     <td>

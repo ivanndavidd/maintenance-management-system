@@ -181,6 +181,11 @@
                                             <span class="badge {{ $latestReport->getStatusBadgeClass() }} mt-1" style="font-size: 10px;">
                                                 <i class="fas fa-file-alt"></i> {{ $latestReport->getStatusLabel() }}
                                             </span>
+                                            @if($reportStatus === 'sparepart_rejected' && $latestReport->sparepart_approval_notes)
+                                                <br><small class="text-danger" style="font-size:10px;" title="{{ $latestReport->sparepart_approval_notes }}">
+                                                    <i class="fas fa-exclamation-circle"></i> {{ Str::limit($latestReport->sparepart_approval_notes, 40) }}
+                                                </small>
+                                            @endif
                                             @if($latestReport->timing_label)
                                                 <br>
                                                 <span class="badge {{ $latestReport->timing_badge_class }} mt-1" style="font-size: 10px;" title="Submitted on {{ $latestReport->submitted_at?->format('d M Y') }}">
@@ -373,6 +378,7 @@ function viewReport(taskId, reportId) {
             let html = `<div class="alert alert-light border"><strong>${r.task.task_name}</strong><br><small class="text-muted">Date: ${r.task.task_date} | Shift: ${r.task.shift ? 'Shift ' + r.task.shift : '-'}</small></div>
                 <div class="mb-3"><label class="fw-semibold">Status</label><br><span class="badge ${r.status_badge}">${r.status_label}</span><small class="text-muted ms-2">Submitted by ${r.submitted_by} on ${r.submitted_at}</small></div>`;
             if (r.admin_comments) html += `<div class="alert alert-warning mb-3"><strong>Admin Comments:</strong><br>${r.admin_comments}</div>`;
+            if (r.status === 'sparepart_rejected') html += `<div class="alert alert-danger mb-3"><strong><i class="fas fa-times-circle me-1"></i> Penggunaan Sparepart Ditolak</strong><br>${r.sparepart_approval_notes || '-'}<br><small class="text-muted">Ditolak oleh ${r.sparepart_approved_by || '-'} pada ${r.sparepart_approved_at || '-'}</small></div>`;
             html += `<div class="mb-3"><label class="fw-semibold">Detail Kegiatan</label><p class="mb-0">${r.description}</p></div>`;
             if (r.photos && r.photos.length > 0) {
                 html += '<div class="mb-3"><label class="fw-semibold">Foto</label><div class="d-flex flex-wrap gap-2">';
