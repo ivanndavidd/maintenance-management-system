@@ -185,7 +185,7 @@
 
                     {{-- Excel Export/Import Buttons --}}
                     <div class="btn-group">
-                        <a href="{{ route('supervisor.my-tasks.stock-opname.export-template', $schedule->id) }}" class="btn btn-primary">
+                        <a href="{{ route('supervisor.my-tasks.stock-opname.export-template', $schedule->id) }}" class="btn btn-primary" data-no-loading>
                             <i class="fas fa-download"></i> Download Template
                         </a>
                         <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importModal">
