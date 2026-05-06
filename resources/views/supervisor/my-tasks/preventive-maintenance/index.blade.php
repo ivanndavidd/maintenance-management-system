@@ -310,7 +310,7 @@ let selectedAssets = [];
 
 $(document).ready(function() {
     $('#assetSelect').select2({
-        placeholder: 'Klik untuk memilih asset...',
+        placeholder: 'Klik untuk memilih sparepart...',
         allowClear: true,
         width: '100%',
         theme: 'bootstrap-5',
@@ -320,7 +320,7 @@ $(document).ready(function() {
             delay: 250,
             data: function(params) { return { q: params.term || '' }; },
             processResults: function(data) { return { results: data.results }; },
-            cache: true,
+            cache: false,
         },
         minimumInputLength: 0,
     });
@@ -437,7 +437,7 @@ function viewReport(taskId, reportId) {
                 html += '</div></div>';
             }
             if (r.further_repair_assets && r.further_repair_assets.length > 0) {
-                html += '<div class="mb-3"><label class="fw-semibold">Further Repair Assets</label><div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Equipment ID</th><th>Name</th><th>Location</th><th>Notes</th></tr></thead><tbody>';
+                html += '<div class="mb-3"><label class="fw-semibold">Sparepart</label><div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Equipment ID</th><th>Name</th><th>Location</th><th>Notes</th></tr></thead><tbody>';
                 r.further_repair_assets.forEach(a => { html += `<tr><td>${a.equipment_id}</td><td>${a.asset_name}</td><td>${a.location || '-'}</td><td>${a.notes || '-'}</td></tr>`; });
                 html += '</tbody></table></div></div>';
             }
