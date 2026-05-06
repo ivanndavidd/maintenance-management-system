@@ -69,7 +69,7 @@
                                         @endphp
                                         <a href="{{ $pmUrl }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none">PM</a>
                                         <small class="d-block mt-1" style="max-width:160px;">
-                                            <a href="{{ $pmUrl }}" class="text-muted text-decoration-none">
+                                            <a href="{{ $pmUrl }}" class="text-primary text-decoration-underline">
                                                 {{ $usage->pmReport->task->task_name }}
                                             </a>
                                         </small>
