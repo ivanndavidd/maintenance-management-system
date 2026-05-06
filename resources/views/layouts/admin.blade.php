@@ -743,10 +743,10 @@
  <!-- Main Content -->
  <div class="main-content" id="mainContent">
  <!-- Top Navbar -->
- <nav class="navbar navbar-top px-4 py-3">
- <div class="d-flex justify-content-between w-100">
- <h5 class="mb-0">@yield('page-title', 'Dashboard')</h5>
- <div class="d-flex align-items-center gap-3">
+ <nav class="navbar navbar-top px-3 py-2">
+ <div class="d-flex flex-wrap justify-content-between align-items-center w-100 gap-2">
+ <h6 class="mb-0 fw-bold">@yield('page-title', 'Dashboard')</h6>
+ <div class="d-flex align-items-center gap-2 flex-wrap">
  @if(session('current_site_code'))
  @php
      try {
@@ -759,7 +759,8 @@
      <button class="btn btn-sm btn-outline-info dropdown-toggle d-flex align-items-center gap-1"
              type="button" data-bs-toggle="dropdown" aria-expanded="false">
          <i class="fas fa-building"></i>
-         <span>{{ session('current_site_name') }}</span>
+         <span class="d-none d-sm-inline">{{ session('current_site_name') }}</span>
+         <span class="d-inline d-sm-none">{{ Str::limit(session('current_site_name'), 12) }}</span>
      </button>
      <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width:220px;">
          <li><h6 class="dropdown-header"><i class="fas fa-exchange-alt me-1"></i> Switch Site</h6></li>
@@ -795,17 +796,19 @@
      </ul>
  </div>
  @endif
- <span>Welcome, {{ auth()->user()->name }}
- <span class="badge bg-success ms-2">
- {{ auth()->user()->roles->first()->name ?? 'User' }}
- </span>
- </span>
+ <div class="d-flex align-items-center gap-1">
+     <span class="d-none d-sm-inline" style="font-size:13px;">Welcome, {{ auth()->user()->name }}</span>
+     <span class="d-inline d-sm-none" style="font-size:12px;">{{ explode(' ', auth()->user()->name)[0] }}</span>
+     <span class="badge bg-success" style="font-size:10px; white-space:nowrap;">
+         {{ Str::limit(auth()->user()->roles->first()->name ?? 'User', 12) }}
+     </span>
+ </div>
  </div>
  </div>
  </nav>
 
  <!-- Content -->
- <div class="p-4">
+ <div class="p-2 p-md-4">
  @if (session('success'))
  <div class="alert alert-success alert-dismissible fade show">
  {{ session('success') }}
