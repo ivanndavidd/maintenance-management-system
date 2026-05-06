@@ -568,6 +568,11 @@ Route::middleware(['auth'])->group(function () {
                         'reviewReport',
                     ])->name('reports.review');
 
+                    Route::post('/reports/{report}/review-sparepart', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'reviewSparepartUsage',
+                    ])->name('reports.review-sparepart');
+
                     Route::post('/reports/{report}/create-cm', [
                         App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
                         'createCmFromReport',
@@ -946,6 +951,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/reports', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'reports'])->name('reports');
                 Route::get('/reports/{report}', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'showReport'])->name('reports.show');
                 Route::post('/reports/{report}/review', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'reviewReport'])->name('reports.review');
+                Route::post('/reports/{report}/review-sparepart', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'reviewSparepartUsage'])->name('reports.review-sparepart');
                 Route::post('/reports/{report}/create-cm', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'createCmFromReport'])->name('reports.create-cm');
 
                 // Asset search

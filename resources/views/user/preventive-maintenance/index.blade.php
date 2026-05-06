@@ -184,6 +184,18 @@
                                             <span class="text-success"><i class="fas fa-check-circle"></i> Approved</span>
                                         @elseif($reportStatus === 'submitted')
                                             <span class="text-info"><i class="fas fa-clock"></i> Pending Review</span>
+                                        @elseif($reportStatus === 'pending_sparepart_approval')
+                                            <span class="text-warning"><i class="fas fa-boxes"></i> Pending Sparepart Approval</span>
+                                            <button type="button" class="btn btn-sm btn-outline-info ms-1" onclick="viewReport({{ $task->id }}, {{ $latestReport->id }})" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        @elseif($reportStatus === 'sparepart_rejected')
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="openReportModal({{ $task->id }}, '{{ addslashes($task->task_name) }}', '{{ $task->task_date?->format('d M Y') }}', {{ $task->assigned_shift_id ?? 'null' }})">
+                                                <i class="fas fa-redo"></i> Resubmit
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-info" onclick="viewReport({{ $task->id }}, {{ $latestReport->id }})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
                                         @elseif($reportStatus === 'revision_needed')
                                             <button type="button" class="btn btn-sm btn-warning" onclick="openReportModal({{ $task->id }}, '{{ addslashes($task->task_name) }}', '{{ $task->task_date?->format('d M Y') }}', {{ $task->assigned_shift_id ?? 'null' }})">
                                                 <i class="fas fa-edit"></i> Revise
@@ -386,6 +398,20 @@ function viewReport(taskId, reportId) {
                     <span class="badge ${r.status_badge}">${r.status_label}</span>
                     <small class="text-muted ms-2">Submitted by ${r.submitted_by} on ${r.submitted_at}</small>
                 </div>`;
+
+            if (r.status === 'sparepart_rejected' && r.sparepart_approval_notes) {
+                html += `<div class="alert alert-danger mb-3">
+                    <strong><i class="fas fa-times-circle me-1"></i> Penggunaan Sparepart Ditolak:</strong><br>${r.sparepart_approval_notes}
+                    <br><small class="text-muted">Ditolak oleh ${r.sparepart_approved_by || '-'} pada ${r.sparepart_approved_at || '-'}</small>
+                </div>`;
+            }
+
+            if (r.status === 'pending_sparepart_approval') {
+                html += `<div class="alert alert-warning mb-3">
+                    <strong><i class="fas fa-clock me-1"></i> Menunggu Approval Sparepart</strong><br>
+                    Penggunaan sparepart Anda sedang menunggu persetujuan supervisor/admin.
+                </div>`;
+            }
 
             if (r.admin_comments) {
                 html += `<div class="alert alert-warning mb-3">
