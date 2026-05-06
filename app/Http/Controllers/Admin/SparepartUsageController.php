@@ -37,8 +37,9 @@ class SparepartUsageController extends Controller
 
         $usages = $query->paginate(20)->appends($request->except('page'));
         $spareparts = Sparepart::orderBy('sparepart_name')->get();
+        $routePrefix = auth()->user()->hasRole('supervisor_maintenance') ? 'supervisor' : 'admin';
 
-        return view('admin.sparepart-usage.index', compact('usages', 'spareparts'));
+        return view('admin.sparepart-usage.index', compact('usages', 'spareparts', 'routePrefix'));
     }
 
     public function create()
