@@ -284,17 +284,21 @@
  /* Mobile */
  @media (max-width: 768px) {
      .sidebar {
-         left: -100%;
-         transition: left 0.3s ease, width 0.3s ease;
-     }
-     .sidebar.show {
-         left: 0;
-         width: 280px;
+         left: -280px !important;
+         width: 280px !important;
+         transition: left 0.3s ease !important;
      }
      .sidebar:hover {
-         width: 280px;
+         left: -280px !important;
+     }
+     .sidebar.show {
+         left: 0 !important;
      }
      .main-content {
+         margin-left: 0 !important;
+         width: 100% !important;
+     }
+     .sidebar:hover ~ .main-content {
          margin-left: 0 !important;
          width: 100% !important;
      }
@@ -304,6 +308,9 @@
      }
      .mobile-toggle-admin {
          display: flex !important;
+     }
+     .sidebar-backdrop {
+         display: block;
      }
  }
 
@@ -324,6 +331,14 @@
      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
      z-index: 1200;
      cursor: pointer;
+ }
+
+ .sidebar-backdrop {
+     display: none;
+     position: fixed;
+     top: 0; left: 0; right: 0; bottom: 0;
+     background: rgba(0,0,0,0.4);
+     z-index: 999;
  }
 
  .navbar-top {
@@ -813,6 +828,9 @@
      <i class="fas fa-bars"></i>
  </button>
 
+ <!-- Sidebar Backdrop (mobile) -->
+ <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleAdminSidebar()"></div>
+
  <!-- Modals (rendered outside main-content to avoid overflow/z-index issues) -->
  @stack('modals')
 
@@ -822,19 +840,11 @@
  <script>
  // Mobile sidebar toggle
  function toggleAdminSidebar() {
-     document.getElementById('sidebar').classList.toggle('show');
+     const sidebar = document.getElementById('sidebar');
+     const backdrop = document.getElementById('sidebarBackdrop');
+     const isOpen = sidebar.classList.toggle('show');
+     if (backdrop) backdrop.style.display = isOpen ? 'block' : 'none';
  }
-
- // Close sidebar when clicking outside on mobile
- document.addEventListener('click', function(e) {
-     if (window.innerWidth <= 768) {
-         const sidebar = document.getElementById('sidebar');
-         const toggle = document.getElementById('mobileToggleAdmin');
-         if (sidebar && toggle && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
-             sidebar.classList.remove('show');
-         }
-     }
- });
 
  // Toggle submenu functions
  function toggleInventoryMenu() {
