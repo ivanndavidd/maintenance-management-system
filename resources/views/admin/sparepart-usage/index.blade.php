@@ -60,7 +60,7 @@
                                 <td><small>{{ $usage->used_at->format('d M Y') }}</small></td>
                                 <td>
                                     @if($usage->ticket_number && $usage->cmTicket)
-                                        <a href="{{ route($routePrefix . '.corrective-maintenance.show', $usage->cmTicket) }}" class="badge bg-light text-dark border text-decoration-none">
+                                        <a href="{{ route($routePrefix . '.corrective-maintenance.show', $usage->cmTicket) }}" class="badge bg-light text-primary border text-decoration-underline">
                                             {{ $usage->ticket_number }}
                                         </a>
                                     @elseif($usage->pm_report_id && $usage->pmReport?->task)
