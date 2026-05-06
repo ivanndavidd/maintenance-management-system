@@ -12,35 +12,35 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
+    <div class="row g-2 mb-4">
+        <div class="col-6 col-md-3">
             <div class="card bg-secondary text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['total'] }}</h3>
+                <div class="card-body text-center py-2 py-md-3">
+                    <h4 class="mb-0">{{ $stats['total'] }}</h4>
                     <small>Total Assigned</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['in_progress'] }}</h3>
+                <div class="card-body text-center py-2 py-md-3">
+                    <h4 class="mb-0">{{ $stats['in_progress'] }}</h4>
                     <small>In Progress</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['done'] }}</h3>
+                <div class="card-body text-center py-2 py-md-3">
+                    <h4 class="mb-0">{{ $stats['done'] }}</h4>
                     <small>Done</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card bg-warning text-dark">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['further_repair'] }}</h3>
+                <div class="card-body text-center py-2 py-md-3">
+                    <h4 class="mb-0">{{ $stats['further_repair'] }}</h4>
                     <small>Further Repair</small>
                 </div>
             </div>
@@ -70,8 +70,8 @@
                         <option value="critical" {{ request('priority') == 'critical' ? 'selected' : '' }}>Critical</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">
+                <div class="col-12 col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary">
                         <i class="fas fa-search me-1"></i> Filter
                     </button>
                     <a href="{{ route('user.corrective-maintenance.index') }}" class="btn btn-secondary">

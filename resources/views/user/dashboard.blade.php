@@ -2,6 +2,14 @@
 
 @push('styles')
 <style>
+    /* Mobile stat card compact */
+    @media (max-width: 575px) {
+        .stat-card .card-body { padding: 10px 12px; }
+        .stat-card h2 { font-size: 1.4rem; }
+        .stat-card .fa-3x { font-size: 1.5rem !important; }
+        .stat-card h6 { font-size: 12px; }
+        .stat-card small { font-size: 11px; }
+    }
     /* Mini Calendar Styles */
     .mini-calendar {
         background: white;
@@ -246,14 +254,14 @@
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
         <div>
-            <h2><i class="fas fa-home"></i> My Dashboard</h2>
+            <h4 class="mb-1"><i class="fas fa-home"></i> My Dashboard</h4>
             <p class="text-muted mb-0">Welcome back, {{ auth()->user()->name }}!</p>
         </div>
         <div class="text-end">
             <small class="text-muted">
-                <i class="fas fa-calendar"></i> {{ now()->format('l, d F Y') }}
+                <i class="fas fa-calendar"></i> {{ now()->format('d M Y') }}
             </small>
         </div>
     </div>
@@ -261,8 +269,8 @@
     <!-- Row 1: Statistics Cards -->
     <div class="row g-3 mb-4">
         <!-- Pending Tasks Card -->
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-warning shadow-sm h-100">
+        <div class="col-xl-3 col-md-6 col-6">
+            <div class="card border-warning shadow-sm h-100 stat-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -279,8 +287,8 @@
         </div>
 
         <!-- In Progress Tasks Card -->
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-primary shadow-sm h-100">
+        <div class="col-xl-3 col-md-6 col-6">
+            <div class="card border-primary shadow-sm h-100 stat-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -297,8 +305,8 @@
         </div>
 
         <!-- Completed This Month Card -->
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-success shadow-sm h-100">
+        <div class="col-xl-3 col-md-6 col-6">
+            <div class="card border-success shadow-sm h-100 stat-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -321,8 +329,8 @@
 
         <!-- Further Repair Card -->
         @if($tasks['further_repair'] > 0)
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-danger shadow-sm h-100">
+        <div class="col-xl-3 col-md-6 col-6">
+            <div class="card border-danger shadow-sm h-100 stat-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>

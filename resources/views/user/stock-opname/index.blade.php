@@ -129,8 +129,8 @@
             <h6 class="mb-0"><i class="fas fa-info-circle"></i> How Stock Opname Works</h6>
         </div>
         <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
                     <h6 class="fw-bold">Your Role:</h6>
                     <ul class="small">
                         <li>You are assigned based on your shift schedule</li>
@@ -139,7 +139,7 @@
                         <li>Items you complete will be marked and removed from everyone's pending list</li>
                     </ul>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <h6 class="fw-bold">Execution Steps:</h6>
                     <ul class="small">
                         <li>Click "View Details & Execute" on a schedule</li>

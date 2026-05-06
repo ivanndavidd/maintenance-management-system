@@ -204,11 +204,15 @@
         .main-content {
             margin-left: 70px;
             min-height: 100vh;
-            padding: 25px;
+            padding: 16px;
             background-color: #f8fafc;
             transition: margin-left 0.3s ease, width 0.3s ease;
             width: calc(100% - 70px);
             overflow-x: hidden;
+        }
+
+        @media (min-width: 769px) {
+            .main-content { padding: 25px; }
         }
 
         /* Push content when sidebar is hovered */
@@ -229,6 +233,8 @@
 
             .main-content {
                 margin-left: 0;
+                width: 100%;
+                padding: 12px;
             }
 
             .mobile-toggle {
