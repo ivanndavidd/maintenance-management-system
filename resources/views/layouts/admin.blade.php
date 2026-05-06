@@ -911,13 +911,14 @@
  document.addEventListener('click', function(e) {
  const link = e.target.closest('a');
  if (!link) return;
- if (link.hasAttribute('data-no-loading')) return;
+ if (link.hasAttribute('data-no-loading') || link.getAttribute('data-no-loading') === '') return;
  if (link.hasAttribute('data-bs-toggle')) return;
  const href = link.getAttribute('href');
  const target = link.getAttribute('target');
- if (href && href !== '#' && !href.startsWith('javascript:') && !href.startsWith('#') && target !== '_blank') {
+ if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('#') || target === '_blank') return;
+ // Skip file download links (export, download, template)
+ if (href.includes('export') || href.includes('download') || href.includes('template')) return;
  showLoading('Loading...');
- }
  });
 
  // Add loading indicator to all form submissions
