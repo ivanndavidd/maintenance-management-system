@@ -205,13 +205,14 @@
                         <thead class="table-light">
                             <tr>
                                 <th width="5%">#</th>
-                                <th width="10%">Type</th>
-                                <th width="15%">Item Code</th>
-                                <th width="25%">Item Name</th>
-                                <th width="12%">Physical Qty</th>
+                                <th width="8%">Type</th>
+                                <th width="12%">Item Code</th>
+                                <th width="20%">Item Name</th>
+                                <th width="10%">Physical Qty</th>
                                 <th width="8%">Discrepancy</th>
-                                <th width="10%">Status</th>
-                                <th width="15%">Action</th>
+                                <th width="8%">Status</th>
+                                <th width="15%">Reject Reason</th>
+                                <th width="14%">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -265,6 +266,13 @@
                                         <span class="badge bg-success">Completed</span>
                                     @else
                                         <span class="badge bg-danger">Cancelled</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($scheduleItem->review_status === 'rejected' && $scheduleItem->review_notes)
+                                        <span class="text-danger small"><i class="fas fa-exclamation-circle me-1"></i>{{ $scheduleItem->review_notes }}</span>
+                                    @else
+                                        <span class="text-muted">-</span>
                                     @endif
                                 </td>
                                 <td class="action-cell">
