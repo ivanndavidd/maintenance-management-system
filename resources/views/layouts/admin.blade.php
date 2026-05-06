@@ -894,6 +894,14 @@
 
  // Global Loading Indicator Functions
  function showLoading(message = 'Processing...') {
+ // Never show loading if the active element or last clicked link is a download
+ const active = document.activeElement;
+ if (active && active.tagName === 'A') {
+ const href = active.getAttribute('href') || '';
+ if (active.hasAttribute('data-no-loading') || href.includes('export') || href.includes('download') || href.includes('template')) {
+ return;
+ }
+ }
  const loadingOverlay = document.getElementById('globalLoading');
  const loadingText = loadingOverlay.querySelector('.loading-text');
  loadingText.textContent = message;
