@@ -256,6 +256,13 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
 let currentReportId = null;
 
+// Auto-open modal if redirected from Sparepart Usage with ?open_report=
+document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    const openReport = params.get('open_report');
+    if (openReport) viewReport(parseInt(openReport));
+});
+
 function viewReport(reportId) {
     currentReportId = reportId;
     const modalEl = document.getElementById('reportDetailModal');
