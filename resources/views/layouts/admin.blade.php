@@ -428,33 +428,7 @@
 
  /* Loading Indicator Styles */
  .loading-overlay {
- display: none;
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- background: rgba(0, 0, 0, 0.7);
- z-index: 1070;
- justify-content: center;
- align-items: center;
- }
- .loading-overlay.show {
- display: flex;
- }
- .loading-spinner {
- text-align: center;
- color: white;
- }
- .loading-spinner .spinner-border {
- width: 4rem;
- height: 4rem;
- border-width: 0.4em;
- }
- .loading-text {
- margin-top: 1rem;
- font-size: 1.1rem;
- font-weight: 500;
+ display: none !important;
  }
  </style>
 
