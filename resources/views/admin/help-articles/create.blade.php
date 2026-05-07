@@ -197,21 +197,6 @@
                     </ul>
                 </div>
             </div>
-
-            <div class="card shadow-sm border-warning mt-3">
-                <div class="card-header bg-warning text-dark">
-                    <i class="fas fa-lightbulb"></i> Icon Examples
-                </div>
-                <div class="card-body small">
-                    <p class="mb-2"><i class="fas fa-question-circle text-info"></i> <code>fa-question-circle</code> - FAQ</p>
-                    <p class="mb-2"><i class="fas fa-clipboard-list text-primary"></i> <code>fa-clipboard-list</code> - Checklist</p>
-                    <p class="mb-2"><i class="fas fa-tools text-success"></i> <code>fa-tools</code> - Maintenance</p>
-                    <p class="mb-2"><i class="fas fa-cogs text-secondary"></i> <code>fa-cogs</code> - Settings</p>
-                    <p class="mb-2"><i class="fas fa-exclamation-triangle text-warning"></i> <code>fa-exclamation-triangle</code> - Warning</p>
-                    <p class="mb-2"><i class="fas fa-book text-info"></i> <code>fa-book</code> - Documentation</p>
-                    <p class="mb-0"><i class="fas fa-graduation-cap text-success"></i> <code>fa-graduation-cap</code> - Tutorial</p>
-                </div>
-            </div>
         </div>
     </div>
 </div>
