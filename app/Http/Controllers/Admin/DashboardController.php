@@ -377,24 +377,20 @@ class DashboardController extends Controller
 
     private function getCmKpi(Carbon $dateFrom, Carbon $dateTo): array
     {
-        $openStatuses = ['pending', 'received', 'in_progress', 'further_repair'];
-        $closedStatuses = ['completed', 'done'];
+        $base = CorrectiveMaintenanceRequest::whereBetween('created_at', [$dateFrom, $dateTo]);
 
-        $open = CorrectiveMaintenanceRequest::whereBetween('created_at', [$dateFrom, $dateTo])
-            ->whereIn('status', $openStatuses)
-            ->count();
-
-        $closed = CorrectiveMaintenanceRequest::whereBetween('created_at', [$dateFrom, $dateTo])
-            ->whereIn('status', $closedStatuses)
-            ->count();
-
-        $total = CorrectiveMaintenanceRequest::whereBetween('created_at', [$dateFrom, $dateTo])
-            ->count();
+        $open          = (clone $base)->whereIn('status', ['pending', 'received', 'in_progress'])->count();
+        $furtherRepair = (clone $base)->where('status', 'further_repair')->count();
+        $closed        = (clone $base)->whereIn('status', ['completed', 'done'])->count();
+        $cancelled     = (clone $base)->where('status', 'cancelled')->count();
+        $total         = (clone $base)->count();
 
         return [
-            'open' => $open,
-            'closed' => $closed,
-            'total' => $total,
+            'open'          => $open,
+            'further_repair'=> $furtherRepair,
+            'closed'        => $closed,
+            'cancelled'     => $cancelled,
+            'total'         => $total,
         ];
     }
 

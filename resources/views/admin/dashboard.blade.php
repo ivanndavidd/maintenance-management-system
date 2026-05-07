@@ -262,7 +262,7 @@
     }
     .kpi-metric-card {
         text-align: center;
-        padding: 20px 15px;
+        padding: 10px 8px;
         border-radius: 10px;
         transition: all 0.2s;
     }
@@ -270,10 +270,10 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    .kpi-metric-value { font-size: 28px; font-weight: 800; line-height: 1.2; }
+    .kpi-metric-value { font-size: 24px; font-weight: 800; line-height: 1.2; }
     .kpi-metric-label {
-        font-size: 12px; font-weight: 600; text-transform: uppercase;
-        letter-spacing: 0.5px; margin-top: 4px; color: #6c757d;
+        font-size: 11px; font-weight: 600; text-transform: uppercase;
+        letter-spacing: 0.5px; margin-top: 2px; color: #6c757d;
     }
     .kpi-custom-range { display: none; margin-top: 10px; }
     .kpi-custom-range.show { display: flex; }
@@ -389,18 +389,30 @@
                                     <div class="row g-2 mb-3">
                                         <div class="col-6">
                                             <div class="kpi-metric-card bg-warning bg-opacity-10">
-                                                <div class="kpi-metric-value text-warning" id="cmOpen">-</div>
+                                                <div class="kpi-metric-value text-warning" id="cmOpen" style="font-size:22px;">-</div>
                                                 <div class="kpi-metric-label">Open</div>
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="kpi-metric-card bg-success bg-opacity-10">
-                                                <div class="kpi-metric-value text-success" id="cmClosed">-</div>
+                                                <div class="kpi-metric-value text-success" id="cmClosed" style="font-size:22px;">-</div>
                                                 <div class="kpi-metric-label">Closed</div>
                                             </div>
                                         </div>
+                                        <div class="col-6">
+                                            <div class="kpi-metric-card bg-danger bg-opacity-10">
+                                                <div class="kpi-metric-value text-danger" id="cmFurtherRepair" style="font-size:22px;">-</div>
+                                                <div class="kpi-metric-label" style="font-size:10px;">Further Repair</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="kpi-metric-card bg-secondary bg-opacity-10">
+                                                <div class="kpi-metric-value text-secondary" id="cmCancelled" style="font-size:22px;">-</div>
+                                                <div class="kpi-metric-label">Cancelled</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div style="height: 180px; position: relative;">
+                                    <div style="height: 150px; position: relative;">
                                         <canvas id="cmKpiChart"></canvas>
                                     </div>
                                 </div>
@@ -1087,22 +1099,29 @@
     function updateCmKpi(cm) {
         document.getElementById('cmOpen').textContent = cm.open;
         document.getElementById('cmClosed').textContent = cm.closed;
+        document.getElementById('cmFurtherRepair').textContent = cm.further_repair ?? 0;
+        document.getElementById('cmCancelled').textContent = cm.cancelled ?? 0;
 
         if (cmKpiChart) cmKpiChart.destroy();
         const ctx = document.getElementById('cmKpiChart');
         cmKpiChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Open', 'Closed'],
+                labels: ['Open', 'Closed', 'Further Repair', 'Cancelled'],
                 datasets: [{
-                    data: [cm.open, cm.closed],
-                    backgroundColor: ['rgba(255,193,7,0.8)', 'rgba(40,167,69,0.8)'],
+                    data: [cm.open, cm.closed, cm.further_repair ?? 0, cm.cancelled ?? 0],
+                    backgroundColor: [
+                        'rgba(255,193,7,0.8)',
+                        'rgba(40,167,69,0.8)',
+                        'rgba(220,53,69,0.8)',
+                        'rgba(108,117,125,0.8)'
+                    ],
                     borderWidth: 2, borderColor: '#fff'
                 }]
             },
             options: {
                 responsive: true, maintainAspectRatio: false, cutout: '60%',
-                plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } } }
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8 } } }
             }
         });
     }
