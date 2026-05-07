@@ -198,9 +198,11 @@
                     <a href="{{ route($routePrefix.'.purchase-orders.create') }}?tool_id={{ $tool->id }}" class="btn btn-success btn-sm">
                         <i class="fas fa-shopping-cart"></i> Create Purchase Order
                     </a>
+                    @if(Route::has($routePrefix.'.opname.executions.create'))
                     <a href="{{ route($routePrefix.'.opname.executions.create') }}?tool_id={{ $tool->id }}" class="btn btn-info btn-sm">
                         <i class="fas fa-clipboard-check"></i> Record Opname
                     </a>
+                    @endif
                     <hr class="my-1">
                     <a href="{{ route($routePrefix.'.tools.index') }}" class="btn btn-secondary btn-sm">
                         <i class="fas fa-arrow-left"></i> Back to List
