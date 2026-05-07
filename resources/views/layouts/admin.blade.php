@@ -314,6 +314,15 @@
          margin-left: auto;
          margin-right: 45px;
      }
+     /* Show submenus on mobile when sidebar is open and submenu has .show */
+     .sidebar.show .sidebar-submenu.show {
+         display: block !important;
+         max-height: 500px !important;
+     }
+     /* Show chevron when sidebar open on mobile */
+     .sidebar.show .sidebar-dropdown .float-end {
+         opacity: 1 !important;
+     }
      .main-content {
          margin-left: 0 !important;
          width: 100% !important;
@@ -904,6 +913,17 @@
      const backdrop = document.getElementById('sidebarBackdrop');
      const isOpen = sidebar.classList.toggle('show');
      if (backdrop) backdrop.style.display = isOpen ? 'block' : 'none';
+
+     // When closing sidebar on mobile, collapse all submenus
+     if (!isOpen) {
+         document.querySelectorAll('.sidebar-submenu').forEach(function(submenu) {
+             submenu.classList.remove('show');
+         });
+         document.querySelectorAll('.sidebar-dropdown .float-end').forEach(function(chevron) {
+             chevron.classList.remove('fa-chevron-up');
+             chevron.classList.add('fa-chevron-down');
+         });
+     }
  }
 
  // Toggle submenu functions
