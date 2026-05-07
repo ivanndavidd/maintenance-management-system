@@ -250,10 +250,10 @@
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-between">
                             <a href="{{ route($routePrefix.'.work-reports.my-reports') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Cancel</span>
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i> Submit Report
+            <i class="fas fa-paper-plane"></i><span class="btn-text"> Submit Report</span>
                             </button>
                         </div>
                     </form>

@@ -49,7 +49,7 @@
                     <div class="col-md-2">
                         <label class="form-label">&nbsp;</label>
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-save"></i> Update
+            <i class="fas fa-save"></i><span class="btn-text"> Update</span>
                         </button>
                     </div>
                 </div>
@@ -397,7 +397,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-check"></i> OK
+            <i class="fas fa-check"></i><span class="btn-text"> OK</span>
                 </button>
             </div>
         </div>
@@ -433,10 +433,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> Cancel
+            <i class="fas fa-times"></i><span class="btn-text"> Cancel</span>
                 </button>
                 <button type="button" class="btn btn-primary" id="confirmAssignBtn">
-                    <i class="fas fa-check"></i> Yes, Assign Schedule
+            <i class="fas fa-check"></i><span class="btn-text"> Yes, Assign Schedule</span>
                 </button>
             </div>
         </div>
@@ -498,7 +498,7 @@
                     Cancel
                 </button>
                 <button type="button" class="btn btn-primary" onclick="submitShiftChange()">
-                    <i class="fas fa-check"></i> Apply Change
+            <i class="fas fa-check"></i><span class="btn-text"> Apply Change</span>
                 </button>
             </div>
         </div>
@@ -575,7 +575,7 @@
             </div>
             <div class="modal-footer justify-content-center">
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> Close
+            <i class="fas fa-times"></i><span class="btn-text"> Close</span>
                 </button>
             </div>
         </div>

@@ -17,7 +17,7 @@
         </div>
         <div>
             <a href="{{ route($routePrefix.'.jobs.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Create New Job
+            <i class="fas fa-plus"></i><span class="btn-text"> Create New Job</span>
             </a>
         </div>
     </div>
@@ -133,10 +133,10 @@
 
                     <div class="col-md-5 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary me-2">
-                            <i class="fas fa-search"></i> Apply Filters
+            <i class="fas fa-search"></i><span class="btn-text"> Apply Filters</span>
                         </button>
                         <a href="{{ route($routePrefix.'.jobs.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-redo"></i> Reset
+            <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
                         </a>
                     </div>
                 </div>

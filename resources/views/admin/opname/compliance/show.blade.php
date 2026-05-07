@@ -230,7 +230,7 @@
     <!-- Back Button -->
     <div class="mt-4">
         <a href="{{ route($routePrefix.'.opname.compliance.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Compliance Report List
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to Compliance Report List</span>
         </a>
     </div>
 </div>

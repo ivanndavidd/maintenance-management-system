@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5>Purchase Orders</h5>
         <a href="{{ route($routePrefix.'.purchase-orders.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Create Purchase Order
+            <i class="fas fa-plus"></i><span class="btn-text"> Create Purchase Order</span>
         </a>
     </div>
 
@@ -36,12 +36,12 @@
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter"></i> Filter
+            <i class="fas fa-filter"></i><span class="btn-text"> Filter</span>
                         </button>
                     </div>
                     <div class="col-md-2">
                         <a href="{{ route($routePrefix.'.purchase-orders.index') }}" class="btn btn-secondary w-100">
-                            <i class="fas fa-redo"></i> Reset
+            <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
                         </a>
                     </div>
                 </div>
@@ -224,7 +224,7 @@
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                             @if(!$hasStockItems)
                                 <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-trash"></i> Delete
+            <i class="fas fa-trash"></i><span class="btn-text"> Delete</span>
                                 </button>
                             @endif
                         </div>

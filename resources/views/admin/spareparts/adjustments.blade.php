@@ -18,7 +18,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Adjustment History</h5>
             <a href="{{ route(($routePrefix ?? 'admin').'.spareparts.adjustments.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Create Adjustment
+            <i class="fas fa-plus"></i><span class="btn-text"> Create Adjustment</span>
             </a>
         </div>
         <div class="card-body">

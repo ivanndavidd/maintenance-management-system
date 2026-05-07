@@ -10,7 +10,7 @@
             <p class="text-muted mb-0">Deduct sparepart stock by recording usage</p>
         </div>
         <a href="{{ route($routePrefix . '.sparepart-usage.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Back
+            <i class="fas fa-arrow-left me-1"></i><span class="btn-text"> Back</span>
         </a>
     </div>
 
@@ -73,7 +73,7 @@
 
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i> Record Usage
+            <i class="fas fa-save me-1"></i><span class="btn-text"> Record Usage</span>
                     </button>
                     <a href="{{ route($routePrefix . '.sparepart-usage.index') }}" class="btn btn-outline-secondary">Cancel</a>
                 </div>

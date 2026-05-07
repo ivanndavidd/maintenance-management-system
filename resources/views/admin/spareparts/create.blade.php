@@ -165,10 +165,10 @@
 
                         <div class="d-flex justify-content-between">
                             <a href="{{ route($routePrefix.'.spareparts.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Cancel</span>
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Save Sparepart
+            <i class="fas fa-save"></i><span class="btn-text"> Save Sparepart</span>
                             </button>
                         </div>
                     </form>

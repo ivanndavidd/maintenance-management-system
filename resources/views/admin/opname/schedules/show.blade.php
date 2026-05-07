@@ -25,15 +25,15 @@
             <h5><i class="fas fa-calendar-check"></i> Schedule Details</h5>
             <div class="btn-group">
                 <a href="{{ route($routePrefix.'.opname.schedules.export', $schedule) }}" class="btn btn-success" id="exportBtn"  onclick="handleExport(event)">
-                    <i class="fas fa-file-excel"></i> Export to Excel
+            <i class="fas fa-file-excel"></i><span class="btn-text"> Export to Excel</span>
                 </a>
                 @if($schedule->canBeClosed())
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#closeTicketModal">
-                        <i class="fas fa-check-circle"></i> Close Ticket
+            <i class="fas fa-check-circle"></i><span class="btn-text"> Close Ticket</span>
                     </button>
                 @elseif($schedule->ticket_status === 'closed')
                     <a href="{{ route($routePrefix.'.opname.compliance.show', $schedule) }}" class="btn btn-info">
-                        <i class="fas fa-file-alt"></i> View Compliance Report
+            <i class="fas fa-file-alt"></i><span class="btn-text"> View Compliance Report</span>
                     </a>
                 @endif
             </div>
@@ -646,11 +646,11 @@
                 <div class="card-body">
                     @if($schedule->ticket_status !== 'closed')
                         <a href="{{ route($routePrefix.'.opname.schedules.edit', $schedule) }}" class="btn btn-warning w-100 mb-2">
-                            <i class="fas fa-edit"></i> Edit Schedule
+            <i class="fas fa-edit"></i><span class="btn-text"> Edit Schedule</span>
                         </a>
                     @endif
                     <a href="{{ route($routePrefix.'.opname.schedules.index') }}" class="btn btn-secondary w-100">
-                        <i class="fas fa-arrow-left"></i> Back to List
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to List</span>
                     </a>
                 </div>
             </div>
@@ -744,7 +744,7 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn btn-success">
-                                <i class="fas fa-check"></i> Approve Discrepancy
+            <i class="fas fa-check"></i><span class="btn-text"> Approve Discrepancy</span>
                             </button>
                         </div>
                     </form>
@@ -793,7 +793,7 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-times"></i> Reject & Reset
+            <i class="fas fa-times"></i><span class="btn-text"> Reject & Reset</span>
                             </button>
                         </div>
                     </form>
@@ -849,10 +849,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancel
+            <i class="fas fa-times"></i><span class="btn-text"> Cancel</span>
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-sync"></i> Sync All Items
+            <i class="fas fa-sync"></i><span class="btn-text"> Sync All Items</span>
                     </button>
                 </div>
             </form>
@@ -900,10 +900,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancel
+            <i class="fas fa-times"></i><span class="btn-text"> Cancel</span>
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-check-circle"></i> Close Ticket
+            <i class="fas fa-check-circle"></i><span class="btn-text"> Close Ticket</span>
                     </button>
                 </div>
             </form>

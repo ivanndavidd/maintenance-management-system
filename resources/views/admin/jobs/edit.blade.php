@@ -301,10 +301,10 @@
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-between">
                             <a href="{{ route($routePrefix.'.jobs.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Cancel</span>
                             </a>
                             <button type="submit" class="btn btn-warning text-dark">
-                                <i class="fas fa-save"></i> Update Job
+            <i class="fas fa-save"></i><span class="btn-text"> Update Job</span>
                             </button>
                         </div>
                     </form>
@@ -435,7 +435,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning text-dark">
-                        <i class="fas fa-save"></i> Update Status
+            <i class="fas fa-save"></i><span class="btn-text"> Update Status</span>
                     </button>
                 </div>
             </form>

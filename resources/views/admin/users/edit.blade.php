@@ -191,10 +191,10 @@
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-between">
                             <a href="{{ route($routePrefix.'.users.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Cancel</span>
                             </a>
                             <button type="submit" class="btn btn-warning text-dark">
-                                <i class="fas fa-save"></i> Update User
+            <i class="fas fa-save"></i><span class="btn-text"> Update User</span>
                             </button>
                         </div>
                     </form>
@@ -371,7 +371,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning text-dark">
-                        <i class="fas fa-key"></i> Reset Password
+            <i class="fas fa-key"></i><span class="btn-text"> Reset Password</span>
                     </button>
                 </div>
             </form>

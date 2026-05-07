@@ -281,11 +281,11 @@
                             <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.approve', $purchaseOrder) }}" method="POST" class="d-inline">
                                 @csrf
                                 <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-check"></i> Approve PO
+            <i class="fas fa-check"></i><span class="btn-text"> Approve PO</span>
                                 </button>
                             </form>
                             <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                                <i class="fas fa-times"></i> Reject PO
+            <i class="fas fa-times"></i><span class="btn-text"> Reject PO</span>
                             </button>
                         </div>
                     @else
@@ -296,7 +296,7 @@
                 @if($purchaseOrder->canBeCancelled())
                 <div class="mt-3">
                     <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelPOModal">
-                        <i class="fas fa-ban"></i> Cancel This Purchase Order
+            <i class="fas fa-ban"></i><span class="btn-text"> Cancel This Purchase Order</span>
                     </button>
                 </div>
                 @endif
@@ -308,14 +308,14 @@
                     <p class="mb-2">PO has been approved and ordered. Expected delivery: <strong>{{ $purchaseOrder->expected_delivery_date ? $purchaseOrder->expected_delivery_date->format('d M Y') : '-' }}</strong></p>
                     <p class="mb-3">When goods arrive, click the button below to start receiving process:</p>
                     <a href="{{ route(($routePrefix ?? 'admin').'.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-primary">
-                        <i class="fas fa-box-open"></i> Receive Goods
+            <i class="fas fa-box-open"></i><span class="btn-text"> Receive Goods</span>
                     </a>
                 </div>
 
                 @if($purchaseOrder->canBeCancelled())
                 <div class="mt-3">
                     <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelPOModal">
-                        <i class="fas fa-ban"></i> Cancel This Purchase Order
+            <i class="fas fa-ban"></i><span class="btn-text"> Cancel This Purchase Order</span>
                     </button>
                 </div>
                 @endif
@@ -327,14 +327,14 @@
                     <p class="mb-2">Received: <strong>{{ $purchaseOrder->items->sum('quantity_received') }} / {{ $purchaseOrder->total_quantity }}</strong> items</p>
                     <p class="mb-3">Continue receiving remaining items:</p>
                     <a href="{{ route(($routePrefix ?? 'admin').'.purchase-orders.receive', $purchaseOrder) }}" class="btn btn-warning">
-                        <i class="fas fa-box-open"></i> Continue Receiving
+            <i class="fas fa-box-open"></i><span class="btn-text"> Continue Receiving</span>
                     </a>
                 </div>
 
                 @if($purchaseOrder->canBeCancelled())
                 <div class="mt-3">
                     <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelPOModal">
-                        <i class="fas fa-ban"></i> Cancel This Purchase Order
+            <i class="fas fa-ban"></i><span class="btn-text"> Cancel This Purchase Order</span>
                     </button>
                 </div>
                 @endif
@@ -454,7 +454,7 @@
                         <p class="mb-2">Quality check completed. Listed items are ready to be added to inventory stock.</p>
                         <p class="mb-3"><strong>Items ready: {{ $purchaseOrder->items->where('is_unlisted', false)->where('compliance_status', 'compliant')->where('added_to_stock', false)->count() }}</strong></p>
                         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAllToStockModal">
-                            <i class="fas fa-plus-circle"></i> Add All Compliant Items to Stock
+            <i class="fas fa-plus-circle"></i><span class="btn-text"> Add All Compliant Items to Stock</span>
                         </button>
                     </div>
                     <div class="card mt-3">
@@ -570,7 +570,7 @@
                 @if($purchaseOrder->status === 'received' && $purchaseOrder->canBeCancelled())
                 <div class="mt-3">
                     <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelPOModal">
-                        <i class="fas fa-ban"></i> Cancel This Purchase Order
+            <i class="fas fa-ban"></i><span class="btn-text"> Cancel This Purchase Order</span>
                     </button>
                 </div>
                 @endif
@@ -633,22 +633,22 @@
                             <form action="{{ route(($routePrefix ?? 'admin').'.purchase-orders.approve', $purchaseOrder) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn btn-success w-100">
-                                    <i class="fas fa-check"></i> Approve
+            <i class="fas fa-check"></i><span class="btn-text"> Approve</span>
                                 </button>
                             </form>
                             <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                                <i class="fas fa-times"></i> Reject
+            <i class="fas fa-times"></i><span class="btn-text"> Reject</span>
                             </button>
                         </div>
                     @endif
 
                     <a href="{{ route(($routePrefix ?? 'admin').'.purchase-orders.index') }}" class="btn btn-secondary w-100 mt-2">
-                        <i class="fas fa-arrow-left"></i> Back to List
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to List</span>
                     </a>
 
                     @if(auth()->user()->hasRole('admin'))
                         <button type="button" class="btn btn-danger w-100 mt-2" data-bs-toggle="modal" data-bs-target="#deletePOModal">
-                            <i class="fas fa-trash"></i> Delete PO
+            <i class="fas fa-trash"></i><span class="btn-text"> Delete PO</span>
                         </button>
                     @endif
                 </div>
@@ -770,7 +770,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-times"></i> Reject PO
+            <i class="fas fa-times"></i><span class="btn-text"> Reject PO</span>
                     </button>
                 </div>
             </form>
@@ -801,7 +801,7 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-success">
-                            <i class="fas fa-check"></i> Mark as Compliant
+            <i class="fas fa-check"></i><span class="btn-text"> Mark as Compliant</span>
                         </button>
                     </div>
                 </form>
@@ -833,7 +833,7 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-times"></i> Mark as Non-Compliant
+            <i class="fas fa-times"></i><span class="btn-text"> Mark as Non-Compliant</span>
                         </button>
                     </div>
                 </form>
@@ -866,7 +866,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning">
-                        <i class="fas fa-undo"></i> Reverse to Pending Check
+            <i class="fas fa-undo"></i><span class="btn-text"> Reverse to Pending Check</span>
                     </button>
                 </div>
             </form>
@@ -915,7 +915,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     @if(!$hasStockItems)
                         <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Yes, Delete Permanently
+            <i class="fas fa-trash"></i><span class="btn-text"> Yes, Delete Permanently</span>
                         </button>
                     @endif
                 </div>
@@ -947,7 +947,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check"></i> Yes, Add All to Stock
+            <i class="fas fa-check"></i><span class="btn-text"> Yes, Add All to Stock</span>
                     </button>
                 </div>
             </form>
@@ -980,7 +980,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-check"></i> Yes, Add to Stock
+            <i class="fas fa-check"></i><span class="btn-text"> Yes, Add to Stock</span>
                     </button>
                 </div>
             </form>
@@ -1023,10 +1023,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Close
+            <i class="fas fa-times"></i><span class="btn-text"> Close</span>
                     </button>
                     <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-ban"></i> Yes, Cancel This PO
+            <i class="fas fa-ban"></i><span class="btn-text"> Yes, Cancel This PO</span>
                     </button>
                 </div>
             </form>

@@ -55,10 +55,10 @@
 
                         <div class="d-flex justify-content-between">
                             <a href="{{ route($routePrefix.'.assets.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Cancel</span>
                             </a>
                             <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <i class="fas fa-upload"></i> Import Data
+            <i class="fas fa-upload"></i><span class="btn-text"> Import Data</span>
                             </button>
                         </div>
                     </form>

@@ -12,7 +12,7 @@
         </div>
         <div>
             <button type="button" class="btn btn-primary" id="btnNewEvent">
-                <i class="fas fa-plus me-1"></i> New Task
+            <i class="fas fa-plus me-1"></i><span class="btn-text"> New Task</span>
             </button>
         </div>
     </div>

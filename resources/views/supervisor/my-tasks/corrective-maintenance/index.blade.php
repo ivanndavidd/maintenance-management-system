@@ -75,10 +75,10 @@
                 </div>
                 <div class="col-12 col-md-4 d-flex align-items-end gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search me-1"></i> Filter
+            <i class="fas fa-search me-1"></i><span class="btn-text"> Filter</span>
                     </button>
                     <a href="{{ route('supervisor.my-tasks.corrective-maintenance') }}" class="btn btn-secondary">
-                        <i class="fas fa-times me-1"></i> Clear
+            <i class="fas fa-times me-1"></i><span class="btn-text"> Clear</span>
                     </a>
                 </div>
             </form>

@@ -19,7 +19,7 @@
                     <p class="text-muted mb-0">{{ $user->employee_id }} | {{ $user->department->name ?? 'No Department' }}</p>
                 </div>
                 <a href="{{ route($routePrefix.'.kpi.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to KPI List
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to KPI List</span>
                 </a>
             </div>
         </div>

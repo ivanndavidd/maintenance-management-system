@@ -23,7 +23,7 @@
             </p>
         </div>
         <a href="{{ route('supervisor.my-tasks.preventive-maintenance') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Back
+            <i class="fas fa-arrow-left me-1"></i><span class="btn-text"> Back</span>
         </a>
     </div>
 
@@ -167,7 +167,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary" id="submitBtn">
-                            <i class="fas fa-paper-plane me-1"></i> Submit Report
+            <i class="fas fa-paper-plane me-1"></i><span class="btn-text"> Submit Report</span>
                         </button>
                     </form>
                 </div>
@@ -185,17 +185,17 @@
                     <div class="d-grid gap-2">
                         @if($task->status !== 'in_progress' && $task->status !== 'completed')
                         <button class="btn btn-outline-warning" onclick="updateStatus('in_progress')">
-                            <i class="fas fa-play me-1"></i> Mark In Progress
+            <i class="fas fa-play me-1"></i><span class="btn-text"> Mark In Progress</span>
                         </button>
                         @endif
                         @if($task->status !== 'completed')
                         <button class="btn btn-outline-success" onclick="updateStatus('completed')">
-                            <i class="fas fa-check me-1"></i> Mark Completed
+            <i class="fas fa-check me-1"></i><span class="btn-text"> Mark Completed</span>
                         </button>
                         @endif
                         @if($task->status !== 'pending')
                         <button class="btn btn-outline-secondary" onclick="updateStatus('pending')">
-                            <i class="fas fa-undo me-1"></i> Reset to Pending
+            <i class="fas fa-undo me-1"></i><span class="btn-text"> Reset to Pending</span>
                         </button>
                         @endif
                     </div>

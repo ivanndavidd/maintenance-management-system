@@ -10,7 +10,7 @@
             <p class="text-muted mb-0">{{ $bom->description ?? 'No description' }}</p>
         </div>
         <a href="{{ route($routePrefix . '.bom-management.show', $bom) }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Back
+            <i class="fas fa-arrow-left me-1"></i><span class="btn-text"> Back</span>
         </a>
     </div>
 
@@ -90,7 +90,7 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <button type="submit" class="btn btn-primary w-100 mb-2">
-                            <i class="fas fa-save me-1"></i> Update BOM
+            <i class="fas fa-save me-1"></i><span class="btn-text"> Update BOM</span>
                         </button>
                         <a href="{{ route($routePrefix . '.bom-management.show', $bom) }}" class="btn btn-secondary w-100">
                             Cancel

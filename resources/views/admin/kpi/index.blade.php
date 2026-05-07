@@ -27,10 +27,10 @@
                     </div>
                     <div class="col-md-6 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary me-2">
-                            <i class="fas fa-filter"></i> Apply Filter
+            <i class="fas fa-filter"></i><span class="btn-text"> Apply Filter</span>
                         </button>
                         <a href="{{ route($routePrefix.'.kpi.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Clear
+            <i class="fas fa-times"></i><span class="btn-text"> Clear</span>
                         </a>
                     </div>
                 </form>

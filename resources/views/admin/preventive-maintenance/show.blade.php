@@ -56,15 +56,15 @@
                     @csrf
                     @method('PATCH')
                     <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check-circle me-1"></i> Activate
+            <i class="fas fa-check-circle me-1"></i><span class="btn-text"> Activate</span>
                     </button>
                 </form>
             @endif
             <a href="{{ route(($routePrefix ?? 'admin').'.preventive-maintenance.edit', $schedule) }}" class="btn btn-warning">
-                <i class="fas fa-edit me-1"></i> Edit Info
+            <i class="fas fa-edit me-1"></i><span class="btn-text"> Edit Info</span>
             </a>
             <a href="{{ route(($routePrefix ?? 'admin').'.preventive-maintenance.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Back
+            <i class="fas fa-arrow-left me-1"></i><span class="btn-text"> Back</span>
             </a>
         </div>
     </div>
@@ -124,7 +124,7 @@
                 <div class="input-group input-group-sm" style="width: auto;">
                     <input type="date" id="newDateInput" class="form-control form-control-sm" style="width: 160px;" min="{{ $schedule->scheduled_month->startOfMonth()->format('Y-m-d') }}" max="{{ $schedule->scheduled_month->endOfMonth()->format('Y-m-d') }}">
                     <button class="btn btn-primary" onclick="addDate()">
-                        <i class="fas fa-plus me-1"></i> Add Date
+            <i class="fas fa-plus me-1"></i><span class="btn-text"> Add Date</span>
                     </button>
                 </div>
             </div>
@@ -398,7 +398,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="submitCleaningGroup()">
-                    <i class="fas fa-plus me-1"></i> Add
+            <i class="fas fa-plus me-1"></i><span class="btn-text"> Add</span>
                 </button>
             </div>
         </div>
@@ -423,7 +423,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="submitSprGroup()">
-                    <i class="fas fa-plus me-1"></i> Add
+            <i class="fas fa-plus me-1"></i><span class="btn-text"> Add</span>
                 </button>
             </div>
         </div>
@@ -544,7 +544,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-danger" id="deleteConfirmBtn">
-                    <i class="fas fa-trash me-1"></i> Delete
+            <i class="fas fa-trash me-1"></i><span class="btn-text"> Delete</span>
                 </button>
             </div>
         </div>

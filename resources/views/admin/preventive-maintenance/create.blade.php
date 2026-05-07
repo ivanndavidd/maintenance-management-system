@@ -10,7 +10,7 @@
             <p class="text-muted mb-0">Create a monthly PM schedule, then add dates and tasks</p>
         </div>
         <a href="{{ route($routePrefix.'.preventive-maintenance.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Back
+            <i class="fas fa-arrow-left me-1"></i><span class="btn-text"> Back</span>
         </a>
     </div>
 
@@ -45,7 +45,7 @@
             <div class="card-footer d-flex justify-content-end gap-2">
                 <a href="{{ route($routePrefix.'.preventive-maintenance.index') }}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i> Create Schedule
+            <i class="fas fa-save me-1"></i><span class="btn-text"> Create Schedule</span>
                 </button>
             </div>
         </div>

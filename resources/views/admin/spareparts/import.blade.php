@@ -78,10 +78,10 @@
 
                         <div class="d-flex justify-content-between">
                             <a href="{{ route($routePrefix.'.spareparts.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Cancel</span>
                             </a>
                             <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <i class="fas fa-upload"></i> Import Data
+            <i class="fas fa-upload"></i><span class="btn-text"> Import Data</span>
                             </button>
                         </div>
                     </form>
@@ -109,7 +109,7 @@
                 <div class="card-body">
                     <p>Download the CSV template with sample data to get started.</p>
                     <a href="{{ route($routePrefix.'.spareparts.import.template') }}" class="btn btn-success w-100 mb-2">
-                        <i class="fas fa-download"></i> Download CSV Template
+            <i class="fas fa-download"></i><span class="btn-text"> Download CSV Template</span>
                     </a>
                     <small class="text-muted d-block">
                         Opens in Excel automatically. Fill data, then save as CSV.

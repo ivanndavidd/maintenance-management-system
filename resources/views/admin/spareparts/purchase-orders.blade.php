@@ -18,7 +18,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Purchase Orders List</h5>
             <a href="{{ route($routePrefix.'.spareparts.purchase-orders.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Create Purchase Order
+            <i class="fas fa-plus"></i><span class="btn-text"> Create Purchase Order</span>
             </a>
         </div>
         <div class="card-body">

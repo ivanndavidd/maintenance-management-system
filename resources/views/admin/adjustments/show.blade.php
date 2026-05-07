@@ -155,12 +155,12 @@
                     <form action="{{ route($routePrefix.'.adjustments.approve', $adjustment) }}" method="POST" class="mb-2">
                         @csrf
                         <button type="submit" class="btn btn-success w-100">
-                            <i class="fas fa-check"></i> Approve Adjustment
+            <i class="fas fa-check"></i><span class="btn-text"> Approve Adjustment</span>
                         </button>
                     </form>
 
                     <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                        <i class="fas fa-times"></i> Reject Adjustment
+            <i class="fas fa-times"></i><span class="btn-text"> Reject Adjustment</span>
                     </button>
                 </div>
             </div>
@@ -232,7 +232,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-times"></i> Reject Adjustment
+            <i class="fas fa-times"></i><span class="btn-text"> Reject Adjustment</span>
                     </button>
                 </div>
             </form>

@@ -49,7 +49,7 @@
                     <div class="col-md-2">
                         <label class="form-label">&nbsp;</label>
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-save"></i> Update
+            <i class="fas fa-save"></i><span class="btn-text"> Update</span>
                         </button>
                     </div>
                 </div>

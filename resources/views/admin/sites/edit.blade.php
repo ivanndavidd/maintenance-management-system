@@ -91,10 +91,10 @@
 
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{{ route('admin.sites.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Cancel</span>
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Update Site
+            <i class="fas fa-save"></i><span class="btn-text"> Update Site</span>
                             </button>
                         </div>
                     </form>
@@ -141,7 +141,7 @@
                           onsubmit="return confirm('Run all pending migrations for this site?')">
                         @csrf
                         <button type="submit" class="btn btn-outline-primary w-100">
-                            <i class="fas fa-database"></i> Run Migrations
+            <i class="fas fa-database"></i><span class="btn-text"> Run Migrations</span>
                         </button>
                     </form>
                     <small class="text-muted d-block mt-2">

@@ -83,10 +83,10 @@
 
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{{ route('admin.sites.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Cancel</span>
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Create Site
+            <i class="fas fa-save"></i><span class="btn-text"> Create Site</span>
                             </button>
                         </div>
                     </form>

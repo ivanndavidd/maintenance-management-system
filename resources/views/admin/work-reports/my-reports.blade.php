@@ -18,10 +18,10 @@
         </div>
         <div>
             <a href="{{ route($routePrefix.'.work-reports.index') }}" class="btn btn-secondary">
-                <i class="fas fa-list"></i> All Reports
+            <i class="fas fa-list"></i><span class="btn-text"> All Reports</span>
             </a>
             <a href="{{ route($routePrefix.'.work-reports.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Submit New Report
+            <i class="fas fa-plus"></i><span class="btn-text"> Submit New Report</span>
             </a>
         </div>
     </div>
@@ -45,10 +45,10 @@
                     </div>
                     <div class="col-md-3">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-filter"></i> Apply Filter
+            <i class="fas fa-filter"></i><span class="btn-text"> Apply Filter</span>
                         </button>
                         <a href="{{ route($routePrefix.'.work-reports.my-reports') }}" class="btn btn-secondary">
-                            <i class="fas fa-redo"></i> Reset
+            <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
                         </a>
                     </div>
                 </div>
@@ -230,7 +230,7 @@
                                 <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
                                 <p class="text-muted mb-2">You haven't submitted any work reports yet</p>
                                 <a href="{{ route($routePrefix.'.work-reports.create') }}" class="btn btn-primary">
-                                    <i class="fas fa-plus"></i> Submit Your First Report
+            <i class="fas fa-plus"></i><span class="btn-text"> Submit Your First Report</span>
                                 </a>
                             </td>
                         </tr>

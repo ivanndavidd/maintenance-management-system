@@ -10,7 +10,7 @@
             <p class="text-muted mb-0">{{ $schedule->scheduled_month->format('F Y') }}</p>
         </div>
         <a href="{{ route($routePrefix.'.preventive-maintenance.show', $schedule) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Back
+            <i class="fas fa-arrow-left me-1"></i><span class="btn-text"> Back</span>
         </a>
     </div>
 
@@ -54,7 +54,7 @@
             <div class="card-footer d-flex justify-content-between">
                 <a href="{{ route($routePrefix.'.preventive-maintenance.show', $schedule) }}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i> Save Changes
+            <i class="fas fa-save me-1"></i><span class="btn-text"> Save Changes</span>
                 </button>
             </div>
         </div>

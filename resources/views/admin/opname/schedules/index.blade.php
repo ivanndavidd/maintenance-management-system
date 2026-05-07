@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5><i class="fas fa-calendar-alt"></i> Stock Opname Schedules</h5>
         <a href="{{ route($routePrefix.'.opname.schedules.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> New Schedule
+            <i class="fas fa-plus"></i><span class="btn-text"> New Schedule</span>
         </a>
     </div>
 
@@ -36,10 +36,10 @@
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary me-2">
-                        <i class="fas fa-filter"></i> Filter
+            <i class="fas fa-filter"></i><span class="btn-text"> Filter</span>
                     </button>
                     <a href="{{ route($routePrefix.'.opname.schedules.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-redo"></i> Reset
+            <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
                     </a>
                 </div>
             </form>

@@ -175,7 +175,7 @@
                         </div>
 
                         <button type="button" class="btn btn-success w-100 mt-3" onclick="addToCart()">
-                            <i class="fas fa-cart-plus"></i> Add to Cart
+            <i class="fas fa-cart-plus"></i><span class="btn-text"> Add to Cart</span>
                         </button>
                     </div>
 
@@ -261,10 +261,10 @@
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg" id="submit_btn" disabled>
-                                <i class="fas fa-paper-plane"></i> Create Purchase Order
+            <i class="fas fa-paper-plane"></i><span class="btn-text"> Create Purchase Order</span>
                             </button>
                             <a href="{{ route($routePrefix.'.purchase-orders.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back</span>
                             </a>
                         </div>
                     </form>

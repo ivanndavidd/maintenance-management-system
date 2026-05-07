@@ -106,13 +106,13 @@
                     <div class="col-md-2">
                         <label class="form-label">&nbsp;</label>
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter"></i> Filter
+            <i class="fas fa-filter"></i><span class="btn-text"> Filter</span>
                         </button>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">&nbsp;</label>
                         <a href="{{ route($routePrefix.'.opname.reports.compliance') }}" class="btn btn-secondary w-100">
-                            <i class="fas fa-redo"></i> Reset
+            <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
                         </a>
                     </div>
                 </div>
