@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PmTask;
 use App\Models\CorrectiveMaintenanceRequest;
+use App\Models\CmReport;
 use App\Models\StockOpnameScheduleItem;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -37,19 +38,17 @@ class KpiController extends Controller
             if ($dateTo) $pmAssignedQuery->whereDate('task_date', '<=', $dateTo);
             $pmAssigned = $pmAssignedQuery->count();
 
-            // CM Tickets completed by this user (via technicians pivot)
-            $cmQuery = CorrectiveMaintenanceRequest::whereHas('technicians', function ($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                ->where('status', 'completed');
-            if ($dateFrom) $cmQuery->whereDate('completed_at', '>=', $dateFrom);
-            if ($dateTo) $cmQuery->whereDate('completed_at', '<=', $dateTo);
+            // CM Tickets completed by this user (via submitted CmReport)
+            $cmQuery = CmReport::where('submitted_by', $user->id)
+                ->whereHas('cmRequest', function ($q) {
+                    $q->whereIn('status', ['done', 'further_repair', 'completed']);
+                });
+            if ($dateFrom) $cmQuery->whereDate('created_at', '>=', $dateFrom);
+            if ($dateTo) $cmQuery->whereDate('created_at', '<=', $dateTo);
             $cmCount = $cmQuery->count();
 
-            // CM Tickets assigned to this user (all statuses)
-            $cmAssignedQuery = CorrectiveMaintenanceRequest::whereHas('technicians', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
+            // CM Tickets assigned to this user (all statuses, by report submission)
+            $cmAssignedQuery = CmReport::where('submitted_by', $user->id);
             if ($dateFrom) $cmAssignedQuery->whereDate('created_at', '>=', $dateFrom);
             if ($dateTo) $cmAssignedQuery->whereDate('created_at', '<=', $dateTo);
             $cmAssigned = $cmAssignedQuery->count();
@@ -108,14 +107,16 @@ class KpiController extends Controller
         if ($dateTo) $pmQuery->whereDate('completed_at', '<=', $dateTo);
         $pmTasks = $pmQuery->orderBy('completed_at', 'desc')->get();
 
-        // CM Tickets
-        $cmQuery = CorrectiveMaintenanceRequest::whereHas('technicians', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
+        // CM Tickets completed by this user (via submitted CmReport)
+        $cmQuery = CmReport::where('submitted_by', $user->id)
+            ->whereHas('cmRequest', function ($q) {
+                $q->whereIn('status', ['done', 'further_repair', 'completed']);
             })
-            ->where('status', 'completed');
-        if ($dateFrom) $cmQuery->whereDate('completed_at', '>=', $dateFrom);
-        if ($dateTo) $cmQuery->whereDate('completed_at', '<=', $dateTo);
-        $cmTickets = $cmQuery->orderBy('completed_at', 'desc')->get();
+            ->with('cmRequest');
+        if ($dateFrom) $cmQuery->whereDate('created_at', '>=', $dateFrom);
+        if ($dateTo) $cmQuery->whereDate('created_at', '<=', $dateTo);
+        $cmReports = $cmQuery->orderBy('created_at', 'desc')->get();
+        $cmTickets = $cmReports->map(fn($r) => $r->cmRequest)->filter();
 
         // Stock Opname Items
         $soQuery = StockOpnameScheduleItem::where('executed_by', $user->id)
@@ -141,14 +142,14 @@ class KpiController extends Controller
             ->groupBy('month')
             ->pluck('count', 'month');
 
-        // Monthly trend - CM
-        $cmTrend = CorrectiveMaintenanceRequest::whereHas('technicians', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
+        // Monthly trend - CM (by report submission date)
+        $cmTrend = CmReport::where('submitted_by', $user->id)
+            ->whereHas('cmRequest', function ($q) {
+                $q->whereIn('status', ['done', 'further_repair', 'completed']);
             })
-            ->where('status', 'completed')
-            ->where('completed_at', '>=', now()->subMonths(6))
+            ->where('created_at', '>=', now()->subMonths(6))
             ->select(
-                DB::raw('DATE_FORMAT(completed_at, "%Y-%m") as month'),
+                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
                 DB::raw('COUNT(*) as count')
             )
             ->groupBy('month')

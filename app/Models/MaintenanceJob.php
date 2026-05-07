@@ -71,11 +71,6 @@ class MaintenanceJob extends TenantModels
         return $this->creator();
     }
 
-    public function workReports()
-    {
-        return $this->hasMany(WorkReport::class, 'job_id');
-    }
-
     public function parentJob()
     {
         return $this->belongsTo(MaintenanceJob::class, 'parent_job_id');
