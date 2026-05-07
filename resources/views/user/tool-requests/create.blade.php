@@ -235,5 +235,39 @@ document.getElementById('tool_id').addEventListener('change', function() {
 });
 
 document.getElementById('tool_id').dispatchEvent(new Event('change'));
+
+const qtyInput = document.getElementById('quantity_requested');
+const qtyError = document.createElement('div');
+qtyError.className = 'invalid-feedback d-none';
+qtyError.id = 'qtyExceedError';
+qtyInput.parentElement.after(qtyError);
+
+qtyInput.addEventListener('input', function() {
+    validateQty();
+});
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    if (!validateQty()) {
+        e.preventDefault();
+    }
+});
+
+function validateQty() {
+    const max = parseInt(qtyInput.max);
+    const val = parseInt(qtyInput.value);
+    const toolSel = document.getElementById('tool_id');
+    const opt = toolSel.options[toolSel.selectedIndex];
+    const unit = opt?.dataset?.unit ?? 'unit';
+
+    if (toolSel.value && !isNaN(max) && !isNaN(val) && val > max) {
+        qtyInput.classList.add('is-invalid');
+        qtyError.textContent = 'Cannot exceed available stock: ' + max + ' ' + unit;
+        qtyError.classList.remove('d-none');
+        return false;
+    }
+    qtyInput.classList.remove('is-invalid');
+    qtyError.classList.add('d-none');
+    return true;
+}
 </script>
 @endpush
