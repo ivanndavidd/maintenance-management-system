@@ -104,6 +104,12 @@
     </div>
 
     <!-- Hourly Shift Calendar -->
+    <!-- Mobile landscape hint -->
+    <div class="alert alert-warning d-flex align-items-center gap-2 d-md-none mb-3">
+        <i class="fas fa-rotate fa-lg"></i>
+        <div><strong>Tip:</strong> Putar layar ke <strong>landscape</strong> untuk pengalaman terbaik saat mengisi kalender ini.</div>
+    </div>
+
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Hourly Shift Calendar</h5>
@@ -114,13 +120,13 @@
             </div>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
-                <table class="table table-bordered table-sm shift-calendar-hourly mb-0" id="shift-calendar">
+            <div class="table-responsive" style="max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+                <table class="table table-bordered table-sm shift-calendar-hourly mb-0" id="shift-calendar" style="min-width: 700px;">
                     <thead class="table-light sticky-top" style="top: 0; z-index: 10;">
                         <tr>
-                            <th style="width: 60px; position: sticky; left: 0; z-index: 11; background: white;">Time</th>
+                            <th style="width: 55px; min-width: 55px; position: sticky; left: 0; z-index: 11; background: white;">Time</th>
                             @foreach(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $day)
-                                <th colspan="4" class="text-center">{{ $day }}</th>
+                                <th colspan="4" class="text-center" style="min-width: 80px;">{{ substr($day, 0, 3) }}</th>
                             @endforeach
                         </tr>
                     </thead>
@@ -150,7 +156,7 @@
                                             data-day="{{ $day }}"
                                             data-hour="{{ $hour }}"
                                             data-column="{{ $col }}"
-                                            style="width: 40px; height: 35px; cursor: pointer; position: relative; {{ $shiftBorder }}">
+                                            style="width: 20px; min-width: 20px; height: 40px; cursor: pointer; position: relative; {{ $shiftBorder }}">
                                             @if(isset($grid[$day][$hour][$col]) && $grid[$day][$hour][$col])
                                                 @php
                                                     $assignment = $grid[$day][$hour][$col];
