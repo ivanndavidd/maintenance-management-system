@@ -136,6 +136,22 @@
                             <i class="fas fa-times"></i>
                         </button>
                         @endif
+                        @if($req->status === 'approved' && !$req->isConsumable())
+                        <form action="{{ route($routePrefix.'.tool-requests.in-use', $req) }}" method="POST"
+                              onsubmit="return confirm('Mark {{ $req->request_number }} as in use? Stock will be deducted.')">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-primary w-100" title="Mark as In Use">
+                                <i class="fas fa-tools"></i>
+                            </button>
+                        </form>
+                        @endif
+                        @if(in_array($req->status, ['approved', 'in_use']) && !$req->isConsumable())
+                        <button type="button" class="btn btn-sm btn-success"
+                                onclick="quickReturn({{ $req->id }}, '{{ $req->request_number }}', {{ $req->status === 'in_use' ? 'true' : 'false' }})"
+                                title="Mark as Returned">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        @endif
                     </div>
                 </div>
                 <div class="text-muted mt-1" style="font-size:11px;">
@@ -213,6 +229,36 @@
         </div>
     </div>
 </div>
+
+{{-- Quick Return Modal --}}
+<div class="modal fade" id="returnModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="returnForm" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold"><i class="fas fa-undo text-success"></i> Mark as Returned</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Confirm tool for request <strong id="returnReqNo"></strong> has been returned?</p>
+                    <div id="returnStockInfo" class="alert alert-info py-2 d-none" style="font-size:13px;">
+                        <i class="fas fa-info-circle me-1"></i> Stock will be restored.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes <small class="text-muted">(optional)</small></label>
+                        <textarea name="return_notes" class="form-control form-control-sm" rows="2"
+                                  placeholder="Tool condition, remarks..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Confirm Returned</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -227,6 +273,18 @@ function quickReject(id, reqNo) {
     document.getElementById('rejectReqNo').textContent = reqNo;
     document.getElementById('rejectForm').action = '{{ url($routePrefix . '/tool-requests') }}/' + id + '/reject';
     new bootstrap.Modal(document.getElementById('rejectModal')).show();
+}
+
+function quickReturn(id, reqNo, isInUse) {
+    document.getElementById('returnReqNo').textContent = reqNo;
+    document.getElementById('returnForm').action = '{{ url($routePrefix . '/tool-requests') }}/' + id + '/mark-returned';
+    const info = document.getElementById('returnStockInfo');
+    if (isInUse) {
+        info.classList.remove('d-none');
+    } else {
+        info.classList.add('d-none');
+    }
+    new bootstrap.Modal(document.getElementById('returnModal')).show();
 }
 </script>
 @endpush
