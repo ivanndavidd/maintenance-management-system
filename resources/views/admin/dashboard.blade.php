@@ -288,10 +288,10 @@
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h2>{{ auth()->user()->hasRole('supervisor_maintenance') ? 'Supervisor Dashboard' : 'Admin Dashboard' }}</h2>
-            <p class="text-muted mb-0">Welcome back, <strong>{{ auth()->user()->name }}</strong>!</p>
+            <h5 class="mb-1 fw-bold">{{ auth()->user()->hasRole('supervisor_maintenance') ? 'Supervisor Dashboard' : 'Admin Dashboard' }}</h5>
+            <p class="text-muted mb-0" style="font-size:13px;">Welcome back, <strong>{{ auth()->user()->name }}</strong>!</p>
         </div>
         <div class="text-end">
             <small class="text-muted d-block">{{ Carbon\Carbon::now()->format('l, F d, Y') }}</small>
