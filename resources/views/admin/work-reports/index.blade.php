@@ -16,10 +16,10 @@
             </nav>
         </div>
         <div>
-            <a href="{{ route($routePrefix.'.work-reports.my-reports') }}" class="btn btn-info">
+            <a href="{{ route($routePrefix.'.work-reports.my-reports') }}" class="btn btn-sm btn-info">
             <i class="fas fa-user"></i><span class="btn-text"> My Reports</span>
             </a>
-            <a href="{{ route($routePrefix.'.work-reports.create') }}" class="btn btn-primary">
+            <a href="{{ route($routePrefix.'.work-reports.create') }}" class="btn btn-sm btn-primary">
             <i class="fas fa-plus"></i><span class="btn-text"> Submit New Report</span>
             </a>
         </div>
@@ -33,19 +33,16 @@
         </div>
         <div class="card-body">
             <form method="GET" action="{{ route($routePrefix.'.work-reports.index') }}">
-                <div class="row g-3">
-                    <!-- Search -->
-                    <div class="col-md-3">
+                <div class="row g-2">
+                    <div class="col-12 col-md-3">
                         <label class="form-label">Search</label>
-                        <input type="text" name="search" class="form-control" 
-                               placeholder="Report code, work performed..." 
+                        <input type="text" name="search" class="form-control form-control-sm"
+                               placeholder="Report code, work performed..."
                                value="{{ request('search') }}">
                     </div>
-
-                    <!-- Status Filter -->
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
+                        <select name="status" class="form-select form-select-sm">
                             <option value="">All Status</option>
                             @foreach($statuses as $status)
                                 <option value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>
@@ -54,11 +51,9 @@
                             @endforeach
                         </select>
                     </div>
-
-                    <!-- User Filter -->
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <label class="form-label">Submitted By</label>
-                        <select name="user" class="form-select">
+                        <select name="user" class="form-select form-select-sm">
                             <option value="">All Users</option>
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}" {{ request('user') == $user->id ? 'selected' : '' }}>
@@ -67,28 +62,23 @@
                             @endforeach
                         </select>
                     </div>
-
-                    <!-- Date From -->
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="form-label">Date From</label>
-                        <input type="date" name="date_from" class="form-control" 
+                        <input type="date" name="date_from" class="form-control form-control-sm"
                                value="{{ request('date_from') }}">
                     </div>
-
-                    <!-- Date To -->
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="form-label">Date To</label>
-                        <input type="date" name="date_to" class="form-control" 
+                        <input type="date" name="date_to" class="form-control form-control-sm"
                                value="{{ request('date_to') }}">
                     </div>
                 </div>
-
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">
-            <i class="fas fa-search"></i><span class="btn-text"> Apply Filters</span>
+                <div class="mt-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-search"></i><span class="btn-text"> Filter</span>
                     </button>
-                    <a href="{{ route($routePrefix.'.work-reports.index') }}" class="btn btn-secondary">
-            <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
+                    <a href="{{ route($routePrefix.'.work-reports.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-redo"></i>
                     </a>
                 </div>
             </form>
@@ -96,64 +86,53 @@
     </div>
 
     <!-- Summary Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
+    <div class="row g-2 mb-4">
+        <div class="col-6 col-md-3">
             <div class="card border-warning shadow-sm">
-                <div class="card-body">
+                <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Pending Review</h6>
-                            <h5 class="mb-0 text-warning">
-                                {{ $reports->where('status', 'pending')->count() }}
-                            </h5>
+                            <h6 class="text-muted mb-1" style="font-size:12px;">Pending</h6>
+                            <h5 class="mb-0 text-warning">{{ $reports->where('status', 'pending')->count() }}</h5>
                         </div>
                         <i class="fas fa-clock fa-2x text-warning opacity-25"></i>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-3 mb-3">
+        <div class="col-6 col-md-3">
             <div class="card border-success shadow-sm">
-                <div class="card-body">
+                <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Approved</h6>
-                            <h5 class="mb-0 text-success">
-                                {{ $reports->where('status', 'approved')->count() }}
-                            </h5>
+                            <h6 class="text-muted mb-1" style="font-size:12px;">Approved</h6>
+                            <h5 class="mb-0 text-success">{{ $reports->where('status', 'approved')->count() }}</h5>
                         </div>
                         <i class="fas fa-check-circle fa-2x text-success opacity-25"></i>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-3 mb-3">
+        <div class="col-6 col-md-3">
             <div class="card border-danger shadow-sm">
-                <div class="card-body">
+                <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Rejected</h6>
-                            <h5 class="mb-0 text-danger">
-                                {{ $reports->where('status', 'rejected')->count() }}
-                            </h5>
+                            <h6 class="text-muted mb-1" style="font-size:12px;">Rejected</h6>
+                            <h5 class="mb-0 text-danger">{{ $reports->where('status', 'rejected')->count() }}</h5>
                         </div>
                         <i class="fas fa-times-circle fa-2x text-danger opacity-25"></i>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-3 mb-3">
+        <div class="col-6 col-md-3">
             <div class="card border-secondary shadow-sm">
-                <div class="card-body">
+                <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Draft</h6>
-                            <h5 class="mb-0 text-secondary">
-                                {{ $reports->where('status', 'draft')->count() }}
-                            </h5>
+                            <h6 class="text-muted mb-1" style="font-size:12px;">Draft</h6>
+                            <h5 class="mb-0 text-secondary">{{ $reports->where('status', 'draft')->count() }}</h5>
                         </div>
                         <i class="fas fa-file fa-2x text-secondary opacity-25"></i>
                     </div>
@@ -185,10 +164,10 @@
                                     @endif
                                 </a>
                             </th>
-                            <th>Job</th>
-                            <th>Machine</th>
-                            <th>Submitted By</th>
-                            <th>
+                            <th class="d-none d-md-table-cell">Job</th>
+                            <th class="d-none d-lg-table-cell">Machine</th>
+                            <th class="d-none d-md-table-cell">Submitted By</th>
+                            <th class="d-none d-md-table-cell">
                                 <a href="{{ route($routePrefix.'.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'work_start',
                                     'sort_order' => request('sort_by') == 'work_start' && request('sort_order') == 'asc' ? 'desc' : 'asc'
@@ -201,8 +180,8 @@
                                     @endif
                                 </a>
                             </th>
-                            <th>Duration</th>
-                            <th>
+                            <th class="d-none d-lg-table-cell">Duration</th>
+                            <th class="d-none d-lg-table-cell">
                                 <a href="{{ route($routePrefix.'.work-reports.index', array_merge(request()->except(['sort_by', 'sort_order', 'page']), [
                                     'sort_by' => 'machine_condition',
                                     'sort_order' => request('sort_by') == 'machine_condition' && request('sort_order') == 'asc' ? 'desc' : 'asc'
@@ -236,8 +215,14 @@
                         <tr>
                             <td>
                                 <strong class="text-primary">{{ $report->report_code }}</strong>
+                                <div class="d-md-none">
+                                    @if($report->job)
+                                        <small class="text-muted">{{ $report->job->job_code }}</small>
+                                    @endif
+                                    <br><small class="text-muted">{{ $report->work_start->format('d M Y') }}</small>
+                                </div>
                             </td>
-                            <td>
+                            <td class="d-none d-md-table-cell">
                                 @if($report->job)
                                     <small>
                                         <strong>{{ $report->job->job_code }}</strong><br>
@@ -247,7 +232,7 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="d-none d-lg-table-cell">
                                 @if($report->job && $report->job->machine)
                                     <small>
                                         <strong>{{ $report->job->machine->code }}</strong><br>
@@ -257,16 +242,16 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="d-none d-md-table-cell">
                                 <small>{{ $report->user->name }}</small>
                             </td>
-                            <td>
+                            <td class="d-none d-md-table-cell">
                                 <small>{{ $report->work_start->format('d M Y') }}</small>
                             </td>
-                            <td>
+                            <td class="d-none d-lg-table-cell">
                                 <small>{{ $report->workDurationFormatted }}</small>
                             </td>
-                            <td>
+                            <td class="d-none d-lg-table-cell">
                                 <span class="badge bg-{{ $report->conditionBadge }}">
                                     {{ ucfirst($report->machine_condition) }}
                                 </span>
