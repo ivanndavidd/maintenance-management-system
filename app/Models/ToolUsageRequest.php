@@ -46,12 +46,17 @@ class ToolUsageRequest extends TenantModels
 
     public static function generateRequestNumber(): string
     {
-        $prefix = 'TUR';
-        $date   = now()->format('Ymd');
+        $prefix  = 'TUR';
+        $date    = now()->format('Ymd');
         $pattern = $prefix . '-' . $date . '-%';
-        $last = self::where('request_number', 'like', $pattern)->orderByDesc('request_number')->first();
-        $seq = $last ? ((int) substr($last->request_number, -4)) + 1 : 1;
+        $last    = self::where('request_number', 'like', $pattern)->orderByDesc('request_number')->first();
+        $seq     = $last ? ((int) substr($last->request_number, -4)) + 1 : 1;
         return $prefix . '-' . $date . '-' . str_pad($seq, 4, '0', STR_PAD_LEFT);
+    }
+
+    public function isConsumable(): bool
+    {
+        return $this->tool && strtolower($this->tool->equipment_type) === 'consumable';
     }
 
     public function getStatusBadgeClass(): string
@@ -61,6 +66,7 @@ class ToolUsageRequest extends TenantModels
             'approved'  => 'success',
             'rejected'  => 'danger',
             'in_use'    => 'primary',
+            'used'      => 'info',
             'returned'  => 'secondary',
             'cancelled' => 'dark',
             default     => 'secondary',
@@ -74,6 +80,7 @@ class ToolUsageRequest extends TenantModels
             'approved'  => 'Approved',
             'rejected'  => 'Rejected',
             'in_use'    => 'In Use',
+            'used'      => 'Used',
             'returned'  => 'Returned',
             'cancelled' => 'Cancelled',
             default     => ucfirst($this->status),
@@ -82,11 +89,18 @@ class ToolUsageRequest extends TenantModels
 
     public function canBeCancelledBy(int $userId): bool
     {
-        return $this->requested_by === $userId && in_array($this->status, ['pending']);
+        return $this->requested_by === $userId && $this->status === 'pending';
     }
 
+    // Non-consumable: track borrow → return
     public function canBeMarkedReturned(): bool
     {
-        return in_array($this->status, ['approved', 'in_use']);
+        return in_array($this->status, ['approved', 'in_use']) && !$this->isConsumable();
+    }
+
+    // Consumable: mark as used (stock already deducted on approve)
+    public function canBeMarkedUsed(): bool
+    {
+        return $this->status === 'approved' && $this->isConsumable();
     }
 }

@@ -30,23 +30,41 @@
                             <select name="tool_id" id="tool_id"
                                     class="form-select @error('tool_id') is-invalid @enderror" required>
                                 <option value="">-- Select Tool --</option>
+                                @php $currentType = '' @endphp
                                 @foreach($tools as $tool)
-                                <option value="{{ $tool->id }}"
-                                        data-qty="{{ $tool->quantity }}"
-                                        data-unit="{{ $tool->unit }}"
-                                        {{ old('tool_id') == $tool->id ? 'selected' : '' }}>
-                                    {{ $tool->sparepart_name }}
-                                    @if($tool->material_code) ({{ $tool->material_code }}) @endif
-                                    — Stock: {{ $tool->quantity }} {{ $tool->unit }}
-                                </option>
+                                    @if($tool->equipment_type !== $currentType)
+                                        @if($currentType !== '') </optgroup> @endif
+                                        <optgroup label="{{ $tool->equipment_type ?? 'Other' }}">
+                                        @php $currentType = $tool->equipment_type @endphp
+                                    @endif
+                                    <option value="{{ $tool->id }}"
+                                            data-qty="{{ $tool->quantity }}"
+                                            data-unit="{{ $tool->unit }}"
+                                            data-type="{{ strtolower($tool->equipment_type) }}"
+                                            {{ old('tool_id') == $tool->id ? 'selected' : '' }}>
+                                        {{ $tool->sparepart_name }}
+                                        @if($tool->material_code) ({{ $tool->material_code }}) @endif
+                                        — Stock: {{ $tool->quantity }} {{ $tool->unit }}
+                                    </option>
                                 @endforeach
+                                @if($currentType !== '') </optgroup> @endif
                             </select>
                             @error('tool_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div id="stockInfo" class="form-text text-muted d-none">
+                            <div id="stockInfo" class="form-text d-none">
                                 <i class="fas fa-info-circle"></i>
                                 Available stock: <strong id="stockQty"></strong>
+                            </div>
+                            {{-- Consumable notice --}}
+                            <div id="consumableNotice" class="alert alert-info py-2 mt-2 d-none" style="font-size:13px;">
+                                <i class="fas fa-flask me-1"></i>
+                                <strong>Consumable item</strong> — stock will be deducted immediately upon approval. No return required.
+                            </div>
+                            {{-- Non-consumable notice --}}
+                            <div id="borrowNotice" class="alert alert-primary py-2 mt-2 d-none" style="font-size:13px;">
+                                <i class="fas fa-tools me-1"></i>
+                                <strong>Borrowing item</strong> — you must return this tool and mark it as returned after use.
                             </div>
                         </div>
 
@@ -76,9 +94,9 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="col-12 col-sm-6">
+                            <div class="col-12 col-sm-6" id="returnDateWrapper">
                                 <label class="form-label">Estimated Return Date</label>
-                                <input type="date" name="return_date"
+                                <input type="date" name="return_date" id="return_date"
                                        class="form-control @error('return_date') is-invalid @enderror"
                                        value="{{ old('return_date') }}">
                                 <small class="text-muted">Optional</small>
@@ -177,25 +195,45 @@
 <script>
 document.getElementById('tool_id').addEventListener('change', function() {
     const opt = this.options[this.selectedIndex];
-    const qty = opt.dataset.qty;
+    const qty = opt.dataset.qty ?? 0;
     const unit = opt.dataset.unit ?? 'unit';
-    const info = document.getElementById('stockInfo');
-    const qtyEl = document.getElementById('stockQty');
-    const unitLabel = document.getElementById('unitLabel');
+    const type = opt.dataset.type ?? '';
+    const isConsumable = type === 'consumable';
+
+    const info            = document.getElementById('stockInfo');
+    const qtyEl           = document.getElementById('stockQty');
+    const unitLabel       = document.getElementById('unitLabel');
+    const returnWrapper   = document.getElementById('returnDateWrapper');
+    const returnInput     = document.getElementById('return_date');
+    const consumableNotice = document.getElementById('consumableNotice');
+    const borrowNotice    = document.getElementById('borrowNotice');
 
     if (this.value) {
         qtyEl.textContent = qty + ' ' + unit;
         info.classList.remove('d-none');
         unitLabel.textContent = unit;
         document.getElementById('quantity_requested').max = qty;
+
+        if (isConsumable) {
+            returnWrapper.classList.add('d-none');
+            returnInput.value = '';
+            consumableNotice.classList.remove('d-none');
+            borrowNotice.classList.add('d-none');
+        } else {
+            returnWrapper.classList.remove('d-none');
+            consumableNotice.classList.add('d-none');
+            borrowNotice.classList.remove('d-none');
+        }
     } else {
         info.classList.add('d-none');
         unitLabel.textContent = 'unit';
         document.getElementById('quantity_requested').removeAttribute('max');
+        returnWrapper.classList.remove('d-none');
+        consumableNotice.classList.add('d-none');
+        borrowNotice.classList.add('d-none');
     }
 });
 
-// Trigger on load if old value
 document.getElementById('tool_id').dispatchEvent(new Event('change'));
 </script>
 @endpush

@@ -1133,6 +1133,11 @@ Route::middleware(['auth'])->group(function () {
                         App\Http\Controllers\User\ToolUsageRequestController::class,
                         'markReturned',
                     ])->name('returned');
+
+                    Route::post('/{toolRequest}/used', [
+                        App\Http\Controllers\User\ToolUsageRequestController::class,
+                        'markUsed',
+                    ])->name('used');
                 });
 
             // Stock Opname
