@@ -609,17 +609,28 @@
 
  <!-- Inventory Management Dropdown -->
  <div class="sidebar-dropdown" onclick="toggleInventoryMenu()">
- <a class="{{ request()->routeIs('admin.spareparts.*') || request()->routeIs('admin.tools.*') || request()->routeIs('admin.group-assets.*') || request()->routeIs('admin.bom-management.*') || request()->routeIs('supervisor.spareparts.*') || request()->routeIs('supervisor.tools.*') || request()->routeIs('supervisor.group-assets.*') || request()->routeIs('supervisor.bom-management.*') ? 'active' : '' }}">
+ <a class="{{ request()->routeIs('admin.spareparts.*') || request()->routeIs('admin.tools.*') || request()->routeIs('admin.tool-requests.*') || request()->routeIs('admin.group-assets.*') || request()->routeIs('admin.bom-management.*') || request()->routeIs('supervisor.spareparts.*') || request()->routeIs('supervisor.tools.*') || request()->routeIs('supervisor.tool-requests.*') || request()->routeIs('supervisor.group-assets.*') || request()->routeIs('supervisor.bom-management.*') ? 'active' : '' }}">
  <i class="fas fa-warehouse"></i><span class="menu-text"> Inventory Mgmt</span>
  <i class="fas fa-chevron-down float-end" id="inventoryChevron"></i>
  </a>
  </div>
- <div class="sidebar-submenu {{ request()->routeIs('admin.spareparts.*') || request()->routeIs('admin.tools.*') || request()->routeIs('admin.group-assets.*') || request()->routeIs('admin.bom-management.*') || request()->routeIs('admin.sparepart-usage.*') || request()->routeIs('supervisor.spareparts.*') || request()->routeIs('supervisor.tools.*') || request()->routeIs('supervisor.group-assets.*') || request()->routeIs('supervisor.bom-management.*') || request()->routeIs('supervisor.sparepart-usage.*') ? 'show' : '' }}" id="inventorySubmenu">
+ <div class="sidebar-submenu {{ request()->routeIs('admin.spareparts.*') || request()->routeIs('admin.tools.*') || request()->routeIs('admin.tool-requests.*') || request()->routeIs('admin.group-assets.*') || request()->routeIs('admin.bom-management.*') || request()->routeIs('admin.sparepart-usage.*') || request()->routeIs('supervisor.spareparts.*') || request()->routeIs('supervisor.tools.*') || request()->routeIs('supervisor.tool-requests.*') || request()->routeIs('supervisor.group-assets.*') || request()->routeIs('supervisor.bom-management.*') || request()->routeIs('supervisor.sparepart-usage.*') ? 'show' : '' }}" id="inventorySubmenu">
  <a href="{{ route($routePrefix . '.spareparts.index') }}" class="{{ request()->routeIs('admin.spareparts.*') || request()->routeIs('supervisor.spareparts.*') ? 'active' : '' }}">
  <i class="fas fa-cubes"></i><span class="menu-text"> Spareparts</span>
  </a>
  <a href="{{ route($routePrefix . '.tools.index') }}" class="{{ request()->routeIs('admin.tools.*') || request()->routeIs('supervisor.tools.*') ? 'active' : '' }}">
  <i class="fas fa-tools"></i><span class="menu-text"> Tools</span>
+ </a>
+ <a href="{{ route($routePrefix . '.tool-requests.index') }}" class="{{ request()->routeIs('admin.tool-requests.*') || request()->routeIs('supervisor.tool-requests.*') ? 'active' : '' }}">
+ <i class="fas fa-hand-holding"></i><span class="menu-text"> Tool Requests</span>
+ @php
+     $pendingToolRequests = cache()->remember('pending_tool_requests', 60, function() {
+         return \App\Models\ToolUsageRequest::where('status', 'pending')->count();
+     });
+ @endphp
+ @if($pendingToolRequests > 0)
+     <span class="badge bg-warning text-dark ms-1">{{ $pendingToolRequests }}</span>
+ @endif
  </a>
  <a href="{{ route($routePrefix . '.group-assets.index') }}" class="{{ request()->routeIs('admin.group-assets.*') || request()->routeIs('supervisor.group-assets.*') ? 'active' : '' }}">
  <i class="fas fa-layer-group"></i><span class="menu-text"> Assets</span>
