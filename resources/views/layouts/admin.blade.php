@@ -366,6 +366,30 @@
  z-index: 999;
  }
 
+ .navbar-page-title {
+     font-size: 15px;
+     max-width: 50%;
+ }
+
+ .navbar-user-name {
+     font-size: 12px;
+     max-width: 80px;
+ }
+
+ @media (min-width: 769px) {
+     .navbar-page-title {
+         font-size: 17px;
+         max-width: none;
+     }
+     .navbar-user-name {
+         font-size: 13px;
+         max-width: none;
+     }
+     .navbar-top .mb-1 {
+         margin-bottom: 0 !important;
+     }
+ }
+
  /* Badge alignment when sidebar collapsed - hide badge */
  .sidebar .badge {
  display: none;
@@ -744,66 +768,66 @@
  <div class="main-content" id="mainContent">
  <!-- Top Navbar -->
  <nav class="navbar navbar-top px-3 py-2">
- <div class="d-flex flex-wrap justify-content-between align-items-center w-100 gap-2">
- <h6 class="mb-0 fw-bold">@yield('page-title', 'Dashboard')</h6>
- <div class="d-flex align-items-center gap-2 flex-wrap">
- @if(session('current_site_code'))
- @php
-     try {
-         $allSites = \App\Models\Site::on('central')->active()->get();
-     } catch (\Exception $e) {
-         $allSites = collect();
-     }
- @endphp
- <div class="dropdown">
-     <button class="btn btn-sm btn-outline-info dropdown-toggle d-flex align-items-center gap-1"
-             type="button" data-bs-toggle="dropdown" aria-expanded="false">
-         <i class="fas fa-building"></i>
-         <span class="d-none d-sm-inline">{{ session('current_site_name') }}</span>
-         <span class="d-inline d-sm-none">{{ Str::limit(session('current_site_name'), 12) }}</span>
-     </button>
-     <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width:220px;">
-         <li><h6 class="dropdown-header"><i class="fas fa-exchange-alt me-1"></i> Switch Site</h6></li>
-         @foreach($allSites as $site)
-         <li>
-             @if($site->code === session('current_site_code'))
-                 <span class="dropdown-item d-flex align-items-center gap-2 text-muted">
-                     <i class="fas fa-check-circle text-success"></i>
-                     <span>{{ $site->name }}</span>
-                     <span class="badge bg-success ms-auto" style="font-size:10px;">Current</span>
-                 </span>
-             @else
-                 <form action="{{ route('site.switch-direct') }}" method="POST" class="m-0">
-                     @csrf
-                     <input type="hidden" name="site_code" value="{{ $site->code }}">
-                     <button type="submit" class="dropdown-item d-flex align-items-center gap-2">
-                         <i class="fas fa-circle text-secondary" style="font-size:8px;"></i>
-                         <span>{{ $site->name }}</span>
-                     </button>
-                 </form>
-             @endif
-         </li>
-         @endforeach
-         <li><hr class="dropdown-divider"></li>
-         <li>
-             <form action="{{ route('site.switch') }}" method="POST" class="m-0">
-                 @csrf
-                 <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
-                     <i class="fas fa-sign-out-alt"></i> Logout & Switch Site
-                 </button>
-             </form>
-         </li>
-     </ul>
- </div>
- @endif
- <div class="d-flex align-items-center gap-1">
-     <span class="d-none d-sm-inline" style="font-size:13px;">Welcome, {{ auth()->user()->name }}</span>
-     <span class="d-inline d-sm-none" style="font-size:12px;">{{ explode(' ', auth()->user()->name)[0] }}</span>
-     <span class="badge bg-success" style="font-size:10px; white-space:nowrap;">
-         {{ Str::limit(auth()->user()->roles->first()->name ?? 'User', 12) }}
-     </span>
- </div>
- </div>
+ <!-- Row 1: Page title -->
+ <div class="w-100 d-flex align-items-center justify-content-between mb-1">
+     <span class="navbar-page-title fw-semibold text-truncate">@yield('page-title', 'Dashboard')</span>
+     <div class="d-flex align-items-center gap-2">
+         @if(session('current_site_code'))
+         @php
+             try {
+                 $allSites = \App\Models\Site::on('central')->active()->get();
+             } catch (\Exception $e) {
+                 $allSites = collect();
+             }
+         @endphp
+         <div class="dropdown">
+             <button class="btn btn-sm btn-outline-info dropdown-toggle d-flex align-items-center gap-1"
+                     type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size:12px; padding:3px 8px;">
+                 <i class="fas fa-building" style="font-size:11px;"></i>
+                 <span>{{ Str::limit(session('current_site_name'), 15) }}</span>
+             </button>
+             <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width:220px;">
+                 <li><h6 class="dropdown-header"><i class="fas fa-exchange-alt me-1"></i> Switch Site</h6></li>
+                 @foreach($allSites as $site)
+                 <li>
+                     @if($site->code === session('current_site_code'))
+                         <span class="dropdown-item d-flex align-items-center gap-2 text-muted">
+                             <i class="fas fa-check-circle text-success"></i>
+                             <span>{{ $site->name }}</span>
+                             <span class="badge bg-success ms-auto" style="font-size:10px;">Current</span>
+                         </span>
+                     @else
+                         <form action="{{ route('site.switch-direct') }}" method="POST" class="m-0">
+                             @csrf
+                             <input type="hidden" name="site_code" value="{{ $site->code }}">
+                             <button type="submit" class="dropdown-item d-flex align-items-center gap-2">
+                                 <i class="fas fa-circle text-secondary" style="font-size:8px;"></i>
+                                 <span>{{ $site->name }}</span>
+                             </button>
+                         </form>
+                     @endif
+                 </li>
+                 @endforeach
+                 <li><hr class="dropdown-divider"></li>
+                 <li>
+                     <form action="{{ route('site.switch') }}" method="POST" class="m-0">
+                         @csrf
+                         <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
+                             <i class="fas fa-sign-out-alt"></i> Logout & Switch Site
+                         </button>
+                     </form>
+                 </li>
+             </ul>
+         </div>
+         @endif
+         <div class="d-flex align-items-center gap-1">
+             <i class="fas fa-user-circle text-muted" style="font-size:14px;"></i>
+             <span class="navbar-user-name text-truncate">{{ explode(' ', auth()->user()->name)[0] }}</span>
+             <span class="badge bg-success" style="font-size:10px; white-space:nowrap; padding:2px 6px;">
+                 {{ Str::limit(auth()->user()->roles->first()->name ?? 'User', 12) }}
+             </span>
+         </div>
+     </div>
  </div>
  </nav>
 
