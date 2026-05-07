@@ -369,6 +369,20 @@
 
             <hr class="text-white">
 
+            <a href="{{ route('user.tool-requests.index') }}" class="{{ request()->routeIs('user.tool-requests.*') ? 'active' : '' }}">
+                <i class="fas fa-wrench"></i><span class="menu-text"> Tool Requests</span>
+                @php
+                    $pendingToolReq = cache()->remember('pending_tool_req_user_' . auth()->id(), 60, function() {
+                        return \App\Models\ToolUsageRequest::where('requested_by', auth()->id())
+                            ->whereIn('status', ['pending', 'approved'])
+                            ->count();
+                    });
+                @endphp
+                @if($pendingToolReq > 0)
+                    <span class="badge bg-warning text-dark ms-2">{{ $pendingToolReq }}</span>
+                @endif
+            </a>
+
             <a href="{{ route('user.help.index') }}" class="{{ request()->routeIs('user.help.*') ? 'active' : '' }}">
                 <i class="fas fa-question-circle"></i><span class="menu-text"> Help & Support</span>
             </a>

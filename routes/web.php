@@ -1100,6 +1100,41 @@ Route::middleware(['auth'])->group(function () {
                 'reportSparepartOutOfStock',
             ])->name('sparepart.report-out-of-stock');
 
+            // Tool Usage Requests
+            Route::prefix('tool-requests')
+                ->name('tool-requests.')
+                ->group(function () {
+                    Route::get('/', [
+                        App\Http\Controllers\User\ToolUsageRequestController::class,
+                        'index',
+                    ])->name('index');
+
+                    Route::get('/create', [
+                        App\Http\Controllers\User\ToolUsageRequestController::class,
+                        'create',
+                    ])->name('create');
+
+                    Route::post('/', [
+                        App\Http\Controllers\User\ToolUsageRequestController::class,
+                        'store',
+                    ])->name('store');
+
+                    Route::get('/{toolRequest}', [
+                        App\Http\Controllers\User\ToolUsageRequestController::class,
+                        'show',
+                    ])->name('show');
+
+                    Route::post('/{toolRequest}/cancel', [
+                        App\Http\Controllers\User\ToolUsageRequestController::class,
+                        'cancel',
+                    ])->name('cancel');
+
+                    Route::post('/{toolRequest}/returned', [
+                        App\Http\Controllers\User\ToolUsageRequestController::class,
+                        'markReturned',
+                    ])->name('returned');
+                });
+
             // Stock Opname
             Route::prefix('stock-opname')
                 ->name('stock-opname.')
