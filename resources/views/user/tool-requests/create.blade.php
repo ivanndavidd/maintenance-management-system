@@ -241,7 +241,6 @@ const qtyError = document.createElement('div');
 qtyError.className = 'invalid-feedback d-none';
 qtyError.id = 'qtyExceedError';
 qtyInput.parentElement.classList.add('has-validation');
-qtyInput.after(document.getElementById('unitLabel'));
 qtyInput.parentElement.appendChild(qtyError);
 
 qtyInput.addEventListener('input', function() {
