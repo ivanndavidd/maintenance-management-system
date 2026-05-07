@@ -476,6 +476,28 @@
     color: #323130;
 }
 
+@media (max-width: 768px) {
+    .fc .fc-toolbar {
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 8px 0;
+    }
+    .fc .fc-toolbar-chunk {
+        display: flex;
+        align-items: center;
+    }
+    .fc .fc-toolbar-title {
+        font-size: 15px;
+    }
+    .fc .fc-button {
+        font-size: 12px !important;
+        padding: 4px 8px !important;
+    }
+    .fc .fc-button .fc-icon {
+        font-size: 13px !important;
+    }
+}
+
 .fc .fc-button {
     font-size: 13px;
     padding: 6px 12px;
@@ -925,9 +947,9 @@ document.addEventListener('DOMContentLoaded', function() {
         displayEventEnd: false,
         initialView: 'dayGridMonth',
         headerToolbar: {
-            left: 'prev,next today',
+            left: 'prev,next',
             center: 'title',
-            right: 'dayGridMonth,customList'
+            right: 'today dayGridMonth,customList'
         },
         customButtons: {
             customList: {
@@ -946,7 +968,7 @@ document.addEventListener('DOMContentLoaded', function() {
         firstDay: 0,
         weekNumbers: false,
         navLinks: false,
-        dayHeaderFormat: { weekday: 'long' },
+        dayHeaderFormat: { weekday: 'short' },
         eventOrder: 'assigned_shift_id,title',
         loading: function(isLoading) { return false; },
 
