@@ -910,14 +910,19 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/{user}', [App\Http\Controllers\Admin\KpiController::class, 'show'])->name('show');
             });
 
-            // Tool Usage Requests (approval)
+            // Tool Usage Requests (approval + own requests for supervisor)
             Route::prefix('tool-requests')->name('tool-requests.')->group(function () {
                 Route::get('/', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'index'])->name('index');
+                Route::get('/create', [App\Http\Controllers\User\ToolUsageRequestController::class, 'create'])->name('create');
+                Route::post('/', [App\Http\Controllers\User\ToolUsageRequestController::class, 'store'])->name('store');
                 Route::get('/{toolRequest}', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'show'])->name('show');
                 Route::post('/{toolRequest}/approve', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'approve'])->name('approve');
                 Route::post('/{toolRequest}/reject', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'reject'])->name('reject');
                 Route::post('/{toolRequest}/in-use', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'markInUse'])->name('in-use');
                 Route::post('/{toolRequest}/mark-returned', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'markReturned'])->name('mark-returned');
+                Route::post('/{toolRequest}/cancel', [App\Http\Controllers\User\ToolUsageRequestController::class, 'cancel'])->name('cancel');
+                Route::post('/{toolRequest}/returned', [App\Http\Controllers\User\ToolUsageRequestController::class, 'markReturned'])->name('returned');
+                Route::post('/{toolRequest}/used', [App\Http\Controllers\User\ToolUsageRequestController::class, 'markUsed'])->name('used');
             });
 
             // Help Articles

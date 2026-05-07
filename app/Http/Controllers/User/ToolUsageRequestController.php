@@ -73,7 +73,11 @@ class ToolUsageRequestController extends Controller
             'status'             => 'pending',
         ]);
 
-        return redirect()->route('user.tool-requests.index')
+        $user = auth()->user();
+        $prefix = ($user->hasRole('supervisor_maintenance') || $user->hasRole('admin')) ? 'supervisor' : 'user';
+        if ($user->hasRole('admin')) $prefix = 'admin';
+
+        return redirect()->route($prefix . '.tool-requests.index')
             ->with('success', 'Tool usage request submitted. Waiting for approval.');
     }
 
