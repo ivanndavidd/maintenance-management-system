@@ -125,14 +125,14 @@
         <div class="collapse show" id="month-{{ $month }}">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover table-compact mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>Date</th>
                                 <th>Task Name</th>
-                                <th>Description</th>
-                                <th>Equipment</th>
-                                <th>Shift</th>
+                                <th class="d-none d-md-table-cell">Description</th>
+                                <th class="d-none d-md-table-cell">Equipment</th>
+                                <th class="d-none d-lg-table-cell">Shift</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -156,11 +156,11 @@
                                             <i class="fas fa-sync-alt text-muted ms-1" style="font-size: 10px;" title="Recurring"></i>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                         <small class="text-muted">{{ Str::limit($task->task_description, 50) ?? '-' }}</small>
                                     </td>
-                                    <td>{{ $task->equipment_type ?? '-' }}</td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">{{ $task->equipment_type ?? '-' }}</td>
+                                    <td class="d-none d-lg-table-cell">
                                         @if($task->assigned_shift_id)
                                             @php
                                                 $shiftColors = [1 => 'primary', 2 => 'info', 3 => 'success'];

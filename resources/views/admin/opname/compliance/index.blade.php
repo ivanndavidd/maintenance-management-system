@@ -105,66 +105,60 @@
         <div class="card-body">
             @if($closedTickets->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+                    <table class="table table-striped table-hover table-compact">
                         <thead class="table-light">
                             <tr>
-                                <th>No</th>
-                                <th>Ticket Number</th>
-                                <th>Item Types</th>
-                                <th>Location</th>
-                                <th>Closed Date</th>
-                                <th>Total Items</th>
-                                <th>Discrepancy</th>
-                                <th>Assigned Users</th>
-                                <th>Execution Type</th>
+                                <th class="d-none d-md-table-cell">No</th>
+                                <th>Ticket</th>
+                                <th class="d-none d-md-table-cell">Item Types</th>
+                                <th class="d-none d-lg-table-cell">Location</th>
+                                <th class="d-none d-md-table-cell">Closed Date</th>
+                                <th class="text-center">Items</th>
+                                <th class="text-center">Disc.</th>
+                                <th class="d-none d-lg-table-cell">Assigned Users</th>
+                                <th>Execution</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($closedTickets as $ticket)
                             <tr>
-                                <td>{{ $closedTickets->firstItem() + $loop->index }}</td>
+                                <td class="d-none d-md-table-cell">{{ $closedTickets->firstItem() + $loop->index }}</td>
                                 <td>
                                     <strong>{{ $ticket->schedule_code }}</strong>
-                                    <br><small class="text-muted">{{ $ticket->closed_at->format('d M Y H:i') }}</small>
+                                    <br><small class="text-muted">{{ $ticket->closed_at->format('d M Y') }}</small>
                                 </td>
-                                <td>{{ $ticket->getItemTypes() }}</td>
-                                <td>{{ $ticket->getAllLocations() }}</td>
-                                <td>{{ $ticket->closed_at->format('d M Y H:i') }}</td>
-                                <td>
-                                    <span class="badge bg-info">{{ $ticket->total_items }} items</span>
+                                <td class="d-none d-md-table-cell">{{ $ticket->getItemTypes() }}</td>
+                                <td class="d-none d-lg-table-cell">{{ $ticket->getAllLocations() }}</td>
+                                <td class="d-none d-md-table-cell">{{ $ticket->closed_at->format('d M Y H:i') }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-info">{{ $ticket->total_items }}</span>
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     @php
                                         $discrepancy = $ticket->getTotalDiscrepancy();
                                     @endphp
                                     @if($discrepancy > 0)
-                                        <span class="badge bg-warning">{{ $discrepancy }} items</span>
+                                        <span class="badge bg-warning">{{ $discrepancy }}</span>
                                     @else
-                                        <span class="badge bg-success">0 items</span>
+                                        <span class="badge bg-success">0</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     <small>{{ $ticket->getAssignedUsersNames() }}</small>
                                 </td>
                                 <td>
                                     @if($ticket->execution_type === 'early')
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-arrow-up"></i> Early ({{ $ticket->days_difference }} days)
-                                        </span>
+                                        <span class="badge bg-success"><i class="fas fa-arrow-up"></i><span class="d-none d-md-inline"> Early</span></span>
                                     @elseif($ticket->execution_type === 'ontime')
-                                        <span class="badge bg-info">
-                                            <i class="fas fa-check"></i> On-Time
-                                        </span>
+                                        <span class="badge bg-info"><i class="fas fa-check"></i><span class="d-none d-md-inline"> On-Time</span></span>
                                     @elseif($ticket->execution_type === 'late')
-                                        <span class="badge bg-danger">
-                                            <i class="fas fa-arrow-down"></i> Late ({{ $ticket->days_difference }} days)
-                                        </span>
+                                        <span class="badge bg-danger"><i class="fas fa-arrow-down"></i><span class="d-none d-md-inline"> Late</span></span>
                                     @endif
                                 </td>
                                 <td>
                                     <a href="{{ route($routePrefix.'.opname.compliance.show', $ticket) }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-eye"></i> View Details
+                                        <i class="fas fa-eye"></i>
                                     </a>
                                 </td>
                             </tr>

@@ -6,15 +6,15 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="fas fa-list-alt me-2"></i>BOM Management</h4>
+            <h5 class="mb-1"><i class="fas fa-list-alt me-2"></i>BOM Management</h5>
             <p class="text-muted mb-0">Bill of Materials — linked to assets via BOM ID</p>
         </div>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
-            <i class="fas fa-file-csv me-1"></i><span class="btn-text"> Import CSV</span>
+            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal" title="Import CSV">
+                <i class="fas fa-file-csv"></i><span class="btn-text d-none d-md-inline"> Import CSV</span>
             </button>
-            <a href="{{ route($routePrefix . '.bom-management.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i><span class="btn-text"> Create BOM</span>
+            <a href="{{ route($routePrefix . '.bom-management.create') }}" class="btn btn-primary" title="Create BOM">
+                <i class="fas fa-plus"></i><span class="btn-text d-none d-md-inline"> Create BOM</span>
             </a>
         </div>
     </div>

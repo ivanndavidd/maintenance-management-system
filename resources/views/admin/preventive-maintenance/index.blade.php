@@ -52,17 +52,17 @@
     <div class="card">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover table-compact mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Month</th>
-                            <th>Title</th>
-                            <th>Dates</th>
-                            <th>Total Tasks</th>
-                            <th>Progress</th>
+                            <th class="d-none d-md-table-cell">Title</th>
+                            <th class="d-none d-md-table-cell">Dates</th>
+                            <th class="d-none d-md-table-cell">Tasks</th>
+                            <th class="d-none d-lg-table-cell">Progress</th>
                             <th>Status</th>
-                            <th>Created By</th>
-                            <th width="120">Actions</th>
+                            <th class="d-none d-lg-table-cell">Created By</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -72,25 +72,29 @@
                             @endphp
                             <tr>
                                 <td>
-                                    <span class="fw-bold">{{ $schedule->scheduled_month->format('F Y') }}</span>
+                                    <span class="fw-bold">{{ $schedule->scheduled_month->format('M Y') }}</span>
+                                    <div class="d-md-none">
+                                        <small class="text-muted">{{ $schedule->title ?: '-' }}</small>
+                                        <br><span class="badge bg-secondary" style="font-size:10px;">{{ $stats['total'] }} tasks</span>
+                                    </div>
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     {{ $schedule->title ?: '-' }}
                                     @if($schedule->description)
-                                        <br><small class="text-muted">{{ Str::limit($schedule->description, 50) }}</small>
+                                        <br><small class="text-muted">{{ Str::limit($schedule->description, 40) }}</small>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <span class="badge bg-info">{{ $schedule->scheduleDates->count() }} Dates</span>
                                 </td>
-                                <td>
-                                    <span class="badge bg-secondary">{{ $stats['total'] }} Tasks</span>
+                                <td class="d-none d-md-table-cell">
+                                    <span class="badge bg-secondary">{{ $stats['total'] }}</span>
                                     @if($stats['completed'] > 0)
-                                        <br><small class="text-success">{{ $stats['completed'] }} completed</small>
+                                        <br><small class="text-success">{{ $stats['completed'] }} done</small>
                                     @endif
                                 </td>
-                                <td style="min-width: 150px;">
-                                    <div class="progress" style="height: 20px;">
+                                <td class="d-none d-lg-table-cell" style="min-width: 120px;">
+                                    <div class="progress" style="height: 16px;">
                                         <div class="progress-bar bg-success" style="width: {{ $stats['progress'] }}%">
                                             {{ $stats['progress'] }}%
                                         </div>
@@ -101,7 +105,7 @@
                                         {{ ucfirst($schedule->status) }}
                                     </span>
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     {{ $schedule->creator?->name ?? '-' }}
                                     <br>
                                     <small class="text-muted">{{ $schedule->created_at->format('d/m/Y') }}</small>
