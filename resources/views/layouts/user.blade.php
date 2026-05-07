@@ -224,11 +224,35 @@
         /* Mobile */
         @media (max-width: 768px) {
             .sidebar {
-                left: -100%;
+                left: -280px;
+                width: 280px;
             }
 
             .sidebar.show {
                 left: 0;
+                width: 280px;
+            }
+
+            /* When sidebar is open, show text immediately */
+            .sidebar.show .sidebar-header .text-content {
+                opacity: 1;
+                width: 200px;
+                margin-left: 12px;
+            }
+
+            .sidebar.show a .menu-text {
+                opacity: 1;
+                width: 180px;
+                margin-left: 12px;
+            }
+
+            .sidebar.show .badge {
+                display: inline-block;
+                font-size: 11px;
+                padding: 2px 6px;
+                margin-left: auto;
+                margin-right: 12px;
+                flex-shrink: 0;
             }
 
             .main-content {
@@ -240,6 +264,22 @@
             .mobile-toggle {
                 display: flex !important;
             }
+        }
+
+        /* Sidebar overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
         }
 
         .mobile-toggle {
@@ -384,8 +424,11 @@
         @yield('content')
     </div>
 
+    <!-- Sidebar Overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
     <!-- Mobile Toggle Button -->
-    <button class="mobile-toggle" onclick="toggleSidebar()">
+    <button class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
     </button>
 
@@ -394,20 +437,16 @@
 
     <script>
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('show');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
         }
 
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const toggle = document.querySelector('.mobile-toggle');
-
-            if (window.innerWidth <= 768) {
-                if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
-                    sidebar.classList.remove('show');
-                }
-            }
-        });
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('show');
+            document.getElementById('sidebarOverlay').classList.remove('show');
+        }
     </script>
 
     @stack('scripts')
