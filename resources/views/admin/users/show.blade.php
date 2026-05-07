@@ -7,7 +7,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2><i class="fas fa-user"></i> User Profile</h2>
+            <h5><i class="fas fa-user"></i> User Profile</h5>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
@@ -116,25 +116,25 @@
                     <div class="row text-center">
                         <div class="col-md-3 mb-3">
                             <div class="p-3 bg-light rounded">
-                                <h3 class="text-primary mb-0">{{ $stats['total_assigned'] }}</h3>
+                                <h5 class="text-primary mb-0">{{ $stats['total_assigned'] }}</h5>
                                 <small class="text-muted">Total CMR Assigned</small>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
                             <div class="p-3 bg-light rounded">
-                                <h3 class="text-success mb-0">{{ $stats['completed'] }}</h3>
+                                <h5 class="text-success mb-0">{{ $stats['completed'] }}</h5>
                                 <small class="text-muted">Completed</small>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
                             <div class="p-3 bg-light rounded">
-                                <h3 class="text-warning mb-0">{{ $stats['in_progress'] }}</h3>
+                                <h5 class="text-warning mb-0">{{ $stats['in_progress'] }}</h5>
                                 <small class="text-muted">In Progress</small>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
                             <div class="p-3 bg-light rounded">
-                                <h3 class="text-info mb-0">{{ $stats['completion_rate'] }}%</h3>
+                                <h5 class="text-info mb-0">{{ $stats['completion_rate'] }}%</h5>
                                 <small class="text-muted">Completion Rate</small>
                             </div>
                         </div>

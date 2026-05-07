@@ -35,7 +35,7 @@
                         <button type="button" class="list-btn" id="listToday">today</button>
                     </div>
                     <div class="list-toolbar-chunk">
-                        <h2 class="list-toolbar-title" id="listViewTitle"></h2>
+                        <h5 class="list-toolbar-title" id="listViewTitle"></h5>
                     </div>
                     <div class="list-toolbar-chunk">
                         <div class="list-btn-group">

@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h2>Group Detail</h2>
+        <h5>Group Detail</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>

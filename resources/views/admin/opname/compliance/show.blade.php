@@ -8,7 +8,7 @@
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h2><i class="fas fa-file-alt"></i> Compliance Report Detail</h2>
+                <h5><i class="fas fa-file-alt"></i> Compliance Report Detail</h5>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
@@ -118,17 +118,17 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="text-muted small">Accuracy Rate</label>
-                        <h3 class="mb-0 text-success">{{ $analytics['discrepancy']['accuracy_rate'] }}%</h3>
+                        <h5 class="mb-0 text-success">{{ $analytics['discrepancy']['accuracy_rate'] }}%</h5>
                     </div>
                     <div class="mb-3">
                         <label class="text-muted small">Items With Discrepancy</label>
-                        <h3 class="mb-0 text-warning">{{ $analytics['discrepancy']['items_with_discrepancy'] }}</h3>
+                        <h5 class="mb-0 text-warning">{{ $analytics['discrepancy']['items_with_discrepancy'] }}</h5>
                     </div>
                     <div class="mb-0">
                         <label class="text-muted small">Synced to Stock</label>
-                        <h3 class="mb-0">
+                        <h5 class="mb-0">
                             {{ $analytics['sync']['synced'] }}/{{ $analytics['sync']['total_approved_with_discrepancy'] }}
-                        </h3>
+                        </h5>
                     </div>
                 </div>
             </div>

@@ -6,7 +6,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-file-alt me-2"></i>Corrective Maintenance Reports</h2>
+        <h5><i class="fas fa-file-alt me-2"></i>Corrective Maintenance Reports</h5>
     </div>
 
     <!-- Filters -->

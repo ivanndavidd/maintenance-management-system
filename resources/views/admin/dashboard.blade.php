@@ -462,7 +462,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-2">Corrective Maintenance</h6>
-                            <h3 class="mb-0 fw-bold">{{ $stats['total_cmr'] }}</h3>
+                            <h5 class="mb-0 fw-bold">{{ $stats['total_cmr'] }}</h5>
                             <small>
                                 <span class="text-warning">{{ $stats['pending_cmr'] }} pending</span> |
                                 <span class="text-primary">{{ $stats['in_progress_cmr'] }} in progress</span> |
@@ -492,7 +492,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-2">Preventive Maintenance</h6>
-                            <h3 class="mb-0 fw-bold">{{ $stats['total_pm'] }}</h3>
+                            <h5 class="mb-0 fw-bold">{{ $stats['total_pm'] }}</h5>
                             <small>
                                 <span class="text-secondary">{{ $stats['draft_pm'] }} draft</span> |
                                 <span class="text-primary">{{ $stats['active_pm'] }} active</span> |
@@ -519,7 +519,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-2">Operators</h6>
-                            <h3 class="mb-0 fw-bold">{{ $stats['total_operators'] }}</h3>
+                            <h5 class="mb-0 fw-bold">{{ $stats['total_operators'] }}</h5>
                             <small class="text-success">{{ $stats['active_operators'] }} Active</small>
                         </div>
                         <div class="text-info opacity-25">
@@ -542,7 +542,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-2">Avg Resolution Time</h6>
-                            <h3 class="mb-0 fw-bold">{{ number_format($avgResolutionTime, 1) }}h</h3>
+                            <h5 class="mb-0 fw-bold">{{ number_format($avgResolutionTime, 1) }}h</h5>
                             <small class="text-muted">CMR completed tickets</small>
                         </div>
                         <div class="text-warning opacity-25">

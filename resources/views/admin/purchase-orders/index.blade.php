@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Purchase Orders</h2>
+        <h5>Purchase Orders</h5>
         <a href="{{ route($routePrefix.'.purchase-orders.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Create Purchase Order
         </a>

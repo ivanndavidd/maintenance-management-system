@@ -10,7 +10,7 @@
             <a href="{{ url()->previous(route($routePrefix.'.corrective-maintenance.index')) }}" class="text-decoration-none">
                 <i class="fas fa-arrow-left me-2"></i>Back
             </a>
-            <h2 class="mt-2"><i class="fas fa-ticket-alt me-2"></i>{{ $ticket->ticket_number }}</h2>
+            <h5 class="mt-2"><i class="fas fa-ticket-alt me-2"></i>{{ $ticket->ticket_number }}</h5>
         </div>
         <span class="badge {{ $ticket->getStatusBadgeClass() }} fs-5 px-3 py-2">
             {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}

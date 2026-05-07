@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h2><i class="fas fa-calendar-plus"></i> Create Stock Opname Schedule</h2>
+        <h5><i class="fas fa-calendar-plus"></i> Create Stock Opname Schedule</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.opname.schedules.index') }}">Schedules</a></li>
@@ -263,7 +263,7 @@
                         </div>
                         <hr>
                         <div class="text-center">
-                            <h3 id="totalCount" class="mb-0">0</h3>
+                            <h5 id="totalCount" class="mb-0">0</h5>
                             <small class="text-muted">total items</small>
                         </div>
                     </div>

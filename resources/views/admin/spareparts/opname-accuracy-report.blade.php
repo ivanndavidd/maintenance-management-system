@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h2>Stock Opname Accuracy Report - Spareparts</h2>
+        <h5>Stock Opname Accuracy Report - Spareparts</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.index') }}">Spareparts</a></li>
@@ -21,7 +21,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase">Average Accuracy</h6>
-                    <h1>{{ $stats['average_accuracy'] }}%</h1>
+                    <h5>{{ $stats['average_accuracy'] }}%</h5>
                     <small>Overall Performance</small>
                 </div>
             </div>
@@ -30,7 +30,7 @@
             <div class="card bg-warning text-white">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase">Total Discrepancy Value</h6>
-                    <h3>Rp {{ number_format($stats['total_discrepancy_value'], 0, ',', '.') }}</h3>
+                    <h5>Rp {{ number_format($stats['total_discrepancy_value'], 0, ',', '.') }}</h5>
                     <small>Financial Impact</small>
                 </div>
             </div>
@@ -39,7 +39,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase">Items with Discrepancy</h6>
-                    <h1>{{ $stats['items_with_discrepancy'] }}</h1>
+                    <h5>{{ $stats['items_with_discrepancy'] }}</h5>
                     <small>Total Items</small>
                 </div>
             </div>
@@ -143,19 +143,19 @@
                     <div class="row text-center">
                         <div class="col-md-4">
                             <div class="alert alert-success">
-                                <h2>{{ $excellent }}</h2>
+                                <h5>{{ $excellent }}</h5>
                                 <p class="mb-0">Excellent (≥ 95%)</p>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="alert alert-warning">
-                                <h2>{{ $good }}</h2>
+                                <h5>{{ $good }}</h5>
                                 <p class="mb-0">Good (80-94%)</p>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="alert alert-danger">
-                                <h2>{{ $poor }}</h2>
+                                <h5>{{ $poor }}</h5>
                                 <p class="mb-0">Poor (< 80%)</p>
                             </div>
                         </div>

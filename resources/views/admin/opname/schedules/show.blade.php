@@ -22,7 +22,7 @@
 <div class="container-fluid">
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <h2><i class="fas fa-calendar-check"></i> Schedule Details</h2>
+            <h5><i class="fas fa-calendar-check"></i> Schedule Details</h5>
             <div class="btn-group">
                 <a href="{{ route($routePrefix.'.opname.schedules.export', $schedule) }}" class="btn btn-success" id="exportBtn"  onclick="handleExport(event)">
                     <i class="fas fa-file-excel"></i> Export to Excel
@@ -663,21 +663,21 @@
                 <div class="card-body">
                     <div class="mb-3 pb-3 border-bottom">
                         <small class="text-muted">Total Items</small>
-                        <h3 class="mb-0">{{ $stats['total_items'] }}</h3>
+                        <h5 class="mb-0">{{ $stats['total_items'] }}</h5>
                     </div>
                     <div class="mb-3 pb-3 border-bottom">
                         <small class="text-muted">Completed Items</small>
-                        <h3 class="mb-0 text-success">{{ $stats['completed_items'] }}</h3>
+                        <h5 class="mb-0 text-success">{{ $stats['completed_items'] }}</h5>
                     </div>
                     <div class="mb-3 pb-3 border-bottom">
                         <small class="text-muted">Pending Items</small>
-                        <h3 class="mb-0 text-secondary">{{ $stats['pending_items'] }}</h3>
+                        <h5 class="mb-0 text-secondary">{{ $stats['pending_items'] }}</h5>
                     </div>
                     <div class="mb-3 pb-3 border-bottom">
                         <small class="text-muted">Cancelled Items</small>
-                        <h3 class="mb-0 {{ $stats['cancelled_items'] > 0 ? 'text-danger' : 'text-muted' }}">
+                        <h5 class="mb-0 {{ $stats['cancelled_items'] > 0 ? 'text-danger' : 'text-muted' }}">
                             {{ $stats['cancelled_items'] }}
-                        </h3>
+                        </h5>
                     </div>
                     <div>
                         <small class="text-muted">Days Remaining</small>

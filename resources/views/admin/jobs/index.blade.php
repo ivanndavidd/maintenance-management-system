@@ -7,7 +7,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2><i class="fas fa-tasks"></i> Maintenance Jobs</h2>
+            <h5><i class="fas fa-tasks"></i> Maintenance Jobs</h5>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
@@ -152,9 +152,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-1">Pending</h6>
-                            <h3 class="mb-0 text-warning">
+                            <h5 class="mb-0 text-warning">
                                 {{ $jobs->where('status', 'pending')->count() }}
-                            </h3>
+                            </h5>
                         </div>
                         <i class="fas fa-clock fa-2x text-warning opacity-25"></i>
                     </div>
@@ -168,9 +168,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-1">In Progress</h6>
-                            <h3 class="mb-0 text-primary">
+                            <h5 class="mb-0 text-primary">
                                 {{ $jobs->where('status', 'in_progress')->count() }}
-                            </h3>
+                            </h5>
                         </div>
                         <i class="fas fa-spinner fa-2x text-primary opacity-25"></i>
                     </div>
@@ -184,9 +184,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-1">Completed</h6>
-                            <h3 class="mb-0 text-success">
+                            <h5 class="mb-0 text-success">
                                 {{ $jobs->where('status', 'completed')->count() }}
-                            </h3>
+                            </h5>
                         </div>
                         <i class="fas fa-check-circle fa-2x text-success opacity-25"></i>
                     </div>
@@ -200,9 +200,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-1">Overdue</h6>
-                            <h3 class="mb-0 text-danger">
+                            <h5 class="mb-0 text-danger">
                                 {{ $jobs->filter(fn($job) => $job->isOverdue())->count() }}
-                            </h3>
+                            </h5>
                         </div>
                         <i class="fas fa-exclamation-triangle fa-2x text-danger opacity-25"></i>
                     </div>

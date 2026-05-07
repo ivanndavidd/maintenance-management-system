@@ -15,7 +15,7 @@
             </nav>
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-0">KPI Details: {{ $user->name }}</h1>
+                    <h5 class="h3 mb-0">KPI Details: {{ $user->name }}</h5>
                     <p class="text-muted mb-0">{{ $user->employee_id }} | {{ $user->department->name ?? 'No Department' }}</p>
                 </div>
                 <a href="{{ route($routePrefix.'.kpi.index') }}" class="btn btn-secondary">

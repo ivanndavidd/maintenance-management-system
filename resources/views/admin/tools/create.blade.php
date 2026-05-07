@@ -19,7 +19,7 @@
     @endif
 
     <div class="mb-4">
-        <h2>Add New Tool</h2>
+        <h5>Add New Tool</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>

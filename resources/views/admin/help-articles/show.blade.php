@@ -7,7 +7,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2><i class="fas {{ $helpArticle->icon ?? 'fa-file-alt' }}"></i> {{ $helpArticle->title }}</h2>
+            <h5><i class="fas {{ $helpArticle->icon ?? 'fa-file-alt' }}"></i> {{ $helpArticle->title }}</h5>
             <p class="text-muted mb-0">{!! $helpArticle->category_badge !!}</p>
         </div>
         <div>

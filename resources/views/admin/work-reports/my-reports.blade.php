@@ -7,7 +7,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2><i class="fas fa-user-edit"></i> My Work Reports</h2>
+            <h5><i class="fas fa-user-edit"></i> My Work Reports</h5>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
@@ -64,9 +64,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-1">Pending</h6>
-                            <h3 class="mb-0 text-warning">
+                            <h5 class="mb-0 text-warning">
                                 {{ $reports->where('status', 'pending')->count() }}
-                            </h3>
+                            </h5>
                         </div>
                         <i class="fas fa-clock fa-2x text-warning opacity-25"></i>
                     </div>
@@ -80,9 +80,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-1">Approved</h6>
-                            <h3 class="mb-0 text-success">
+                            <h5 class="mb-0 text-success">
                                 {{ $reports->where('status', 'approved')->count() }}
-                            </h3>
+                            </h5>
                         </div>
                         <i class="fas fa-check-circle fa-2x text-success opacity-25"></i>
                     </div>
@@ -96,9 +96,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-1">Rejected</h6>
-                            <h3 class="mb-0 text-danger">
+                            <h5 class="mb-0 text-danger">
                                 {{ $reports->where('status', 'rejected')->count() }}
-                            </h3>
+                            </h5>
                         </div>
                         <i class="fas fa-times-circle fa-2x text-danger opacity-25"></i>
                     </div>
@@ -112,9 +112,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-1">Draft</h6>
-                            <h3 class="mb-0 text-secondary">
+                            <h5 class="mb-0 text-secondary">
                                 {{ $reports->where('status', 'draft')->count() }}
-                            </h3>
+                            </h5>
                         </div>
                         <i class="fas fa-file fa-2x text-secondary opacity-25"></i>
                     </div>

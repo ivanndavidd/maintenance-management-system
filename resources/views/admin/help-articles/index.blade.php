@@ -7,7 +7,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2><i class="fas fa-question-circle"></i> Help Articles Management</h2>
+            <h5><i class="fas fa-question-circle"></i> Help Articles Management</h5>
             <p class="text-muted mb-0">Manage FAQ, SOP, Tutorials, and Documentation</p>
         </div>
         <a href="{{ route($routePrefix.'.help-articles.create') }}" class="btn btn-primary">
@@ -52,7 +52,7 @@
         <div class="col-md">
             <div class="card border-primary shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-primary mb-0">{{ $categoryCounts['all'] }}</h3>
+                    <h5 class="text-primary mb-0">{{ $categoryCounts['all'] }}</h5>
                     <small class="text-muted">Total Articles</small>
                 </div>
             </div>
@@ -60,7 +60,7 @@
         <div class="col-md">
             <div class="card border-info shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-info mb-0">{{ $categoryCounts['faq'] }}</h3>
+                    <h5 class="text-info mb-0">{{ $categoryCounts['faq'] }}</h5>
                     <small class="text-muted">FAQ</small>
                 </div>
             </div>
@@ -68,7 +68,7 @@
         <div class="col-md">
             <div class="card border-primary shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-primary mb-0">{{ $categoryCounts['sop'] }}</h3>
+                    <h5 class="text-primary mb-0">{{ $categoryCounts['sop'] }}</h5>
                     <small class="text-muted">SOP</small>
                 </div>
             </div>
@@ -76,7 +76,7 @@
         <div class="col-md">
             <div class="card border-success shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-success mb-0">{{ $categoryCounts['tutorial'] }}</h3>
+                    <h5 class="text-success mb-0">{{ $categoryCounts['tutorial'] }}</h5>
                     <small class="text-muted">Tutorials</small>
                 </div>
             </div>
@@ -84,7 +84,7 @@
         <div class="col-md">
             <div class="card border-secondary shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-secondary mb-0">{{ $categoryCounts['documentation'] }}</h3>
+                    <h5 class="text-secondary mb-0">{{ $categoryCounts['documentation'] }}</h5>
                     <small class="text-muted">Documentation</small>
                 </div>
             </div>

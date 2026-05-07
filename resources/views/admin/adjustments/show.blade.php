@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h2>Stock Adjustment Details</h2>
+        <h5>Stock Adjustment Details</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.adjustments.index') }}">Stock Adjustments</a></li>
