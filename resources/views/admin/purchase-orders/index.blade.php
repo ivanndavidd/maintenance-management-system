@@ -15,8 +15,9 @@
     <div class="card mb-3">
         <div class="card-body">
             <form method="GET" action="{{ route($routePrefix.'.purchase-orders.index') }}">
-                <div class="row">
-                    <div class="col-md-4">
+                <div class="row g-2">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Status</label>
                         <select name="status" class="form-select">
                             <option value="">All Status</option>
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
@@ -26,7 +27,8 @@
                             <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Approval Status</label>
                         <select name="approval_status" class="form-select">
                             <option value="">All Approval Status</option>
                             <option value="pending" {{ request('approval_status') == 'pending' ? 'selected' : '' }}>Pending Approval</option>
@@ -34,14 +36,12 @@
                             <option value="rejected" {{ request('approval_status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">
-            <i class="fas fa-filter"></i><span class="btn-text"> Filter</span>
+                    <div class="col-12 col-md-4 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i><span class="btn-text"> Filter</span>
                         </button>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{{ route($routePrefix.'.purchase-orders.index') }}" class="btn btn-secondary w-100">
-            <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
+                        <a href="{{ route($routePrefix.'.purchase-orders.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
                         </a>
                     </div>
                 </div>
