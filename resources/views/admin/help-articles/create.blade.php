@@ -73,16 +73,21 @@
                         <!-- Icon -->
                         <div class="mb-3">
                             <label for="icon" class="form-label">Icon (FontAwesome class)</label>
-                            <input type="text"
-                                   class="form-control @error('icon') is-invalid @enderror"
-                                   id="icon"
-                                   name="icon"
-                                   value="{{ old('icon') }}"
-                                   placeholder="e.g., fa-question-circle">
-                            <small class="text-muted">
-                                Example: fa-question-circle, fa-clipboard-list, fa-tools
-                                (<a href="https://fontawesome.com/icons" target="_blank">Browse icons</a>)
-                            </small>
+                            <div class="input-group">
+                                <span class="input-group-text {{ old('icon') ? '' : 'd-none' }}" id="iconPreviewWrapper">
+                                    <i class="fas {{ old('icon', 'fa-circle') }} me-0" id="iconPreview"></i>
+                                </span>
+                                <input type="text"
+                                       class="form-control @error('icon') is-invalid @enderror"
+                                       id="icon"
+                                       name="icon"
+                                       value="{{ old('icon') }}"
+                                       placeholder="e.g., fa-question-circle"
+                                       autocomplete="off">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#iconPickerModal">
+                                    <i class="fas fa-icons"></i> Pick
+                                </button>
+                            </div>
                             @error('icon')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -211,6 +216,8 @@
     </div>
 </div>
 
+@include('admin.help-articles._icon_picker')
+
 @push('styles')
 <!-- Quill CSS -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -309,6 +316,19 @@ setInterval(function() {
         }
     }
 }, 2000); // Check every 2 seconds
+
+// Icon preview on manual type
+document.getElementById('icon').addEventListener('input', function() {
+    const val = this.value.trim();
+    const wrapper = document.getElementById('iconPreviewWrapper');
+    const preview = document.getElementById('iconPreview');
+    if (val) {
+        preview.className = 'fas ' + val;
+        wrapper.classList.remove('d-none');
+    } else {
+        wrapper.classList.add('d-none');
+    }
+});
 
 // Auto-generate slug from title
 document.getElementById('title').addEventListener('blur', function() {

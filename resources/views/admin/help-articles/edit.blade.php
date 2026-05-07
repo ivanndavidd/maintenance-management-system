@@ -72,21 +72,20 @@
                         <div class="mb-3">
                             <label for="icon" class="form-label">Icon (FontAwesome class)</label>
                             <div class="input-group">
-                                @if($helpArticle->icon)
-                                    <span class="input-group-text">
-                                        <i class="fas {{ $helpArticle->icon }}"></i>
-                                    </span>
-                                @endif
+                                <span class="input-group-text {{ old('icon', $helpArticle->icon) ? '' : 'd-none' }}" id="iconPreviewWrapper">
+                                    <i class="fas {{ old('icon', $helpArticle->icon ?? 'fa-circle') }}" id="iconPreview"></i>
+                                </span>
                                 <input type="text"
                                        class="form-control @error('icon') is-invalid @enderror"
                                        id="icon"
                                        name="icon"
                                        value="{{ old('icon', $helpArticle->icon) }}"
-                                       placeholder="e.g., fa-question-circle">
+                                       placeholder="e.g., fa-question-circle"
+                                       autocomplete="off">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#iconPickerModal">
+                                    <i class="fas fa-icons"></i> Pick
+                                </button>
                             </div>
-                            <small class="text-muted">
-                                <a href="https://fontawesome.com/icons" target="_blank">Browse FontAwesome icons</a>
-                            </small>
                             @error('icon')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -243,6 +242,8 @@
     </div>
 </div>
 
+@include('admin.help-articles._icon_picker')
+
 @push('styles')
 <!-- Quill CSS -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -342,6 +343,19 @@ quill.on('text-change', function(delta, oldDelta, source) {
     const content = document.querySelector('#content');
     if (content && quill) {
         content.value = quill.root.innerHTML;
+    }
+});
+
+// Icon preview on manual type
+document.getElementById('icon').addEventListener('input', function() {
+    const val = this.value.trim();
+    const wrapper = document.getElementById('iconPreviewWrapper');
+    const preview = document.getElementById('iconPreview');
+    if (val) {
+        preview.className = 'fas ' + val;
+        wrapper.classList.remove('d-none');
+    } else {
+        wrapper.classList.add('d-none');
     }
 });
 </script>
