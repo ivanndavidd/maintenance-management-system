@@ -3,8 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ToolRequestApproved;
+use App\Mail\ToolRequestInUse;
+use App\Mail\ToolRequestRejected;
+use App\Mail\ToolRequestReturned;
 use App\Models\ToolUsageRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ToolUsageRequestController extends Controller
 {
@@ -75,6 +80,11 @@ class ToolUsageRequestController extends Controller
             $tool->decrement('quantity', $toolRequest->quantity_requested);
         }
 
+        $toolRequest->load('requester', 'reviewer');
+        if ($toolRequest->requester?->email) {
+            Mail::to($toolRequest->requester->email)->queue(new ToolRequestApproved($toolRequest));
+        }
+
         return back()->with('success', 'Request approved.' . ($isConsumable ? ' Stock has been deducted.' : ' User can now pick up the tool.'));
     }
 
@@ -95,6 +105,11 @@ class ToolUsageRequestController extends Controller
             'review_notes' => $request->review_notes,
         ]);
 
+        $toolRequest->load('requester', 'reviewer');
+        if ($toolRequest->requester?->email) {
+            Mail::to($toolRequest->requester->email)->queue(new ToolRequestRejected($toolRequest));
+        }
+
         return back()->with('success', 'Request rejected.');
     }
 
@@ -112,6 +127,11 @@ class ToolUsageRequestController extends Controller
 
         $toolRequest->tool->decrement('quantity', $toolRequest->quantity_requested);
         $toolRequest->update(['status' => 'in_use']);
+
+        $toolRequest->load('requester');
+        if ($toolRequest->requester?->email) {
+            Mail::to($toolRequest->requester->email)->queue(new ToolRequestInUse($toolRequest));
+        }
 
         return back()->with('success', 'Tool marked as in use. Stock deducted.');
     }
@@ -141,11 +161,15 @@ class ToolUsageRequestController extends Controller
             'return_notes' => $request->return_notes,
         ]);
 
-        // Restore stock only if it was already deducted (in_use)
         if ($wasInUse) {
             $toolRequest->tool->increment('quantity', $toolRequest->quantity_requested);
         }
 
-        return back()->with('success', 'Tool marked as returned. Stock restored.');
+        $toolRequest->load('requester');
+        if ($toolRequest->requester?->email) {
+            Mail::to($toolRequest->requester->email)->queue(new ToolRequestReturned($toolRequest));
+        }
+
+        return back()->with('success', 'Tool marked as returned.' . ($wasInUse ? ' Stock restored.' : ''));
     }
 }

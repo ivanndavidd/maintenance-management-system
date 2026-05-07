@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ToolRequestSubmitted;
+use App\Mail\ToolRequestReturned;
 use App\Models\Tool;
 use App\Models\ToolUsageRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ToolUsageRequestController extends Controller
 {
@@ -60,7 +63,7 @@ class ToolUsageRequestController extends Controller
         // For consumable, return_date is not applicable
         $isConsumable = strtolower($tool->equipment_type) === 'consumable';
 
-        ToolUsageRequest::create([
+        $newRequest = ToolUsageRequest::create([
             'request_number'     => ToolUsageRequest::generateRequestNumber(),
             'tool_id'            => $request->tool_id,
             'requested_by'       => auth()->id(),
@@ -72,6 +75,11 @@ class ToolUsageRequestController extends Controller
             'notes'              => $request->notes,
             'status'             => 'pending',
         ]);
+
+        $newRequest->load('requester', 'tool');
+        if ($newRequest->requester?->email) {
+            Mail::to($newRequest->requester->email)->queue(new ToolRequestSubmitted($newRequest));
+        }
 
         $user = auth()->user();
         $prefix = ($user->hasRole('supervisor_maintenance') || $user->hasRole('admin')) ? 'supervisor' : 'user';
@@ -130,8 +138,12 @@ class ToolUsageRequestController extends Controller
             'return_notes' => $request->return_notes,
         ]);
 
-        // Return stock for non-consumable
         $toolRequest->tool->increment('quantity', $toolRequest->quantity_requested);
+
+        $toolRequest->load('requester');
+        if ($toolRequest->requester?->email) {
+            Mail::to($toolRequest->requester->email)->queue(new ToolRequestReturned($toolRequest));
+        }
 
         return back()->with('success', 'Tool marked as returned. Stock has been updated.');
     }
