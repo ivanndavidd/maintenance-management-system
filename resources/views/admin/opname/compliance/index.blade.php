@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <!-- Header -->
     <div class="mb-4">
-        <h2><i class="fas fa-file-alt"></i> Compliance Report - Closed Tickets</h2>
+        <h5><i class="fas fa-file-alt"></i> Compliance Report - Closed Tickets</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.dashboard') }}">Dashboard</a></li>
@@ -21,7 +21,7 @@
         <div class="col-md-3">
             <div class="card border-primary">
                 <div class="card-body text-center">
-                    <h3 class="text-primary mb-0">{{ $stats['total_closed'] }}</h3>
+                    <h5 class="text-primary mb-0">{{ $stats['total_closed'] }}</h5>
                     <p class="text-muted mb-0">Total Closed Tickets</p>
                 </div>
             </div>
@@ -29,7 +29,7 @@
         <div class="col-md-3">
             <div class="card border-success">
                 <div class="card-body text-center">
-                    <h3 class="text-success mb-0">{{ $stats['early_completion'] }}</h3>
+                    <h5 class="text-success mb-0">{{ $stats['early_completion'] }}</h5>
                     <p class="text-muted mb-0">Early Completion</p>
                 </div>
             </div>
@@ -37,7 +37,7 @@
         <div class="col-md-3">
             <div class="card border-info">
                 <div class="card-body text-center">
-                    <h3 class="text-info mb-0">{{ $stats['ontime_completion'] }}</h3>
+                    <h5 class="text-info mb-0">{{ $stats['ontime_completion'] }}</h5>
                     <p class="text-muted mb-0">On-Time Completion</p>
                 </div>
             </div>
@@ -45,7 +45,7 @@
         <div class="col-md-3">
             <div class="card border-danger">
                 <div class="card-body text-center">
-                    <h3 class="text-danger mb-0">{{ $stats['late_completion'] }}</h3>
+                    <h5 class="text-danger mb-0">{{ $stats['late_completion'] }}</h5>
                     <p class="text-muted mb-0">Late Completion</p>
                 </div>
             </div>

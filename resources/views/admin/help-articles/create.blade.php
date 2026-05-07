@@ -7,7 +7,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2><i class="fas fa-plus-circle"></i> Create New Help Article</h2>
+            <h5><i class="fas fa-plus-circle"></i> Create New Help Article</h5>
             <p class="text-muted mb-0">Add a new FAQ, SOP, Tutorial, or Documentation</p>
         </div>
         <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary">

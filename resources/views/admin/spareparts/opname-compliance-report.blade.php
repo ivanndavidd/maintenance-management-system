@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h2>Stock Opname Compliance Report - Spareparts</h2>
+        <h5>Stock Opname Compliance Report - Spareparts</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.index') }}">Spareparts</a></li>
@@ -21,7 +21,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase">On Time</h6>
-                    <h2>{{ $stats['on_time'] }}</h2>
+                    <h5>{{ $stats['on_time'] }}</h5>
                     <small>Executions</small>
                 </div>
             </div>
@@ -30,7 +30,7 @@
             <div class="card bg-danger text-white">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase">Late</h6>
-                    <h2>{{ $stats['late'] }}</h2>
+                    <h5>{{ $stats['late'] }}</h5>
                     <small>Executions</small>
                 </div>
             </div>
@@ -39,7 +39,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase">Early</h6>
-                    <h2>{{ $stats['early'] }}</h2>
+                    <h5>{{ $stats['early'] }}</h5>
                     <small>Executions</small>
                 </div>
             </div>
@@ -48,7 +48,7 @@
             <div class="card bg-warning text-white">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase">Missed</h6>
-                    <h2>{{ $stats['missed'] }}</h2>
+                    <h5>{{ $stats['missed'] }}</h5>
                     <small>7+ Days Late</small>
                 </div>
             </div>

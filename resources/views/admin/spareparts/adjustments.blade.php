@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h2>Stock Adjustments - Spareparts</h2>
+        <h5>Stock Adjustments - Spareparts</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route(($routePrefix ?? 'admin').'.spareparts.index') }}">Spareparts</a></li>

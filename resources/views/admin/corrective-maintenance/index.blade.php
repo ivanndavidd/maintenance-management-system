@@ -18,7 +18,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2><i class="fas fa-tools me-2"></i>Corrective Maintenance Tickets</h2>
+            <h5><i class="fas fa-tools me-2"></i>Corrective Maintenance Tickets</h5>
             <p class="text-muted mb-0">Manage maintenance request tickets from warehouse staff</p>
         </div>
         <a href="{{ route('maintenance-request.create') }}" target="_blank" class="btn btn-primary">

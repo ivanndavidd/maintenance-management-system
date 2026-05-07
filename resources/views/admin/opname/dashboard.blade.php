@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <h2 class="mb-4">Stock Opname Dashboard</h2>
+    <h5 class="mb-4">Stock Opname Dashboard</h5>
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
@@ -14,7 +14,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-uppercase mb-1">Active Schedules</h6>
-                            <h2 class="mb-0">{{ $stats['total_schedules'] }}</h2>
+                            <h5 class="mb-0">{{ $stats['total_schedules'] }}</h5>
                         </div>
                         <i class="fas fa-calendar-alt fa-3x opacity-50"></i>
                     </div>
@@ -28,7 +28,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-uppercase mb-1">Overdue Schedules</h6>
-                            <h2 class="mb-0">{{ $stats['overdue_schedules'] }}</h2>
+                            <h5 class="mb-0">{{ $stats['overdue_schedules'] }}</h5>
                         </div>
                         <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
                     </div>
@@ -42,7 +42,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-uppercase mb-1">Total Executions</h6>
-                            <h2 class="mb-0">{{ $stats['total_executions'] }}</h2>
+                            <h5 class="mb-0">{{ $stats['total_executions'] }}</h5>
                         </div>
                         <i class="fas fa-clipboard-check fa-3x opacity-50"></i>
                     </div>
@@ -56,7 +56,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-uppercase mb-1">Average Accuracy</h6>
-                            <h2 class="mb-0">{{ $stats['average_accuracy'] }}%</h2>
+                            <h5 class="mb-0">{{ $stats['average_accuracy'] }}%</h5>
                         </div>
                         <i class="fas fa-chart-line fa-3x opacity-50"></i>
                     </div>
@@ -71,7 +71,7 @@
                 <div class="card-body text-center">
                     <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
                     <h5>Missed Executions</h5>
-                    <h3 class="text-danger">{{ $stats['missed_executions'] }}</h3>
+                    <h5 class="text-danger">{{ $stats['missed_executions'] }}</h5>
                     <small class="text-muted">More than 7 days late</small>
                 </div>
             </div>

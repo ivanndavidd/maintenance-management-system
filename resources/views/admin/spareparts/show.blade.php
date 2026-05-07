@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h2>Sparepart Details</h2>
+        <h5>Sparepart Details</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.spareparts.index') }}">Spareparts</a></li>
@@ -62,7 +62,7 @@
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <strong>Current Stock:</strong><br>
-                            <h3>
+                            <h5>
                                 @if($sparepart->quantity <= 0)
                                     <span class="text-danger">{{ $sparepart->quantity }}</span>
                                 @elseif($sparepart->quantity <= $sparepart->minimum_stock)
@@ -71,11 +71,11 @@
                                     <span class="text-success">{{ $sparepart->quantity }}</span>
                                 @endif
                                 {{ $sparepart->unit }}
-                            </h3>
+                            </h5>
                         </div>
                         <div class="col-md-3">
                             <strong>Minimum Stock:</strong><br>
-                            <h3>{{ $sparepart->minimum_stock }} {{ $sparepart->unit }}</h3>
+                            <h5>{{ $sparepart->minimum_stock }} {{ $sparepart->unit }}</h5>
                         </div>
                         <div class="col-md-3">
                             <strong>Unit Price:</strong><br>

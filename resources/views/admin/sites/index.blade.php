@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Site Management</h2>
+        <h5>Site Management</h5>
         <a href="{{ route('admin.sites.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Create New Site
         </a>

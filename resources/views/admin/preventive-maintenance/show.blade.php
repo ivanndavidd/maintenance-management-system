@@ -75,7 +75,7 @@
         <div class="col-md-3">
             <div class="card progress-card pending">
                 <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['total'] }}</h3>
+                    <h5 class="mb-0">{{ $stats['total'] }}</h5>
                     <small class="text-muted">Total Tasks</small>
                 </div>
             </div>
@@ -83,7 +83,7 @@
         <div class="col-md-3">
             <div class="card progress-card completed">
                 <div class="card-body text-center">
-                    <h3 class="mb-0 text-success">{{ $stats['completed'] }}</h3>
+                    <h5 class="mb-0 text-success">{{ $stats['completed'] }}</h5>
                     <small class="text-muted">Completed</small>
                 </div>
             </div>
@@ -91,7 +91,7 @@
         <div class="col-md-3">
             <div class="card progress-card in-progress">
                 <div class="card-body text-center">
-                    <h3 class="mb-0 text-warning">{{ $stats['in_progress'] }}</h3>
+                    <h5 class="mb-0 text-warning">{{ $stats['in_progress'] }}</h5>
                     <small class="text-muted">In Progress</small>
                 </div>
             </div>
@@ -99,7 +99,7 @@
         <div class="col-md-3">
             <div class="card">
                 <div class="card-body text-center">
-                    <h3 class="mb-0">{{ $stats['progress'] }}%</h3>
+                    <h5 class="mb-0">{{ $stats['progress'] }}%</h5>
                     <div class="progress mt-2" style="height: 8px;">
                         <div class="progress-bar bg-success" style="width: {{ $stats['progress'] }}%"></div>
                     </div>

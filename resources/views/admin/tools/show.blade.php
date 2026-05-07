@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h2>Tool Details</h2>
+        <h5>Tool Details</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.tools.index') }}">Tools</a></li>
@@ -62,7 +62,7 @@
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <strong>Current Stock:</strong><br>
-                            <h3>
+                            <h5>
                                 @if($tool->quantity <= 0)
                                     <span class="text-danger">{{ $tool->quantity }}</span>
                                 @elseif($tool->quantity <= $tool->minimum_stock)
@@ -71,11 +71,11 @@
                                     <span class="text-success">{{ $tool->quantity }}</span>
                                 @endif
                                 {{ $tool->unit }}
-                            </h3>
+                            </h5>
                         </div>
                         <div class="col-md-3">
                             <strong>Minimum Stock:</strong><br>
-                            <h3>{{ $tool->minimum_stock }} {{ $tool->unit }}</h3>
+                            <h5>{{ $tool->minimum_stock }} {{ $tool->unit }}</h5>
                         </div>
                         <div class="col-md-3">
                             <strong>Unit Price:</strong><br>

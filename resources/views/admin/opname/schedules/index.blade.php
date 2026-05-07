@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-calendar-alt"></i> Stock Opname Schedules</h2>
+        <h5><i class="fas fa-calendar-alt"></i> Stock Opname Schedules</h5>
         <a href="{{ route($routePrefix.'.opname.schedules.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> New Schedule
         </a>

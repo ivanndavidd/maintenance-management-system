@@ -7,7 +7,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2><i class="fas fa-edit"></i> Edit Help Article</h2>
+            <h5><i class="fas fa-edit"></i> Edit Help Article</h5>
             <p class="text-muted mb-0">{{ $helpArticle->title }}</p>
         </div>
         <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary">

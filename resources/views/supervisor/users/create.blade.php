@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="mb-4">
-        <h2><i class="fas fa-user-plus"></i> Add New User</h2>
+        <h5><i class="fas fa-user-plus"></i> Add New User</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('supervisor.dashboard') }}">Dashboard</a></li>

@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="mb-4">
-        <h2>Stock Opname Accuracy Report</h2>
+        <h5>Stock Opname Accuracy Report</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.opname.dashboard') }}">Opname Dashboard</a></li>
@@ -113,7 +113,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase">Average Accuracy</h6>
-                    <h1>{{ number_format($stats['average_accuracy'], 1) }}%</h1>
+                    <h5>{{ number_format($stats['average_accuracy'], 1) }}%</h5>
                     <small>Overall Performance</small>
                     <br>
                     <small class="opacity-75">Based on {{ $executions->total() }} executions</small>
@@ -124,7 +124,7 @@
             <div class="card bg-warning text-white">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase">Total Discrepancy Value</h6>
-                    <h3>Rp {{ number_format($stats['total_discrepancy_value'], 0, ',', '.') }}</h3>
+                    <h5>Rp {{ number_format($stats['total_discrepancy_value'], 0, ',', '.') }}</h5>
                     <small>Financial Impact</small>
                     <br>
                     <small class="opacity-75">{{ $stats['items_with_discrepancy'] }} items affected</small>
@@ -135,7 +135,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase">Items with Discrepancy</h6>
-                    <h1>{{ $stats['items_with_discrepancy'] }}</h1>
+                    <h5>{{ $stats['items_with_discrepancy'] }}</h5>
                     <small>Total Items</small>
                     <br>
                     <small class="opacity-75">
@@ -260,7 +260,7 @@
                     <div class="row text-center">
                         <div class="col-md-4">
                             <div class="alert alert-success mb-0">
-                                <h2 class="mb-2">{{ $stats['excellent'] ?? 0 }}</h2>
+                                <h5 class="mb-2">{{ $stats['excellent'] ?? 0 }}</h5>
                                 <p class="mb-1"><strong>Excellent (≥ 95%)</strong></p>
                                 <small class="text-muted">
                                     {{ $executions->total() > 0 ? round((($stats['excellent'] ?? 0) / $executions->total()) * 100, 1) : 0 }}% of total
@@ -269,7 +269,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="alert alert-warning mb-0">
-                                <h2 class="mb-2">{{ $stats['good'] ?? 0 }}</h2>
+                                <h5 class="mb-2">{{ $stats['good'] ?? 0 }}</h5>
                                 <p class="mb-1"><strong>Good (80-94%)</strong></p>
                                 <small class="text-muted">
                                     {{ $executions->total() > 0 ? round((($stats['good'] ?? 0) / $executions->total()) * 100, 1) : 0 }}% of total
@@ -278,7 +278,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="alert alert-danger mb-0">
-                                <h2 class="mb-2">{{ $stats['poor'] ?? 0 }}</h2>
+                                <h5 class="mb-2">{{ $stats['poor'] ?? 0 }}</h5>
                                 <p class="mb-1"><strong>Poor (< 80%)</strong></p>
                                 <small class="text-muted">
                                     {{ $executions->total() > 0 ? round((($stats['poor'] ?? 0) / $executions->total()) * 100, 1) : 0 }}% of total

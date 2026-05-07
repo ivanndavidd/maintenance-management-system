@@ -7,7 +7,7 @@
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h2>Purchase Order: {{ $purchaseOrder->po_number }}</h2>
+                <h5>Purchase Order: {{ $purchaseOrder->po_number }}</h5>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ route(($routePrefix ?? 'admin').'.purchase-orders.index') }}">Purchase Orders</a></li>

@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Shift Management</h2>
+        <h5>Shift Management</h5>
         <a href="{{ route(($routePrefix ?? 'admin').'.shifts.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Create New Schedule
         </a>
