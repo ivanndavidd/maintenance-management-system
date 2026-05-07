@@ -30,11 +30,11 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">All Groups <span class="text-muted fw-normal fs-6">({{ $groups->count() }} total)</span></h5>
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
-                    <i class="fas fa-file-csv me-1"></i> Import CSV
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal" title="Import CSV">
+                    <i class="fas fa-file-csv"></i><span class="btn-text d-none d-md-inline"> Import CSV</span>
                 </button>
-                <a href="{{ route($routePrefix.'.group-assets.create') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus me-1"></i> Add Group
+                <a href="{{ route($routePrefix.'.group-assets.create') }}" class="btn btn-primary btn-sm" title="Add Group">
+                    <i class="fas fa-plus"></i><span class="btn-text d-none d-md-inline"> Add Group</span>
                 </a>
             </div>
         </div>
