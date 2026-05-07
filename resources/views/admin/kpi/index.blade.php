@@ -117,7 +117,7 @@
                                     <th class="d-none d-md-table-cell">Department</th>
                                     <th class="text-center">PM</th>
                                     <th class="text-center">CM</th>
-                                    <th class="text-center d-none d-md-table-cell">SO</th>
+                                    <th class="text-center">SO</th>
                                     <th class="text-center d-none d-md-table-cell">Total</th>
                                     <th class="d-none d-lg-table-cell">Rate</th>
                                     <th>Actions</th>
@@ -149,7 +149,7 @@
                                         <td class="text-center">
                                             <span class="badge bg-warning text-dark">{{ $item['cm_count'] }}</span>
                                         </td>
-                                        <td class="text-center d-none d-md-table-cell">
+                                        <td class="text-center">
                                             <span class="badge bg-info">{{ $item['so_count'] }}</span>
                                         </td>
                                         <td class="text-center d-none d-md-table-cell">
