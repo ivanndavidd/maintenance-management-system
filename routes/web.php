@@ -907,6 +907,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/{toolRequest}/approve', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'approve'])->name('approve');
                 Route::post('/{toolRequest}/reject', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'reject'])->name('reject');
                 Route::post('/{toolRequest}/in-use', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'markInUse'])->name('in-use');
+                Route::post('/{toolRequest}/mark-returned', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'markReturned'])->name('mark-returned');
             });
 
             // Help Articles
