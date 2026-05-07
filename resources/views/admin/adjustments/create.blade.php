@@ -24,7 +24,7 @@
         <h5>Create Stock Adjustment</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'adjustments.index') }}">Stock Adjustments</a></li>
+                <li class="breadcrumb-item"><a href="{{ route($routePrefix.'.adjustments.index') }}">Stock Adjustments</a></li>
                 <li class="breadcrumb-item active">Create</li>
             </ol>
         </nav>
