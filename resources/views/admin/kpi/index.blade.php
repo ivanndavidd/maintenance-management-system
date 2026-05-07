@@ -38,8 +38,8 @@
         </div>
 
         <!-- Summary Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3">
+        <div class="row mb-4 g-2">
+            <div class="col-6 col-md-3">
                 <div class="card shadow-sm border-left-primary">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -54,7 +54,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card shadow-sm border-left-warning">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -69,7 +69,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card shadow-sm border-left-info">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -84,7 +84,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card shadow-sm border-left-success">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -112,50 +112,53 @@
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>#</th>
+                                    <th class="d-none d-md-table-cell">#</th>
                                     <th>User</th>
-                                    <th>Department</th>
-                                    <th class="text-center">PM Tasks</th>
-                                    <th class="text-center">CM Tickets</th>
-                                    <th class="text-center">Stock Opname</th>
-                                    <th class="text-center">Total</th>
-                                    <th>Completion Rate</th>
+                                    <th class="d-none d-md-table-cell">Department</th>
+                                    <th class="text-center">PM</th>
+                                    <th class="text-center">CM</th>
+                                    <th class="text-center d-none d-md-table-cell">SO</th>
+                                    <th class="text-center d-none d-md-table-cell">Total</th>
+                                    <th class="d-none d-lg-table-cell">Rate</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($users as $index => $item)
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
+                                        <td class="d-none d-md-table-cell">{{ $loop->iteration }}</td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="avatar-circle bg-primary text-white me-2">
+                                                <div class="avatar-circle bg-primary text-white me-2 flex-shrink-0">
                                                     {{ $item['user']->initials }}
                                                 </div>
                                                 <div>
                                                     <strong>{{ $item['user']->name }}</strong>
                                                     <br>
                                                     <small class="text-muted">{{ $item['user']->employee_id }}</small>
+                                                    <div class="d-md-none">
+                                                        <span class="badge bg-success" style="font-size:10px;">{{ $item['completion_rate'] }}%</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>{{ $item['user']->department->name ?? '-' }}</td>
+                                        <td class="d-none d-md-table-cell">{{ $item['user']->department->name ?? '-' }}</td>
                                         <td class="text-center">
                                             <span class="badge bg-primary">{{ $item['pm_count'] }}</span>
                                         </td>
                                         <td class="text-center">
                                             <span class="badge bg-warning text-dark">{{ $item['cm_count'] }}</span>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center d-none d-md-table-cell">
                                             <span class="badge bg-info">{{ $item['so_count'] }}</span>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center d-none d-md-table-cell">
                                             <span class="badge bg-success">{{ $item['total_completed'] }}</span>
                                         </td>
-                                        <td>
+                                        <td class="d-none d-lg-table-cell">
                                             <div class="d-flex align-items-center">
                                                 <span class="me-2">{{ $item['completion_rate'] }}%</span>
-                                                <div class="progress flex-grow-1" style="height: 8px; width: 100px;">
+                                                <div class="progress flex-grow-1" style="height: 8px; width: 80px;">
                                                     <div class="progress-bar bg-success" role="progressbar"
                                                         style="width: {{ $item['completion_rate'] }}%"></div>
                                                 </div>
@@ -164,7 +167,7 @@
                                         <td>
                                             <a href="{{ route($routePrefix.'.kpi.show', $item['user']->id) }}"
                                                 class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye"></i> Details
+                                                <i class="fas fa-eye"></i>
                                             </a>
                                         </td>
                                     </tr>

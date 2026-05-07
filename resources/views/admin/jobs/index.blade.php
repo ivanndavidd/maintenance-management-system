@@ -32,7 +32,7 @@
             <form method="GET" action="{{ route($routePrefix.'.jobs.index') }}">
                 <div class="row g-3">
                     <!-- Search -->
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-3">
                         <label class="form-label">Search</label>
                         <input type="text" name="search" class="form-control" 
                                placeholder="Job code, title..." 
@@ -40,7 +40,7 @@
                     </div>
 
                     <!-- Status Filter -->
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="form-label">Status</label>
                         <select name="status" class="form-select">
                             <option value="">All Status</option>
@@ -53,7 +53,7 @@
                     </div>
 
                     <!-- Priority Filter -->
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="form-label">Priority</label>
                         <select name="priority" class="form-select">
                             <option value="">All Priorities</option>
@@ -66,7 +66,7 @@
                     </div>
 
                     <!-- Type Filter -->
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="form-label">Type</label>
                         <select name="type" class="form-select">
                             <option value="">All Types</option>
@@ -79,7 +79,7 @@
                     </div>
 
                     <!-- Overdue Filter -->
-                    <div class="col-md-1">
+                    <div class="col-6 col-md-1">
                         <label class="form-label">Overdue</label>
                         <select name="overdue" class="form-select">
                             <option value="">All</option>
@@ -90,7 +90,7 @@
                     </div>
 
                     <!-- Machine Filter -->
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="form-label">Machine</label>
                         <select name="machine" class="form-select">
                             <option value="">All Machines</option>
@@ -105,7 +105,7 @@
 
                 <div class="row g-3 mt-2">
                     <!-- Assigned To Filter -->
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <label class="form-label">Assigned To</label>
                         <select name="assigned_to" class="form-select">
                             <option value="">All Users</option>
@@ -118,20 +118,20 @@
                     </div>
 
                     <!-- Date From -->
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="form-label">Date From</label>
                         <input type="date" name="date_from" class="form-control" 
                                value="{{ request('date_from') }}">
                     </div>
 
                     <!-- Date To -->
-                    <div class="col-md-2">
+                    <div class="col-6 col-md-2">
                         <label class="form-label">Date To</label>
                         <input type="date" name="date_to" class="form-control" 
                                value="{{ request('date_to') }}">
                     </div>
 
-                    <div class="col-md-5 d-flex align-items-end">
+                    <div class="col-12 col-md-5 d-flex align-items-end gap-2">
                         <button type="submit" class="btn btn-primary me-2">
             <i class="fas fa-search"></i><span class="btn-text"> Apply Filters</span>
                         </button>
@@ -145,8 +145,8 @@
     </div>
 
     <!-- Summary Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
+    <div class="row mb-4 g-2">
+        <div class="col-6 col-md-3">
             <div class="card border-warning shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -162,7 +162,7 @@
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
+        <div class="col-6 col-md-3">
             <div class="card border-primary shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -178,7 +178,7 @@
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
+        <div class="col-6 col-md-3">
             <div class="card border-success shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -194,7 +194,7 @@
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
+        <div class="col-6 col-md-3">
             <div class="card border-danger shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">

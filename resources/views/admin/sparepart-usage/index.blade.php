@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="fas fa-history me-2"></i>Sparepart Usage</h4>
+            <h5 class="mb-1"><i class="fas fa-history me-2"></i>Sparepart Usage</h5>
             <p class="text-muted mb-0">Record and track sparepart usage history</p>
         </div>
     </div>
@@ -15,10 +15,10 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-2">
-                <div class="col-md-5">
+                <div class="col-12 col-md-5">
                     <input type="text" name="search" class="form-control" placeholder="Search by sparepart name or notes..." value="{{ request('search') }}">
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <select name="sparepart_id" class="form-select">
                         <option value="">All Spareparts</option>
                         @foreach($spareparts as $sp)
@@ -28,9 +28,9 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-outline-primary"><i class="fas fa-search"></i> Search</button>
-                    <a href="{{ route($routePrefix . '.sparepart-usage.index') }}" class="btn btn-outline-secondary"><i class="fas fa-times"></i> Clear</a>
+                <div class="col-12 col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i><span class="btn-text"> Filter</span></button>
+                    <a href="{{ route($routePrefix . '.sparepart-usage.index') }}" class="btn btn-secondary"><i class="fas fa-redo"></i><span class="btn-text"> Reset</span></a>
                 </div>
             </form>
         </div>
@@ -44,21 +44,21 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Date</th>
-                                <th>Ticket / Task</th>
+                                <th class="d-none d-md-table-cell">Date</th>
+                                <th class="d-none d-md-table-cell">Ticket / Task</th>
                                 <th>Sparepart</th>
-                                <th>Material Code</th>
-                                <th class="text-center">Qty Used</th>
-                                <th>Notes</th>
-                                <th>Recorded By</th>
+                                <th class="d-none d-lg-table-cell">Material Code</th>
+                                <th class="text-center">Qty</th>
+                                <th class="d-none d-lg-table-cell">Notes</th>
+                                <th class="d-none d-md-table-cell">Recorded By</th>
                                 <th class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($usages as $usage)
                             <tr>
-                                <td><small>{{ $usage->used_at->format('d M Y') }}</small></td>
-                                <td>
+                                <td class="d-none d-md-table-cell"><small>{{ $usage->used_at->format('d M Y') }}</small></td>
+                                <td class="d-none d-md-table-cell">
                                     @if($usage->ticket_number && $usage->cmTicket)
                                         <a href="{{ route($routePrefix . '.corrective-maintenance.show', $usage->cmTicket) }}" class="badge bg-light text-primary border text-decoration-underline">
                                             {{ $usage->ticket_number }}
@@ -80,8 +80,9 @@
                                 <td>
                                     <div class="fw-semibold">{{ $usage->sparepart->sparepart_name ?? '-' }}</div>
                                     <small class="text-muted">{{ $usage->sparepart->equipment_type ?? '' }}</small>
+                                    <div class="d-md-none"><small class="text-muted">{{ $usage->used_at->format('d M Y') }}</small></div>
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     @if($usage->sparepart?->material_code)
                                         <span class="badge bg-light text-dark border">{{ $usage->sparepart->material_code }}</span>
                                     @else
@@ -93,8 +94,8 @@
                                         {{ $usage->quantity_used }} {{ $usage->sparepart->unit ?? '' }}
                                     </span>
                                 </td>
-                                <td><small class="text-muted">{{ $usage->notes ?? '-' }}</small></td>
-                                <td><small>{{ $usage->usedByUser?->name ?? '-' }}</small></td>
+                                <td class="d-none d-lg-table-cell"><small class="text-muted">{{ $usage->notes ?? '-' }}</small></td>
+                                <td class="d-none d-md-table-cell"><small>{{ $usage->usedByUser?->name ?? '-' }}</small></td>
                                 <td class="text-center">
                                     @if(auth()->user()->isSuper())
                                     <form action="{{ route($routePrefix . '.sparepart-usage.destroy', $usage) }}" method="POST"

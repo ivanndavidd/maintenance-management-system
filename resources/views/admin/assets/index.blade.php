@@ -53,10 +53,13 @@
                             <option value="disposed" {{ request('status') == 'disposed' ? 'selected' : '' }}>Disposed</option>
                         </select>
                     </div>
-                    <div class="col-6 col-md-2">
-                        <button type="submit" class="btn btn-primary btn-sm w-100">
-                            <i class="fas fa-filter"></i> Filter
+                    <div class="col-6 col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-filter"></i><span class="btn-text"> Filter</span>
                         </button>
+                        <a href="{{ route($routePrefix.'.assets.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-redo"></i>
+                        </a>
                     </div>
                 </div>
             </form>

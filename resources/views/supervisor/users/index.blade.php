@@ -95,28 +95,28 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover table-compact mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Employee ID</th>
+                            <th class="d-none d-md-table-cell">Employee ID</th>
                             <th>Name</th>
-                            <th>Email</th>
-                            <th>Department</th>
+                            <th class="d-none d-md-table-cell">Email</th>
+                            <th class="d-none d-lg-table-cell">Department</th>
                             <th>Role</th>
                             <th>Status</th>
-                            <th>Created</th>
+                            <th class="d-none d-md-table-cell">Created</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($users as $user)
                         <tr>
-                            <td>
+                            <td class="d-none d-md-table-cell">
                                 <strong>{{ $user->employee_id }}</strong>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar-circle bg-primary text-white me-2">
+                                    <div class="avatar-circle bg-primary text-white me-2 flex-shrink-0">
                                         {{ strtoupper(substr($user->name, 0, 2)) }}
                                     </div>
                                     <div>
@@ -124,11 +124,13 @@
                                         @if($user->id === auth()->id())
                                             <span class="badge bg-info ms-1">You</span>
                                         @endif
+                                        <div class="d-md-none text-muted" style="font-size:11px;">{{ $user->employee_id }}</div>
+                                        <div class="d-md-none text-muted" style="font-size:11px;">{{ $user->email }}</div>
                                     </div>
                                 </div>
                             </td>
-                            <td>{{ $user->email }}</td>
-                            <td>
+                            <td class="d-none d-md-table-cell">{{ $user->email }}</td>
+                            <td class="d-none d-lg-table-cell">
                                 @if($user->department)
                                     <span class="badge bg-secondary">{{ $user->department->name }}</span>
                                 @else
@@ -153,7 +155,7 @@
                                     </span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="d-none d-md-table-cell">
                                 <small class="text-muted">{{ $user->created_at->format('d M Y') }}</small>
                             </td>
                             <td>

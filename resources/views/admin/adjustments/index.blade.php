@@ -21,17 +21,17 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>Adjustment Code</th>
-                                <th>Item Type</th>
+                                <th>Code</th>
+                                <th class="d-none d-md-table-cell">Item Type</th>
                                 <th>Item Name</th>
-                                <th>Type</th>
-                                <th>Qty Before</th>
-                                <th>Adjustment</th>
-                                <th>Qty After</th>
-                                <th>Reason</th>
+                                <th class="d-none d-md-table-cell">Type</th>
+                                <th class="d-none d-lg-table-cell">Qty Before</th>
+                                <th class="d-none d-md-table-cell">Adjustment</th>
+                                <th class="d-none d-lg-table-cell">Qty After</th>
+                                <th class="d-none d-lg-table-cell">Reason</th>
                                 <th>Status</th>
-                                <th>Adjusted By</th>
-                                <th>Date</th>
+                                <th class="d-none d-lg-table-cell">Adjusted By</th>
+                                <th class="d-none d-md-table-cell">Date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -40,8 +40,15 @@
                             <tr>
                                 <td>
                                     <strong>{{ $adjustment->adjustment_code }}</strong>
+                                    <div class="d-md-none">
+                                        @if($adjustment->item_type === 'sparepart')
+                                            <span class="badge bg-primary" style="font-size:10px;">Sparepart</span>
+                                        @else
+                                            <span class="badge bg-info" style="font-size:10px;">Tool</span>
+                                        @endif
+                                    </div>
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     @if($adjustment->item_type === 'sparepart')
                                         <span class="badge bg-primary">Sparepart</span>
                                     @else
@@ -60,7 +67,7 @@
                                     <br>
                                     <small class="text-muted">{{ $item->sparepart_id ?? 'N/A' }}</small>
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     @if($adjustment->adjustment_type === 'add')
                                         <span class="badge bg-success">Add</span>
                                     @elseif($adjustment->adjustment_type === 'subtract')
@@ -69,16 +76,16 @@
                                         <span class="badge bg-warning">Correction</span>
                                     @endif
                                 </td>
-                                <td>{{ $adjustment->quantity_before }}</td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">{{ $adjustment->quantity_before }}</td>
+                                <td class="d-none d-md-table-cell">
                                     @if($adjustment->adjustment_qty > 0)
                                         <span class="text-success">+{{ $adjustment->adjustment_qty }}</span>
                                     @else
                                         <span class="text-danger">{{ $adjustment->adjustment_qty }}</span>
                                     @endif
                                 </td>
-                                <td>{{ $adjustment->quantity_after }}</td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">{{ $adjustment->quantity_after }}</td>
+                                <td class="d-none d-lg-table-cell">
                                     <span class="badge bg-secondary">{{ ucfirst($adjustment->reason_category) }}</span>
                                     <br>
                                     <small class="text-muted">{{ Str::limit($adjustment->reason, 30) }}</small>
@@ -91,9 +98,10 @@
                                     @else
                                         <span class="badge bg-danger">Rejected</span>
                                     @endif
+                                    <div class="d-md-none"><small class="text-muted">{{ $adjustment->created_at->format('d M Y') }}</small></div>
                                 </td>
-                                <td>{{ $adjustment->adjustedByUser->name ?? 'N/A' }}</td>
-                                <td>{{ $adjustment->created_at->format('d M Y H:i') }}</td>
+                                <td class="d-none d-lg-table-cell">{{ $adjustment->adjustedByUser->name ?? 'N/A' }}</td>
+                                <td class="d-none d-md-table-cell">{{ $adjustment->created_at->format('d M Y H:i') }}</td>
                                 <td>
                                     <a href="{{ route($routePrefix.'.adjustments.show', $adjustment) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-eye"></i>

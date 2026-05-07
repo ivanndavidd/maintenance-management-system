@@ -89,14 +89,14 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover table-compact">
                     <thead class="table-light">
                         <tr>
                             <th>Ticket #</th>
-                            <th>Problem Category</th>
+                            <th class="d-none d-md-table-cell">Problem Category</th>
                             <th>Problem</th>
                             <th>Status</th>
-                            <th>Created</th>
+                            <th class="d-none d-md-table-cell">Created</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -107,8 +107,13 @@
                                     <a href="{{ route('supervisor.my-tasks.corrective-maintenance.show', $ticket->id) }}" class="fw-bold text-decoration-none">
                                         {{ $ticket->ticket_number }}
                                     </a>
+                                    <div class="d-md-none">
+                                        <span class="badge {{ $ticket->getProblemCategoryBadgeClass() }}" style="font-size:10px;">
+                                            {{ $ticket->getProblemCategoryLabel() }}
+                                        </span>
+                                    </div>
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <span class="badge {{ $ticket->getProblemCategoryBadgeClass() }}">
                                         <i class="fas {{ $ticket->getProblemCategoryIcon() }} me-1"></i>
                                         {{ $ticket->getProblemCategoryLabel() }}
@@ -116,7 +121,7 @@
                                 </td>
                                 <td>
                                     <span title="{{ $ticket->problem_description }}">
-                                        {{ Str::limit($ticket->problem_description, 50) }}
+                                        {{ Str::limit($ticket->problem_description, 40) }}
                                     </span>
                                 </td>
                                 <td>
@@ -124,10 +129,10 @@
                                         {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
                                     </span>
                                 </td>
-                                <td>{{ $ticket->created_at->format('d M Y') }}</td>
+                                <td class="d-none d-md-table-cell">{{ $ticket->created_at->format('d M Y') }}</td>
                                 <td>
                                     <a href="{{ route('supervisor.my-tasks.corrective-maintenance.show', $ticket->id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i> View
+                                        <i class="fas fa-eye"></i>
                                     </a>
                                 </td>
                             </tr>
