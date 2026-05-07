@@ -14,26 +14,26 @@
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="GET" class="row g-3">
-                <div class="col-md-3">
+            <form method="GET" class="row g-2">
+                <div class="col-6 col-md-3">
                     <label class="form-label">Filter by Month</label>
-                    <input type="month" name="month" class="form-control" value="{{ $selectedMonth }}">
+                    <input type="month" name="month" class="form-control form-control-sm" value="{{ $selectedMonth }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <label class="form-label">Report Status</label>
-                    <select name="report_status" class="form-select">
+                    <select name="report_status" class="form-select form-select-sm">
                         <option value="">All</option>
-                        <option value="submitted" {{ request('report_status') == 'submitted' ? 'selected' : '' }}>Submitted (Pending Review)</option>
-                        <option value="pending_sparepart_approval" {{ request('report_status') == 'pending_sparepart_approval' ? 'selected' : '' }}>Pending Sparepart Approval</option>
+                        <option value="submitted" {{ request('report_status') == 'submitted' ? 'selected' : '' }}>Pending Review</option>
+                        <option value="pending_sparepart_approval" {{ request('report_status') == 'pending_sparepart_approval' ? 'selected' : '' }}>Sparepart Approval</option>
                         <option value="approved" {{ request('report_status') == 'approved' ? 'selected' : '' }}>Approved</option>
                         <option value="revision_needed" {{ request('report_status') == 'revision_needed' ? 'selected' : '' }}>Revision Needed</option>
                         <option value="sparepart_rejected" {{ request('report_status') == 'sparepart_rejected' ? 'selected' : '' }}>Sparepart Rejected</option>
                         <option value="no_report" {{ request('report_status') == 'no_report' ? 'selected' : '' }}>No Report</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <label class="form-label">Timing</label>
-                    <select name="timing" class="form-select">
+                    <select name="timing" class="form-select form-select-sm">
                         <option value="">All</option>
                         <option value="on_time" {{ request('timing') == 'on_time' ? 'selected' : '' }}>On Time</option>
                         <option value="early" {{ request('timing') == 'early' ? 'selected' : '' }}>Early</option>
@@ -45,12 +45,12 @@
                         <option value="late_gte_7" {{ request('timing') == 'late_gte_7' ? 'selected' : '' }}>Late ≥ 7 days</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-outline-primary me-2">
-            <i class="fas fa-search"></i><span class="btn-text"> Filter</span>
+                <div class="col-6 col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-search"></i><span class="btn-text"> Filter</span>
                     </button>
-                    <a href="{{ route($routePrefix . '.preventive-maintenance.reports') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-times"></i><span class="btn-text"> Reset</span>
+                    <a href="{{ route($routePrefix . '.preventive-maintenance.reports') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-times"></i>
                     </a>
                 </div>
             </form>
@@ -73,32 +73,30 @@
         $stats = $monthlyStats[$month];
     @endphp
     <div class="card mb-4">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center" role="button" data-bs-toggle="collapse" data-bs-target="#month-{{ $month }}">
-            <div>
-                <h5 class="mb-0">
-                    <i class="fas fa-calendar me-2"></i>{{ $monthDate->format('F Y') }}
-                    <span class="badge bg-secondary ms-2">{{ $stats['total'] }} tasks</span>
-                </h5>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <div class="d-flex gap-2">
-                    @if($stats['approved'] > 0)
-                        <span class="badge bg-success">{{ $stats['approved'] }} approved</span>
-                    @endif
-                    @if($stats['submitted'] > 0)
-                        <span class="badge bg-info">{{ $stats['submitted'] }} pending review</span>
-                    @endif
-                    @if(($stats['pending_sparepart_approval'] ?? 0) > 0)
-                        <span class="badge bg-warning text-dark"><i class="fas fa-boxes me-1"></i>{{ $stats['pending_sparepart_approval'] }} sparepart approval</span>
-                    @endif
-                    @if($stats['revision_needed'] > 0)
-                        <span class="badge bg-warning text-dark">{{ $stats['revision_needed'] }} revision</span>
-                    @endif
-                    @if($stats['no_report'] > 0)
-                        <span class="badge bg-secondary">{{ $stats['no_report'] }} no report</span>
-                    @endif
+        <div class="card-header bg-white" role="button" data-bs-toggle="collapse" data-bs-target="#month-{{ $month }}">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="fw-semibold"><i class="fas fa-calendar me-1"></i>{{ $monthDate->format('F Y') }}</span>
+                        <span class="badge bg-secondary">{{ $stats['total'] }} tasks</span>
+                        @if($stats['submitted'] > 0)
+                            <span class="badge bg-info">{{ $stats['submitted'] }} pending</span>
+                        @endif
+                        @if($stats['no_report'] > 0)
+                            <span class="badge bg-secondary">{{ $stats['no_report'] }} no report</span>
+                        @endif
+                        @if($stats['approved'] > 0)
+                            <span class="badge bg-success d-none d-md-inline">{{ $stats['approved'] }} approved</span>
+                        @endif
+                        @if(($stats['pending_sparepart_approval'] ?? 0) > 0)
+                            <span class="badge bg-warning text-dark d-none d-md-inline">{{ $stats['pending_sparepart_approval'] }} sparepart</span>
+                        @endif
+                        @if($stats['revision_needed'] > 0)
+                            <span class="badge bg-warning text-dark d-none d-md-inline">{{ $stats['revision_needed'] }} revision</span>
+                        @endif
+                    </div>
                 </div>
-                <i class="fas fa-chevron-down"></i>
+                <i class="fas fa-chevron-down flex-shrink-0 mt-1"></i>
             </div>
         </div>
         <div class="collapse show" id="month-{{ $month }}" style="contain: content;">
@@ -107,14 +105,14 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Date</th>
+                                <th style="width:50px">Date</th>
                                 <th>Task Name</th>
-                                <th>Assigned To</th>
-                                <th>Shift</th>
-                                <th>Task Status</th>
+                                <th class="d-none d-md-table-cell">Assigned To</th>
+                                <th class="d-none d-lg-table-cell">Shift</th>
+                                <th class="d-none d-md-table-cell">Task Status</th>
                                 <th>Report Status</th>
-                                <th>Further Repair</th>
-                                <th>Action</th>
+                                <th class="d-none d-lg-table-cell">Further Repair</th>
+                                <th style="width:50px">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -133,6 +131,15 @@
                                         @if($task->is_recurring || $task->parent_task_id)
                                             <i class="fas fa-sync-alt text-muted ms-1" style="font-size: 10px;" title="Recurring"></i>
                                         @endif
+                                        <div class="d-md-none">
+                                            @php
+                                                $taskDateKey = ($task->task_date instanceof \Carbon\Carbon ? $task->task_date->format('Y-m-d') : $task->task_date);
+                                                $assignedToNames = $task->assigned_shift_id
+                                                    ? ($shiftUserCache[$task->assigned_shift_id . '_' . $taskDateKey] ?? '-')
+                                                    : '-';
+                                            @endphp
+                                            <small class="text-muted">{{ $assignedToNames }}</small>
+                                        </div>
                                     </td>
                                     @php
                                         $taskDateKey = ($task->task_date instanceof \Carbon\Carbon ? $task->task_date->format('Y-m-d') : $task->task_date);
@@ -140,8 +147,8 @@
                                             ? ($shiftUserCache[$task->assigned_shift_id . '_' . $taskDateKey] ?? '-')
                                             : '-';
                                     @endphp
-                                    <td>{{ $assignedToNames }}</td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">{{ $assignedToNames }}</td>
+                                    <td class="d-none d-lg-table-cell">
                                         @if($task->assigned_shift_id)
                                             @php
                                                 $shiftColors = [1 => 'primary', 2 => 'info', 3 => 'success'];
@@ -153,7 +160,7 @@
                                             -
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                         <span class="badge bg-{{ $task->status_badge }}">
                                             {{ ucfirst(str_replace('_', ' ', $task->status)) }}
                                         </span>
@@ -179,7 +186,7 @@
                                             <span class="badge bg-secondary">No Report</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="d-none d-lg-table-cell">
                                         @if($latestReport && $latestReport->furtherRepairAssets && $latestReport->furtherRepairAssets->count() > 0)
                                             <span class="badge bg-warning text-dark">
                                                 <i class="fas fa-tools"></i> {{ $latestReport->furtherRepairAssets->count() }} asset(s)
