@@ -106,16 +106,46 @@ class ToolUsageRequestController extends Controller
 
         $toolRequest->load('tool');
 
-        // Only for non-consumable tools
         if (strtolower($toolRequest->tool->equipment_type) === 'consumable') {
             return back()->with('error', 'Consumable items do not have an in-use state.');
         }
 
-        // Deduct stock when tool is physically taken
         $toolRequest->tool->decrement('quantity', $toolRequest->quantity_requested);
-
         $toolRequest->update(['status' => 'in_use']);
 
         return back()->with('success', 'Tool marked as in use. Stock deducted.');
+    }
+
+    // Admin/supervisor can also mark a borrowed tool as returned
+    public function markReturned(Request $request, ToolUsageRequest $toolRequest)
+    {
+        if (!in_array($toolRequest->status, ['approved', 'in_use'])) {
+            return back()->with('error', 'Only approved or in-use requests can be marked as returned.');
+        }
+
+        $toolRequest->load('tool');
+
+        if (strtolower($toolRequest->tool->equipment_type) === 'consumable') {
+            return back()->with('error', 'Consumable items cannot be returned.');
+        }
+
+        $request->validate([
+            'return_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $wasInUse = $toolRequest->status === 'in_use';
+
+        $toolRequest->update([
+            'status'       => 'returned',
+            'returned_at'  => now(),
+            'return_notes' => $request->return_notes,
+        ]);
+
+        // Restore stock only if it was already deducted (in_use)
+        if ($wasInUse) {
+            $toolRequest->tool->increment('quantity', $toolRequest->quantity_requested);
+        }
+
+        return back()->with('success', 'Tool marked as returned. Stock restored.');
     }
 }

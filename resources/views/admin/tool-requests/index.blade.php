@@ -98,6 +98,24 @@
                         <div class="text-muted" style="font-size:12px; margin-top:2px;">
                             <i class="fas fa-bullseye me-1"></i>{{ Str::limit($req->purpose, 70) }}
                         </div>
+                        {{-- Overdue flag for non-consumable not yet returned --}}
+                        @if($req->tool && strtolower($req->tool->equipment_type) !== 'consumable'
+                            && in_array($req->status, ['approved','in_use'])
+                            && $req->return_date && $req->return_date->isPast())
+                        <div class="mt-1">
+                            <span class="badge bg-danger" style="font-size:10px;">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Overdue — was due {{ $req->return_date->format('d M Y') }}
+                            </span>
+                        </div>
+                        @elseif($req->tool && strtolower($req->tool->equipment_type) !== 'consumable'
+                            && in_array($req->status, ['approved','in_use']))
+                        <div class="mt-1">
+                            <span class="badge bg-warning text-dark" style="font-size:10px;">
+                                <i class="fas fa-clock me-1"></i>Not yet returned
+                                @if($req->return_date) · due {{ $req->return_date->format('d M Y') }} @endif
+                            </span>
+                        </div>
+                        @endif
                     </div>
                     <div class="ms-2 d-flex flex-column gap-1">
                         <a href="{{ route($routePrefix.'.tool-requests.show', $req) }}" class="btn btn-sm btn-outline-primary">

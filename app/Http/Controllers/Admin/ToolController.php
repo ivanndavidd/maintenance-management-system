@@ -137,7 +137,13 @@ class ToolController extends Controller
     {
         $tool->load(['addedByUser', 'opnameUser', 'verifiedUser']);
 
-        return view('admin.tools.show', compact('tool'));
+        $usageHistory = \App\Models\ToolUsageRequest::where('tool_id', $tool->id)
+            ->with(['requester', 'reviewer'])
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
+
+        return view('admin.tools.show', compact('tool', 'usageHistory'));
     }
 
     /**

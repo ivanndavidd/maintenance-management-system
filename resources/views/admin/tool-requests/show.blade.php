@@ -86,12 +86,21 @@
             @if($toolRequest->isConsumable())
             <div class="alert alert-info py-2" style="font-size:13px;">
                 <i class="fas fa-flask me-1"></i>
-                <strong>Consumable item</strong> — stock will be deducted immediately upon approval. No return required.
+                <strong>Consumable item</strong> — stock deducted on approval. No return required.
             </div>
             @else
             <div class="alert alert-primary py-2" style="font-size:13px;">
                 <i class="fas fa-tools me-1"></i>
-                <strong>Borrowing item</strong> — stock deducted when marked <em>In Use</em>. Returned to stock when user marks it returned.
+                <strong>Borrowing item</strong> — stock deducted when marked In Use. Restored when returned.
+            </div>
+            @endif
+
+            {{-- Overdue warning --}}
+            @if(!$toolRequest->isConsumable() && in_array($toolRequest->status, ['approved','in_use']) && $toolRequest->return_date && $toolRequest->return_date->isPast())
+            <div class="alert alert-danger py-2" style="font-size:13px;">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                <strong>Overdue!</strong> Expected return was {{ $toolRequest->return_date->format('d M Y') }}
+                ({{ $toolRequest->return_date->diffForHumans() }}). Tool has not been returned yet.
             </div>
             @endif
 
@@ -177,6 +186,13 @@
                             <i class="fas fa-tools"></i> Mark as In Use
                         </button>
                     </form>
+                    @endif
+
+                    {{-- Admin can also force-mark as returned --}}
+                    @if(in_array($toolRequest->status, ['approved', 'in_use']) && !$toolRequest->isConsumable())
+                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#adminReturnModal">
+                        <i class="fas fa-undo"></i> Mark as Returned
+                    </button>
                     @endif
 
                     <a href="{{ route($routePrefix.'.tool-requests.index') }}" class="btn btn-secondary btn-sm">
@@ -266,6 +282,43 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- Admin Mark Returned Modal --}}
+@if(in_array($toolRequest->status, ['approved', 'in_use']) && !$toolRequest->isConsumable())
+<div class="modal fade" id="adminReturnModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route($routePrefix.'.tool-requests.mark-returned', $toolRequest) }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold"><i class="fas fa-undo text-success"></i> Mark Tool as Returned</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Confirm that <strong>{{ $toolRequest->tool->sparepart_name }}</strong>
+                    ({{ $toolRequest->quantity_requested }} {{ $toolRequest->tool->unit }}) has been returned by
+                    <strong>{{ $toolRequest->requester->name }}</strong>.</p>
+                    @if($toolRequest->status === 'in_use')
+                    <div class="alert alert-info py-2" style="font-size:13px;">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Stock will be restored by <strong>{{ $toolRequest->quantity_requested }} {{ $toolRequest->tool->unit }}</strong>.
+                    </div>
+                    @endif
+                    <div class="mb-3">
+                        <label class="form-label">Notes <small class="text-muted">(optional)</small></label>
+                        <textarea name="return_notes" class="form-control form-control-sm" rows="2"
+                                  placeholder="Tool condition, remarks, etc."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Confirm Returned</button>
                 </div>
             </form>
         </div>
