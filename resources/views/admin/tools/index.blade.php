@@ -166,22 +166,21 @@
                 <table class="table table-hover table-bordered">
                     <thead class="table-light">
                         <tr>
-                            <th>Material Code</th>
+                            <th class="d-none d-md-table-cell">Material Code</th>
                             <th>Name</th>
-                            <th>Equipment Type</th>
-                            <th>Brand</th>
-                            <th>Model</th>
-                            <th class="text-center">Quantity</th>
-                            <th class="text-center">Min Stock</th>
-                            <th>Unit</th>
-                            <th>Location</th>
+                            <th class="d-none d-md-table-cell">Equipment Type</th>
+                            <th class="d-none d-lg-table-cell">Brand</th>
+                            <th class="d-none d-lg-table-cell">Model</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-center d-none d-md-table-cell">Min</th>
+                            <th class="d-none d-md-table-cell">Location</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($tools as $tool)
                         <tr>
-                            <td><span class="badge bg-info">{{ $tool->material_code ?? '-' }}</span></td>
+                            <td class="d-none d-md-table-cell"><span class="badge bg-info">{{ $tool->material_code ?? '-' }}</span></td>
                             <td>
                                 {{ $tool->sparepart_name }}
                                 @if($tool->quantity <= 0)
@@ -189,10 +188,16 @@
                                 @elseif($tool->quantity <= $tool->minimum_stock)
                                     <span class="badge bg-warning text-dark ms-1">Low Stock</span>
                                 @endif
+                                <div class="d-md-none">
+                                    <small class="text-muted">{{ $tool->material_code ?? '-' }}</small>
+                                    @if($tool->equipment_type)
+                                        <span class="badge bg-secondary ms-1" style="font-size:10px;">{{ $tool->equipment_type }}</span>
+                                    @endif
+                                </div>
                             </td>
-                            <td><span class="badge bg-secondary">{{ $tool->equipment_type ?? '-' }}</span></td>
-                            <td>{{ $tool->brand ?? '-' }}</td>
-                            <td>{{ $tool->model ?? '-' }}</td>
+                            <td class="d-none d-md-table-cell"><span class="badge bg-secondary">{{ $tool->equipment_type ?? '-' }}</span></td>
+                            <td class="d-none d-lg-table-cell">{{ $tool->brand ?? '-' }}</td>
+                            <td class="d-none d-lg-table-cell">{{ $tool->model ?? '-' }}</td>
                             <td class="text-center">
                                 @if($tool->quantity <= 0)
                                     <span class="text-danger fw-bold">{{ $tool->quantity }}</span>
@@ -201,10 +206,10 @@
                                 @else
                                     <span class="text-success fw-bold">{{ $tool->quantity }}</span>
                                 @endif
+                                <small class="text-muted d-block" style="font-size:10px;">{{ $tool->unit }}</small>
                             </td>
-                            <td class="text-center">{{ $tool->minimum_stock }}</td>
-                            <td>{{ $tool->unit }}</td>
-                            <td>{{ $tool->location ?? '-' }}</td>
+                            <td class="text-center d-none d-md-table-cell">{{ $tool->minimum_stock }} <small class="text-muted">{{ $tool->unit }}</small></td>
+                            <td class="d-none d-md-table-cell">{{ $tool->location ?? '-' }}</td>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
                                     <a href="{{ route($routePrefix.'.tools.show', $tool) }}" class="btn btn-sm btn-info" title="View">
@@ -226,7 +231,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="text-center">No tools found</td>
+                            <td colspan="9" class="text-center">No tools found</td>
                         </tr>
                         @endforelse
                     </tbody>
