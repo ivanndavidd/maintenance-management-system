@@ -8,6 +8,7 @@ use App\Models\PurchaseOrder;
 use App\Models\StockOpnameSchedule;
 use App\Models\StockOpnameExecution;
 use App\Models\StockAdjustment;
+use App\Models\SparepartUsage;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -166,7 +167,23 @@ class SparepartController extends Controller
     {
         $sparepart->load(['addedByUser', 'opnameUser', 'verifiedUser']);
 
-        return view('admin.spareparts.show', compact('sparepart'));
+        // Usage history
+        $usageHistory = SparepartUsage::where('sparepart_id', $sparepart->id)
+            ->with(['usedByUser', 'cmTicket'])
+            ->orderByDesc('used_at')
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get();
+
+        // Adjustment history
+        $adjustmentHistory = StockAdjustment::where('item_type', 'sparepart')
+            ->where('item_id', $sparepart->id)
+            ->with(['adjustedByUser', 'approvedByUser'])
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
+
+        return view('admin.spareparts.show', compact('sparepart', 'usageHistory', 'adjustmentHistory'));
     }
 
     /**

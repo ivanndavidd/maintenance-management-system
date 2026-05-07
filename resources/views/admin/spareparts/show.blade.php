@@ -260,5 +260,158 @@
             @endif
         </div>
     </div>
+
+    {{-- Usage & Adjustment History --}}
+    <div class="card mt-4">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="historyTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" id="usage-tab" data-bs-toggle="tab" data-bs-target="#usagePane" type="button">
+                        <i class="fas fa-history me-1"></i> Usage History
+                        <span class="badge bg-secondary ms-1">{{ $usageHistory->count() }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="adj-tab" data-bs-toggle="tab" data-bs-target="#adjPane" type="button">
+                        <i class="fas fa-sliders-h me-1"></i> Adjustment History
+                        <span class="badge bg-secondary ms-1">{{ $adjustmentHistory->count() }}</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body p-0">
+            <div class="tab-content" id="historyTabContent">
+
+                {{-- Usage Tab --}}
+                <div class="tab-pane fade show active" id="usagePane" role="tabpanel">
+                    @if($usageHistory->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Used By</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="d-none d-md-table-cell">Source</th>
+                                        <th class="d-none d-md-table-cell">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($usageHistory as $usage)
+                                    <tr>
+                                        <td>
+                                            <small>{{ $usage->used_at?->format('d M Y') ?? '-' }}</small>
+                                        </td>
+                                        <td>
+                                            <small>{{ $usage->usedByUser?->name ?? '-' }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-danger">-{{ $usage->quantity_used }}</span>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            @if($usage->ticket_number)
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-wrench me-1"></i>{{ $usage->ticket_number }}
+                                                </span>
+                                            @elseif($usage->pm_report_id)
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-calendar-check me-1"></i>PM Report
+                                                </span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            <small class="text-muted">{{ $usage->notes ?? '-' }}</small>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                            No usage history found.
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Adjustment Tab --}}
+                <div class="tab-pane fade" id="adjPane" role="tabpanel">
+                    @if($adjustmentHistory->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th class="d-none d-md-table-cell">Code</th>
+                                        <th>Type</th>
+                                        <th class="text-center">Qty Change</th>
+                                        <th class="d-none d-md-table-cell">Adjusted By</th>
+                                        <th class="d-none d-md-table-cell">Status</th>
+                                        <th class="d-none d-lg-table-cell">Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($adjustmentHistory as $adj)
+                                    @php
+                                        $isAdd = $adj->adjustment_type === 'add' || ($adj->adjustment_type === 'correction' && $adj->adjustment_qty > 0);
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            <small>{{ $adj->created_at->format('d M Y') }}</small>
+                                            <div class="d-md-none">
+                                                <small class="text-muted">{{ $adj->adjustedByUser?->name ?? '-' }}</small>
+                                            </div>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            <small class="text-muted">{{ $adj->adjustment_code ?? '-' }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ $isAdd ? 'success' : 'danger' }}">
+                                                {{ ucfirst(str_replace('_', ' ', $adj->adjustment_type)) }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="fw-bold {{ $isAdd ? 'text-success' : 'text-danger' }}">
+                                                {{ $isAdd ? '+' : '-' }}{{ abs($adj->adjustment_qty) }}
+                                            </span>
+                                            <br><small class="text-muted">{{ $adj->quantity_before }} → {{ $adj->quantity_after }}</small>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            <small>{{ $adj->adjustedByUser?->name ?? '-' }}</small>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            @php
+                                                $statusColor = match($adj->status ?? '') {
+                                                    'approved' => 'success',
+                                                    'pending'  => 'warning',
+                                                    'rejected' => 'danger',
+                                                    default    => 'secondary',
+                                                };
+                                            @endphp
+                                            <span class="badge bg-{{ $statusColor }}">{{ ucfirst($adj->status ?? '-') }}</span>
+                                        </td>
+                                        <td class="d-none d-lg-table-cell">
+                                            <small class="text-muted">{{ $adj->reason ?? '-' }}</small>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                            No adjustment history found.
+                        </div>
+                    @endif
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
