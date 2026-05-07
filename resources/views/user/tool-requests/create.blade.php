@@ -71,14 +71,16 @@
                         {{-- Quantity --}}
                         <div class="mb-3">
                             <label class="form-label">Quantity Requested <span class="text-danger">*</span></label>
-                            <div class="input-group @error('quantity_requested') has-validation @enderror">
-                                <input type="number" name="quantity_requested" id="quantity_requested"
-                                       class="form-control @error('quantity_requested') is-invalid @enderror"
-                                       value="{{ old('quantity_requested', 1) }}" min="1" required>
-                                <span class="input-group-text" id="unitLabel">unit</span>
-                                @error('quantity_requested')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="d-flex gap-2 align-items-start">
+                                <div class="flex-grow-1">
+                                    <input type="number" name="quantity_requested" id="quantity_requested"
+                                           class="form-control @error('quantity_requested') is-invalid @enderror"
+                                           value="{{ old('quantity_requested', 1) }}" min="1" required>
+                                    @error('quantity_requested')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <span class="input-group-text" id="unitLabel" style="white-space:nowrap;">unit</span>
                             </div>
                         </div>
 
