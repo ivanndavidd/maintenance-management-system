@@ -1,4 +1,4 @@
-@extends('layouts.user')
+@extends($routePrefix === 'user' ? 'layouts.user' : 'layouts.admin')
 
 @section('page-title', 'New Tool Request')
 
@@ -9,7 +9,7 @@
             <h5 class="mb-0"><i class="fas fa-plus-circle"></i> New Tool Usage Request</h5>
             <small class="text-muted">Fill in details for tool borrowing request</small>
         </div>
-        <a href="{{ route('user.tool-requests.index') }}" class="btn btn-secondary btn-sm">
+        <a href="{{ route($routePrefix.'.tool-requests.index') }}" class="btn btn-secondary btn-sm">
             <i class="fas fa-arrow-left"></i><span class="btn-text"> Back</span>
         </a>
     </div>
@@ -21,7 +21,7 @@
                     <h6 class="mb-0 fw-bold">Request Details</h6>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('user.tool-requests.store') }}" method="POST">
+                    <form action="{{ route($routePrefix.'.tool-requests.store') }}" method="POST">
                         @csrf
 
                         {{-- Tool Selection --}}
@@ -149,7 +149,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-paper-plane"></i> Submit Request
                             </button>
-                            <a href="{{ route('user.tool-requests.index') }}" class="btn btn-secondary">
+                            <a href="{{ route($routePrefix.'.tool-requests.index') }}" class="btn btn-secondary">
                                 Cancel
                             </a>
                         </div>

@@ -9,6 +9,11 @@
             <h5 class="mb-0"><i class="fas fa-wrench"></i> Tool Usage Requests</h5>
             <small class="text-muted">Review and approve tool borrowing / consumption requests</small>
         </div>
+        @if(auth()->user()->hasRole('supervisor_maintenance'))
+        <a href="{{ route($routePrefix.'.tool-requests.create') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> New Request
+        </a>
+        @endif
     </div>
 
     {{-- Stats --}}
