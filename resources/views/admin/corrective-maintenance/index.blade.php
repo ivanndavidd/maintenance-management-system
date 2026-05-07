@@ -21,8 +21,8 @@
             <h5><i class="fas fa-tools me-2"></i>Corrective Maintenance Tickets</h5>
             <p class="text-muted mb-0">Manage maintenance request tickets from warehouse staff</p>
         </div>
-        <a href="{{ route('maintenance-request.create') }}" target="_blank" class="btn btn-primary">
-            <i class="fas fa-external-link-alt me-2"></i>Public Form
+        <a href="{{ route('maintenance-request.create') }}" target="_blank" class="btn btn-primary" title="Public Form">
+            <i class="fas fa-external-link-alt"></i><span class="btn-text d-none d-md-inline"> Public Form</span>
         </a>
     </div>
 
@@ -82,11 +82,11 @@
     <div class="card mb-4">
         <div class="card-body">
             <form action="{{ route($routePrefix . '.corrective-maintenance.index') }}" method="GET" class="row g-3">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Search</label>
                     <input type="text" name="search" class="form-control" placeholder="Ticket, name, email, location..." value="{{ request('search') }}">
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Status</label>
                     <select name="status" class="form-select">
                         <option value="">All Status</option>
@@ -100,7 +100,7 @@
                         <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Problem Category</label>
                     <select name="problem_category" class="form-select">
                         <option value="">All Categories</option>
@@ -112,18 +112,21 @@
                         <option value="others" {{ request('problem_category') == 'others' ? 'selected' : '' }}>Others</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Date From</label>
                     <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Date To</label>
                     <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
                 </div>
-                <div class="col-md-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search"></i>
+                <div class="col-12 col-md-1 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i><span class="btn-text"> Filter</span>
                     </button>
+                    <a href="{{ route($routePrefix . '.corrective-maintenance.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
+                    </a>
                 </div>
             </form>
         </div>
