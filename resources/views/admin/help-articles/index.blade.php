@@ -19,8 +19,8 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form action="{{ route($routePrefix.'.help-articles.index') }}" method="GET">
-                <div class="row g-3">
-                    <div class="col-md-6">
+                <div class="row g-2">
+                    <div class="col-12 col-md-6">
                         <div class="input-group" style="flex-wrap: nowrap; align-items: stretch;">
                             <span class="input-group-text d-flex align-items-center">
                                 <i class="fas fa-search"></i>
@@ -28,7 +28,7 @@
                             <input type="text" name="search" class="form-control" placeholder="Search articles..." value="{{ $search }}">
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-12 col-md-4">
                         <select name="category" class="form-select">
                             <option value="">All Categories</option>
                             <option value="faq" {{ $category == 'faq' ? 'selected' : '' }}>FAQ</option>
@@ -37,10 +37,13 @@
                             <option value="documentation" {{ $category == 'documentation' ? 'selected' : '' }}>Documentation</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">
-            <i class="fas fa-filter"></i><span class="btn-text"> Filter</span>
+                    <div class="col-12 col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                            <i class="fas fa-filter"></i><span class="btn-text"> Filter</span>
                         </button>
+                        <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-redo"></i>
+                        </a>
                     </div>
                 </div>
             </form>
@@ -48,44 +51,44 @@
     </div>
 
     <!-- Statistics -->
-    <div class="row g-3 mb-4">
-        <div class="col-md">
+    <div class="row g-2 mb-4">
+        <div class="col-6 col-md">
             <div class="card border-primary shadow-sm">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-2">
                     <h5 class="text-primary mb-0">{{ $categoryCounts['all'] }}</h5>
-                    <small class="text-muted">Total Articles</small>
+                    <small class="text-muted">Total</small>
                 </div>
             </div>
         </div>
-        <div class="col-md">
+        <div class="col-6 col-md">
             <div class="card border-info shadow-sm">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-2">
                     <h5 class="text-info mb-0">{{ $categoryCounts['faq'] }}</h5>
                     <small class="text-muted">FAQ</small>
                 </div>
             </div>
         </div>
-        <div class="col-md">
+        <div class="col-6 col-md">
             <div class="card border-primary shadow-sm">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-2">
                     <h5 class="text-primary mb-0">{{ $categoryCounts['sop'] }}</h5>
                     <small class="text-muted">SOP</small>
                 </div>
             </div>
         </div>
-        <div class="col-md">
+        <div class="col-6 col-md">
             <div class="card border-success shadow-sm">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-2">
                     <h5 class="text-success mb-0">{{ $categoryCounts['tutorial'] }}</h5>
-                    <small class="text-muted">Tutorials</small>
+                    <small class="text-muted">Tutorial</small>
                 </div>
             </div>
         </div>
-        <div class="col-md">
+        <div class="col-6 col-md">
             <div class="card border-secondary shadow-sm">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-2">
                     <h5 class="text-secondary mb-0">{{ $categoryCounts['documentation'] }}</h5>
-                    <small class="text-muted">Documentation</small>
+                    <small class="text-muted">Docs</small>
                 </div>
             </div>
         </div>
@@ -99,21 +102,21 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th width="5%">#</th>
-                                <th width="5%">Order</th>
-                                <th width="35%">Title</th>
-                                <th width="12%">Category</th>
-                                <th width="10%">Status</th>
-                                <th width="8%">Views</th>
-                                <th width="12%">Last Updated</th>
-                                <th width="13%" class="text-center">Actions</th>
+                                <th class="d-none d-md-table-cell" style="width:5%">#</th>
+                                <th class="d-none d-md-table-cell" style="width:5%">Order</th>
+                                <th>Title</th>
+                                <th class="d-none d-md-table-cell" style="width:12%">Category</th>
+                                <th style="width:10%">Status</th>
+                                <th class="d-none d-lg-table-cell" style="width:8%">Views</th>
+                                <th class="d-none d-lg-table-cell" style="width:12%">Updated</th>
+                                <th class="text-center" style="width:13%">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($articles as $article)
                             <tr>
-                                <td>{{ $article->id }}</td>
-                                <td>
+                                <td class="d-none d-md-table-cell">{{ $article->id }}</td>
+                                <td class="d-none d-md-table-cell">
                                     <span class="badge bg-secondary">{{ $article->order }}</span>
                                 </td>
                                 <td>
@@ -121,8 +124,11 @@
                                         <i class="fas {{ $article->icon }} me-1"></i>
                                     @endif
                                     <strong>{{ $article->title }}</strong>
+                                    <div class="d-md-none">
+                                        {!! $article->category_badge !!}
+                                    </div>
                                 </td>
-                                <td>{!! $article->category_badge !!}</td>
+                                <td class="d-none d-md-table-cell">{!! $article->category_badge !!}</td>
                                 <td>
                                     @if($article->is_published)
                                         <span class="badge bg-success">Published</span>
@@ -130,10 +136,10 @@
                                         <span class="badge bg-secondary">Draft</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     <i class="fas fa-eye text-muted"></i> {{ $article->view_count }}
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     <small>{{ $article->updated_at->format('d M Y') }}</small>
                                 </td>
                                 <td class="text-center">

@@ -26,32 +26,34 @@
 
     {{-- Group Info --}}
     <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-secondary fs-6">{{ $groupAsset->group_id }}</span>
-                <h5 class="mb-0">{{ $groupAsset->group_name }}</h5>
-                <span class="badge bg-{{ $badgeColor }}">{{ ucfirst($groupAsset->severity) }}</span>
-            </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route($routePrefix.'.group-assets.edit', $groupAsset) }}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-edit me-1"></i> Edit
-                </a>
-                <a href="{{ route($routePrefix.'.group-assets.index') }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> Back
-                </a>
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge bg-secondary">{{ $groupAsset->group_id }}</span>
+                    <h6 class="mb-0 fw-bold">{{ $groupAsset->group_name }}</h6>
+                    <span class="badge bg-{{ $badgeColor }}">{{ ucfirst($groupAsset->severity) }}</span>
+                </div>
+                <div class="d-flex gap-2 flex-shrink-0">
+                    <a href="{{ route($routePrefix.'.group-assets.edit', $groupAsset) }}" class="btn btn-sm btn-outline-primary" title="Edit">
+                        <i class="fas fa-edit"></i><span class="d-none d-md-inline"> Edit</span>
+                    </a>
+                    <a href="{{ route($routePrefix.'.group-assets.index') }}" class="btn btn-sm btn-outline-secondary" title="Back">
+                        <i class="fas fa-arrow-left"></i><span class="d-none d-md-inline"> Back</span>
+                    </a>
+                </div>
             </div>
         </div>
         <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-6">
+            <div class="row g-2">
+                <div class="col-12 col-md-6">
                     <small class="text-muted d-block">Severity Description</small>
                     <span>{{ $groupAsset->severity_label }}</span>
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <small class="text-muted d-block">Created By</small>
                     <span>{{ $groupAsset->creator?->name ?? '-' }}</span>
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <small class="text-muted d-block">Created At</small>
                     <span>{{ $groupAsset->created_at?->format('d M Y H:i') ?? '-' }}</span>
                 </div>
@@ -67,7 +69,7 @@
                 Assets in this Group
                 <span class="badge bg-secondary ms-1">{{ $assets->total() }}</span>
             </h6>
-            <small class="text-muted"><i class="fas fa-pencil-alt me-1"></i>Click badge to edit BOM ID &nbsp;|&nbsp; <i class="fas fa-external-link-alt me-1"></i>Link icon to view BOM details</small>
+            <small class="text-muted d-none d-md-block"><i class="fas fa-pencil-alt me-1"></i>Click badge to edit BOM ID &nbsp;|&nbsp; <i class="fas fa-external-link-alt me-1"></i>Link icon to view BOM details</small>
         </div>
         <div class="card-body p-0">
             @if($assets->count() > 0)
