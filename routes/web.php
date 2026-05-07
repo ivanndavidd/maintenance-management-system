@@ -900,6 +900,15 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/{user}', [App\Http\Controllers\Admin\KpiController::class, 'show'])->name('show');
             });
 
+            // Tool Usage Requests (approval)
+            Route::prefix('tool-requests')->name('tool-requests.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'index'])->name('index');
+                Route::get('/{toolRequest}', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'show'])->name('show');
+                Route::post('/{toolRequest}/approve', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'approve'])->name('approve');
+                Route::post('/{toolRequest}/reject', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'reject'])->name('reject');
+                Route::post('/{toolRequest}/in-use', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'markInUse'])->name('in-use');
+            });
+
             // Help Articles
             Route::resource('help-articles', App\Http\Controllers\Admin\HelpArticleController::class);
             Route::patch('help-articles/{helpArticle}/toggle-publish', [App\Http\Controllers\Admin\HelpArticleController::class, 'togglePublish'])->name('help-articles.toggle-publish');
