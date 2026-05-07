@@ -11,7 +11,7 @@
             <p class="text-muted mb-0">Add a new FAQ, SOP, Tutorial, or Documentation</p>
         </div>
         <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to List
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to List</span>
         </a>
     </div>
 
@@ -140,7 +140,7 @@
                         <!-- Submit Buttons -->
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Create Article
+            <i class="fas fa-save"></i><span class="btn-text"> Create Article</span>
                             </button>
                             <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary">
                                 Cancel

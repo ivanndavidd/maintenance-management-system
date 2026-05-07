@@ -179,7 +179,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-upload me-1"></i> Import
+            <i class="fas fa-upload me-1"></i><span class="btn-text"> Import</span>
                     </button>
                 </div>
             </form>

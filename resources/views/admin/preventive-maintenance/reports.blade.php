@@ -47,10 +47,10 @@
                 </div>
                 <div class="col-md-3 d-flex align-items-end">
                     <button type="submit" class="btn btn-outline-primary me-2">
-                        <i class="fas fa-search"></i> Filter
+            <i class="fas fa-search"></i><span class="btn-text"> Filter</span>
                     </button>
                     <a href="{{ route($routePrefix . '.preventive-maintenance.reports') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Reset
+            <i class="fas fa-times"></i><span class="btn-text"> Reset</span>
                     </a>
                 </div>
             </form>
@@ -245,7 +245,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="confirmCreateCm" onclick="confirmCreateCmTicket()">
-                    <i class="fas fa-plus me-1"></i> Create CM Ticket
+            <i class="fas fa-plus me-1"></i><span class="btn-text"> Create CM Ticket</span>
                 </button>
             </div>
         </div>
@@ -388,10 +388,10 @@ function viewReport(reportId) {
                     </div>
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-success" onclick="reviewSparepart(${r.id}, 'approve')">
-                            <i class="fas fa-check me-1"></i> Approve Sparepart
+            <i class="fas fa-check me-1"></i><span class="btn-text"> Approve Sparepart</span>
                         </button>
                         <button type="button" class="btn btn-danger" onclick="reviewSparepart(${r.id}, 'reject')">
-                            <i class="fas fa-times me-1"></i> Reject Sparepart
+            <i class="fas fa-times me-1"></i><span class="btn-text"> Reject Sparepart</span>
                         </button>
                     </div>
                 </div>`;
@@ -434,10 +434,10 @@ function viewReport(reportId) {
                     </div>
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-success" onclick="reviewReport(${r.id}, 'approved')">
-                            <i class="fas fa-check me-1"></i> Approve
+            <i class="fas fa-check me-1"></i><span class="btn-text"> Approve</span>
                         </button>
                         <button type="button" class="btn btn-warning" onclick="reviewReport(${r.id}, 'revision_needed')">
-                            <i class="fas fa-redo me-1"></i> Request Revision
+            <i class="fas fa-redo me-1"></i><span class="btn-text"> Request Revision</span>
                         </button>
                     </div>
                 </div>`;

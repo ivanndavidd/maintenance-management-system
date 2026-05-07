@@ -11,7 +11,7 @@
             <p class="text-muted mb-0">Manage FAQ, SOP, Tutorials, and Documentation</p>
         </div>
         <a href="{{ route($routePrefix.'.help-articles.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Create New Article
+            <i class="fas fa-plus"></i><span class="btn-text"> Create New Article</span>
         </a>
     </div>
 
@@ -39,7 +39,7 @@
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter"></i> Filter
+            <i class="fas fa-filter"></i><span class="btn-text"> Filter</span>
                         </button>
                     </div>
                 </div>
@@ -198,7 +198,7 @@
                         </a>
                     @else
                         <a href="{{ route($routePrefix.'.help-articles.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Create New Article
+            <i class="fas fa-plus"></i><span class="btn-text"> Create New Article</span>
                         </a>
                     @endif
                 </div>

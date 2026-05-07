@@ -12,10 +12,10 @@
         </div>
         <div>
             <a href="{{ route($routePrefix.'.help-articles.edit', $helpArticle) }}" class="btn btn-primary">
-                <i class="fas fa-edit"></i> Edit Article
+            <i class="fas fa-edit"></i><span class="btn-text"> Edit Article</span>
             </a>
             <a href="{{ route($routePrefix.'.help-articles.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to List
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to List</span>
             </a>
         </div>
     </div>

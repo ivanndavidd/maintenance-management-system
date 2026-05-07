@@ -207,24 +207,24 @@
                     <div class="row">
                         <div class="col-md-3">
                             <a href="{{ route($routePrefix.'.opname.schedules.create') }}" class="btn btn-primary w-100 mb-2">
-                                <i class="fas fa-calendar-plus"></i> Create Schedule
+            <i class="fas fa-calendar-plus"></i><span class="btn-text"> Create Schedule</span>
                             </a>
                         </div>
                         @if($routePrefix === 'admin')
                         <div class="col-md-3">
                             <a href="{{ route($routePrefix.'.opname.executions.create') }}" class="btn btn-success w-100 mb-2">
-                                <i class="fas fa-clipboard-check"></i> Record Execution
+            <i class="fas fa-clipboard-check"></i><span class="btn-text"> Record Execution</span>
                             </a>
                         </div>
                         @endif
                         <div class="col-md-3">
                             <a href="{{ route($routePrefix.'.opname.reports.compliance') }}" class="btn btn-info w-100 mb-2">
-                                <i class="fas fa-chart-bar"></i> Compliance Report
+            <i class="fas fa-chart-bar"></i><span class="btn-text"> Compliance Report</span>
                             </a>
                         </div>
                         <div class="col-md-3">
                             <a href="{{ route($routePrefix.'.opname.reports.accuracy') }}" class="btn btn-warning w-100 mb-2">
-                                <i class="fas fa-chart-pie"></i> Accuracy Report
+            <i class="fas fa-chart-pie"></i><span class="btn-text"> Accuracy Report</span>
                             </a>
                         </div>
                     </div>

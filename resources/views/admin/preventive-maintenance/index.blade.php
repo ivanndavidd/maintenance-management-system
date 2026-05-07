@@ -12,7 +12,7 @@
         </div>
         <div>
             <a href="{{ route($routePrefix.'.preventive-maintenance.calendar') }}" class="btn btn-primary">
-                <i class="fas fa-calendar-alt me-1"></i> Calendar View
+            <i class="fas fa-calendar-alt me-1"></i><span class="btn-text"> Calendar View</span>
             </a>
         </div>
     </div>
@@ -38,10 +38,10 @@
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
                     <button type="submit" class="btn btn-outline-primary me-2">
-                        <i class="fas fa-search"></i> Filter
+            <i class="fas fa-search"></i><span class="btn-text"> Filter</span>
                     </button>
                     <a href="{{ route($routePrefix.'.preventive-maintenance.index') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Reset
+            <i class="fas fa-times"></i><span class="btn-text"> Reset</span>
                     </a>
                 </div>
             </form>

@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5>Site Management</h5>
         <a href="{{ route('admin.sites.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Create New Site
+            <i class="fas fa-plus"></i><span class="btn-text"> Create New Site</span>
         </a>
     </div>
 

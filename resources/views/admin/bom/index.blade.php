@@ -11,10 +11,10 @@
         </div>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
-                <i class="fas fa-file-csv me-1"></i> Import CSV
+            <i class="fas fa-file-csv me-1"></i><span class="btn-text"> Import CSV</span>
             </button>
             <a href="{{ route($routePrefix . '.bom-management.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-1"></i> Create BOM
+            <i class="fas fa-plus me-1"></i><span class="btn-text"> Create BOM</span>
             </a>
         </div>
     </div>

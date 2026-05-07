@@ -103,7 +103,7 @@
             <h5 class="mb-0"><i class="fas fa-tools"></i> Tools List</h5>
             <div>
                 <a href="{{ route($routePrefix.'.tools.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Add Tool
+            <i class="fas fa-plus"></i><span class="btn-text"> Add Tool</span>
                 </a>
             </div>
         </div>

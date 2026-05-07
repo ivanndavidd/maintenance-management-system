@@ -175,10 +175,10 @@
 
                         <div class="d-flex justify-content-between">
                             <a href="{{ route($routePrefix.'.tools.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back</span>
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Save Tool
+            <i class="fas fa-save"></i><span class="btn-text"> Save Tool</span>
                             </button>
                         </div>
                     </form>
@@ -394,10 +394,10 @@ Tools,T-00003,Tang Snap,Tekiro,Tekiro Snap,1,Pcs,Low,WH,,1,Item,sites/SCM</pre>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancel
+            <i class="fas fa-times"></i><span class="btn-text"> Cancel</span>
                     </button>
                     <button type="submit" class="btn btn-success" id="importBtn">
-                        <i class="fas fa-upload"></i> Import Tools
+            <i class="fas fa-upload"></i><span class="btn-text"> Import Tools</span>
                     </button>
                 </div>
             </form>

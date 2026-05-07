@@ -31,10 +31,10 @@
             <h5 class="mb-0">Master Data Assets</h5>
             <div class="btn-group">
                 <a href="{{ route($routePrefix.'.assets.import') }}" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i> Import Excel
+            <i class="fas fa-file-excel"></i><span class="btn-text"> Import Excel</span>
                 </a>
                 <a href="{{ route($routePrefix.'.assets.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Add New Asset
+            <i class="fas fa-plus"></i><span class="btn-text"> Add New Asset</span>
                 </a>
             </div>
         </div>

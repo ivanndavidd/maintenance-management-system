@@ -19,7 +19,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Execution History</h5>
             <a href="{{ route($routePrefix.'.spareparts.opname.executions.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Record Execution
+            <i class="fas fa-plus"></i><span class="btn-text"> Record Execution</span>
             </a>
         </div>
         <div class="card-body">

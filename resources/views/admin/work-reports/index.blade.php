@@ -17,10 +17,10 @@
         </div>
         <div>
             <a href="{{ route($routePrefix.'.work-reports.my-reports') }}" class="btn btn-info">
-                <i class="fas fa-user"></i> My Reports
+            <i class="fas fa-user"></i><span class="btn-text"> My Reports</span>
             </a>
             <a href="{{ route($routePrefix.'.work-reports.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Submit New Report
+            <i class="fas fa-plus"></i><span class="btn-text"> Submit New Report</span>
             </a>
         </div>
     </div>
@@ -85,10 +85,10 @@
 
                 <div class="mt-3">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Apply Filters
+            <i class="fas fa-search"></i><span class="btn-text"> Apply Filters</span>
                     </button>
                     <a href="{{ route($routePrefix.'.work-reports.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-redo"></i> Reset
+            <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
                     </a>
                 </div>
             </form>

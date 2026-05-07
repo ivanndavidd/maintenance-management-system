@@ -183,10 +183,10 @@
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div class="d-flex gap-2 flex-wrap">
                     <button type="button" class="btn btn-success" id="saveAllBtn" style="display: none;">
-                        <i class="fas fa-save"></i> Save All Changes (<span id="changedCount">0</span>)
+            <i class="fas fa-save"></i><span class="btn-text"> Save All Changes (</span><span id="changedCount">0</span>)
                     </button>
                     <button type="button" class="btn btn-secondary" id="cancelAllBtn" style="display: none;">
-                        <i class="fas fa-times"></i> Cancel All
+            <i class="fas fa-times"></i><span class="btn-text"> Cancel All</span>
                     </button>
 
                     {{-- Excel Export/Import Buttons --}}
@@ -195,7 +195,7 @@
                             <i class="fas fa-download"></i> Download Template
                         </a>
                         <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importModal">
-                            <i class="fas fa-upload"></i> Import Excel
+            <i class="fas fa-upload"></i><span class="btn-text"> Import Excel</span>
                         </button>
                     </div>
                 </div>
@@ -363,10 +363,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Batal
+            <i class="fas fa-times"></i><span class="btn-text"> Batal</span>
                     </button>
                     <button type="submit" class="btn btn-info" id="importBtn">
-                        <i class="fas fa-upload"></i> Upload & Isi Form
+            <i class="fas fa-upload"></i><span class="btn-text"> Upload & Isi Form</span>
                     </button>
                 </div>
             </form>

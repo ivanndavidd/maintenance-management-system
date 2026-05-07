@@ -18,10 +18,10 @@
         </div>
         <div>
             <a href="{{ route($routePrefix.'.users.edit', $user) }}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit User
+            <i class="fas fa-edit"></i><span class="btn-text"> Edit User</span>
             </a>
             <a href="{{ route($routePrefix.'.users.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to List
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to List</span>
             </a>
         </div>
     </div>
@@ -215,7 +215,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning text-dark">
-                        <i class="fas fa-key"></i> Reset Password
+            <i class="fas fa-key"></i><span class="btn-text"> Reset Password</span>
                     </button>
                 </div>
             </form>

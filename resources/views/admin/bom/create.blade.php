@@ -10,7 +10,7 @@
             <p class="text-muted mb-0">Add a new Bill of Materials</p>
         </div>
         <a href="{{ route($routePrefix . '.bom-management.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Back
+            <i class="fas fa-arrow-left me-1"></i><span class="btn-text"> Back</span>
         </a>
     </div>
 
@@ -88,7 +88,7 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <button type="submit" class="btn btn-primary w-100 mb-2">
-                            <i class="fas fa-save me-1"></i> Save BOM
+            <i class="fas fa-save me-1"></i><span class="btn-text"> Save BOM</span>
                         </button>
                         <a href="{{ route($routePrefix . '.bom-management.index') }}" class="btn btn-secondary w-100">
                             Cancel

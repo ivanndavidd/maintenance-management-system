@@ -131,10 +131,10 @@
 
                 <div class="mt-4 d-flex justify-content-between">
                     <a href="{{ route($routePrefix.'.purchase-orders.show', $purchaseOrder) }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to PO Details
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to PO Details</span>
                     </a>
                     <button type="submit" class="btn btn-success btn-lg" onclick="return confirmBatchReceive()">
-                        <i class="fas fa-check-double"></i> Receive Selected Items
+            <i class="fas fa-check-double"></i><span class="btn-text"> Receive Selected Items</span>
                     </button>
                 </div>
             </form>

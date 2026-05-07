@@ -498,6 +498,22 @@
  overflow-x: hidden;
  }
 
+ /* Mobile: hide button text in page/card headers, show icon only */
+ @media (max-width: 768px) {
+     .page-header .btn-text,
+     .card-header .btn-text,
+     .d-flex.justify-content-between .btn-text,
+     .d-flex.justify-content-end .btn-text {
+         display: none !important;
+     }
+     .page-header .btn:not(.btn-sm),
+     .card-header .btn:not(.btn-sm),
+     .d-flex.justify-content-between .btn:not(.btn-sm),
+     .d-flex.justify-content-end .btn:not(.btn-sm) {
+         padding: 6px 10px;
+     }
+ }
+
  /* Make charts and visualizations responsive */
  canvas {
  max-width: 100% !important;

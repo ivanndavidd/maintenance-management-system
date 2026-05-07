@@ -18,10 +18,10 @@
         </div>
         <div>
             <a href="{{ route($routePrefix.'.jobs.edit', $job) }}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit Job
+            <i class="fas fa-edit"></i><span class="btn-text"> Edit Job</span>
             </a>
             <a href="{{ route($routePrefix.'.jobs.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to List
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to List</span>
             </a>
         </div>
     </div>
@@ -348,7 +348,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning text-dark">
-                        <i class="fas fa-save"></i> Update Status
+            <i class="fas fa-save"></i><span class="btn-text"> Update Status</span>
                     </button>
                 </div>
             </form>

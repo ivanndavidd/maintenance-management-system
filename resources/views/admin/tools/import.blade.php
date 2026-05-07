@@ -44,10 +44,10 @@
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-success">
-                                <i class="fas fa-file-import"></i> Import Tools
+            <i class="fas fa-file-import"></i><span class="btn-text"> Import Tools</span>
                             </button>
                             <a href="{{ route($routePrefix.'.tools.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Cancel</span>
                             </a>
                         </div>
                     </form>

@@ -212,7 +212,7 @@
                 </div>
                 <div class="card-body">
                     <a href="{{ route($routePrefix.'.tools.edit', $tool) }}" class="btn btn-warning w-100 mb-2">
-                        <i class="fas fa-edit"></i> Edit Tool
+            <i class="fas fa-edit"></i><span class="btn-text"> Edit Tool</span>
                     </a>
                     <a href="{{ route($routePrefix.'.adjustments.create') }}?tool_id={{ $tool->id }}" class="btn btn-primary w-100 mb-2">
                         <i class="fas fa-sliders-h"></i> Adjust Stock
@@ -227,7 +227,7 @@
                     <hr>
 
                     <a href="{{ route($routePrefix.'.tools.index') }}" class="btn btn-secondary w-100 mb-2">
-                        <i class="fas fa-arrow-left"></i> Back to List
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to List</span>
                     </a>
 
                     <form action="{{ route($routePrefix.'.tools.destroy', $tool) }}" method="POST"
@@ -235,7 +235,7 @@
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger w-100">
-                            <i class="fas fa-trash"></i> Delete Tool
+            <i class="fas fa-trash"></i><span class="btn-text"> Delete Tool</span>
                         </button>
                     </form>
                 </div>

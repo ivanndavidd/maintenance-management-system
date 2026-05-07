@@ -19,11 +19,11 @@
         <div>
             @if($workReport->user_id === auth()->id() && in_array($workReport->status, ['draft', 'pending']))
             <a href="{{ route($routePrefix.'.work-reports.edit', $workReport) }}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit Report
+            <i class="fas fa-edit"></i><span class="btn-text"> Edit Report</span>
             </a>
             @endif
             <a href="{{ route($routePrefix.'.work-reports.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to List
+            <i class="fas fa-arrow-left"></i><span class="btn-text"> Back to List</span>
             </a>
         </div>
     </div>
@@ -349,7 +349,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-check"></i> Submit Review
+            <i class="fas fa-check"></i><span class="btn-text"> Submit Review</span>
                     </button>
                 </div>
             </form>
@@ -379,7 +379,7 @@
                         class="btn btn-success w-100" 
                         data-bs-toggle="modal" 
                         data-bs-target="#approveModal">
-                    <i class="fas fa-check-circle"></i> Approve Report
+            <i class="fas fa-check-circle"></i><span class="btn-text"> Approve Report</span>
                 </button>
             </div>
             
@@ -389,7 +389,7 @@
                         class="btn btn-danger w-100" 
                         data-bs-toggle="modal" 
                         data-bs-target="#rejectModal">
-                    <i class="fas fa-times-circle"></i> Request Revision
+            <i class="fas fa-times-circle"></i><span class="btn-text"> Request Revision</span>
                 </button>
             </div>
         </div>
@@ -442,10 +442,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancel
+            <i class="fas fa-times"></i><span class="btn-text"> Cancel</span>
                     </button>
                     <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check"></i> Approve Report
+            <i class="fas fa-check"></i><span class="btn-text"> Approve Report</span>
                     </button>
                 </div>
             </form>
@@ -503,10 +503,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancel
+            <i class="fas fa-times"></i><span class="btn-text"> Cancel</span>
                     </button>
                     <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-redo"></i> Request Revision
+            <i class="fas fa-redo"></i><span class="btn-text"> Request Revision</span>
                     </button>
                 </div>
             </form>

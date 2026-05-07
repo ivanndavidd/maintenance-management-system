@@ -186,10 +186,10 @@
                         {{-- Action Buttons --}}
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Create Adjustment
+            <i class="fas fa-save"></i><span class="btn-text"> Create Adjustment</span>
                             </button>
                             <a href="{{ route($routePrefix.'.adjustments.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Cancel
+            <i class="fas fa-times"></i><span class="btn-text"> Cancel</span>
                             </a>
                         </div>
                     </form>

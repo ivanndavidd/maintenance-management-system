@@ -19,7 +19,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Master Data Spareparts</h5>
             <a href="{{ route($routePrefix.'.spareparts.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Add New Sparepart
+            <i class="fas fa-plus"></i><span class="btn-text"> Add New Sparepart</span>
             </a>
         </div>
         <div class="card-body">

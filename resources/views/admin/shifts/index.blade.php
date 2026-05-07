@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5>Shift Management</h5>
         <a href="{{ route(($routePrefix ?? 'admin').'.shifts.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Create New Schedule
+            <i class="fas fa-plus"></i><span class="btn-text"> Create New Schedule</span>
         </a>
     </div>
 

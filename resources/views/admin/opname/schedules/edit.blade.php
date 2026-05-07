@@ -203,10 +203,10 @@
                         {{-- Action Buttons --}}
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Update Schedule
+            <i class="fas fa-save"></i><span class="btn-text"> Update Schedule</span>
                             </button>
                             <a href="{{ route($routePrefix.'.opname.schedules.show', $schedule) }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Cancel
+            <i class="fas fa-times"></i><span class="btn-text"> Cancel</span>
                             </a>
                         </div>
                     </form>

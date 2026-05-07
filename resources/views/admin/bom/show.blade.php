@@ -12,10 +12,10 @@
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route($routePrefix . '.bom-management.edit', $bom) }}" class="btn btn-warning">
-                <i class="fas fa-edit me-1"></i> Edit
+            <i class="fas fa-edit me-1"></i><span class="btn-text"> Edit</span>
             </a>
             <a href="javascript:history.back()" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Back
+            <i class="fas fa-arrow-left me-1"></i><span class="btn-text"> Back</span>
             </a>
         </div>
     </div>

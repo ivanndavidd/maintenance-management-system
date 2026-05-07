@@ -68,10 +68,10 @@
                 </div>
                 <div class="col-12 col-md-4 d-flex align-items-end gap-2">
                     <button type="submit" class="btn btn-outline-primary">
-                        <i class="fas fa-search"></i> Filter
+            <i class="fas fa-search"></i><span class="btn-text"> Filter</span>
                     </button>
                     <a href="{{ route('supervisor.my-tasks.preventive-maintenance') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Reset
+            <i class="fas fa-times"></i><span class="btn-text"> Reset</span>
                     </a>
                 </div>
             </form>
@@ -268,7 +268,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="submitReportBtn">
-                        <i class="fas fa-paper-plane me-1"></i> Submit Report
+            <i class="fas fa-paper-plane me-1"></i><span class="btn-text"> Submit Report</span>
                     </button>
                 </div>
             </form>

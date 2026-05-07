@@ -85,10 +85,10 @@
                         <label class="form-label">&nbsp;</label>
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Filter
+            <i class="fas fa-search"></i><span class="btn-text"> Filter</span>
                             </button>
                             <a href="{{ route($routePrefix.'.opname.compliance.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-redo"></i> Reset
+            <i class="fas fa-redo"></i><span class="btn-text"> Reset</span>
                             </a>
                         </div>
                     </div>
