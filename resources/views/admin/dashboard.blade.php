@@ -804,31 +804,33 @@
                     </div>
 
                     {{-- MTBF & MTTR Trend + MTBF by Group --}}
-                    <div class="row g-3 mb-3">
-                        <div class="col-12 col-md-8">
-                            <div class="card border-0 bg-light">
-                                <div class="card-body">
+                    <div class="row g-3 mb-3" style="align-items:stretch;">
+                        <div class="col-12 col-md-8 d-flex flex-column">
+                            <div class="card border-0 bg-light flex-fill">
+                                <div class="card-body d-flex flex-column">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h6 class="fw-bold mb-0">MTBF & MTTR Trend</h6>
                                         <small class="text-muted" id="trendChartGranularityLabel">Daily</small>
                                     </div>
-                                    <div style="position:relative; height:220px;">
+                                    <div style="position:relative; flex:1; min-height:220px;">
                                         <canvas id="mtbfMttrTrendChart"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
-                            <div class="card border-0 bg-light h-100">
-                                <div class="card-body">
-                                    <h6 class="fw-bold mb-3">MTBF by Group Asset <small class="text-muted fw-normal">(hours)</small></h6>
-                                    <div style="position:relative; height:220px;">
-                                        <canvas id="mtbfGroupChart"></canvas>
+                        <div class="col-12 col-md-4 d-flex flex-column">
+                            <div class="card border-0 bg-light flex-fill">
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-1">
+                                        <h6 class="fw-bold mb-0">MTBF by Group Asset <small class="text-muted fw-normal">(hours)</small></h6>
+                                        <div class="d-flex gap-2">
+                                            <small class="text-success"><i class="fas fa-circle me-1"></i>1x</small>
+                                            <small class="text-warning"><i class="fas fa-circle me-1"></i>2–4x</small>
+                                            <small class="text-danger"><i class="fas fa-circle me-1"></i>≥5x</small>
+                                        </div>
                                     </div>
-                                    <div class="d-flex justify-content-center gap-3 mt-1">
-                                        <small class="text-success"><i class="fas fa-circle me-1"></i>1x failure</small>
-                                        <small class="text-warning"><i class="fas fa-circle me-1"></i>2–4x</small>
-                                        <small class="text-danger"><i class="fas fa-circle me-1"></i>≥5x</small>
+                                    <div style="position:relative; flex:1; min-height:220px;">
+                                        <canvas id="mtbfGroupChart"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -845,9 +847,26 @@
                                             <h6 class="fw-bold mb-0">Downtime Timeline</h6>
                                             <small class="text-muted">time-of-day each downtime event occurred</small>
                                         </div>
-                                        <select class="form-select form-select-sm" id="downtimeGroupSelect" style="width:auto;min-width:200px;">
-                                            <option value="__all__">All Groups</option>
-                                        </select>
+                                        {{-- Custom multi-select dropdown --}}
+                                        <div class="position-relative" id="downtimeDropdownWrap">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+                                                    id="downtimeDropdownBtn" style="min-width:200px; justify-content:space-between;">
+                                                <span id="downtimeDropdownLabel">Select Groups</span>
+                                                <i class="fas fa-chevron-down fa-xs"></i>
+                                            </button>
+                                            <div id="downtimeDropdownMenu"
+                                                 style="display:none; position:absolute; right:0; top:calc(100% + 4px); z-index:200;
+                                                        background:#fff; border:1px solid #dee2e6; border-radius:6px;
+                                                        min-width:260px; max-height:280px; overflow-y:auto;
+                                                        box-shadow:0 4px 12px rgba(0,0,0,0.12); padding:6px 0;">
+                                                <div class="px-3 py-1 border-bottom mb-1 d-flex gap-2">
+                                                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" id="downtimeSelectAll">All</button>
+                                                    <span class="text-muted">|</span>
+                                                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" id="downtimeSelectNone">None</button>
+                                                </div>
+                                                <div id="downtimeCheckboxList"></div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div style="height:320px; overflow-y:auto; overflow-x:hidden;" id="downtimeScrollWrap">
                                         <div id="downtimeTimelineWrap" style="position:relative; height:320px;">
@@ -1483,34 +1502,73 @@
         });
     }
 
-    function populateDowntimeDropdown(timeline) {
-        const sel = document.getElementById('downtimeGroupSelect');
-        const prev = sel.value;
-        sel.innerHTML = '<option value="__all__">All Groups</option>';
-        timeline.forEach(row => {
-            const opt = document.createElement('option');
-            opt.value = row.group;
-            opt.textContent = row.group + ' (' + row.events.length + ' events)';
-            sel.appendChild(opt);
+    // Multi-select dropdown toggle
+    (function() {
+        const btn  = document.getElementById('downtimeDropdownBtn');
+        const menu = document.getElementById('downtimeDropdownMenu');
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         });
-        // Default: select the group with most events (first after sort)
-        if (prev === '__all__' && timeline.length > 0) {
-            sel.value = timeline[0].group;
-        } else {
-            sel.value = prev;
-            if (!sel.value) sel.value = timeline.length > 0 ? timeline[0].group : '__all__';
-        }
+        document.addEventListener('click', function(e) {
+            if (!document.getElementById('downtimeDropdownWrap').contains(e.target))
+                menu.style.display = 'none';
+        });
+        document.getElementById('downtimeSelectAll').addEventListener('click', function() {
+            document.querySelectorAll('#downtimeCheckboxList input[type=checkbox]').forEach(cb => cb.checked = true);
+            updateDowntimeLabel();
+            renderDowntimeTimeline(getFilteredDowntime());
+        });
+        document.getElementById('downtimeSelectNone').addEventListener('click', function() {
+            document.querySelectorAll('#downtimeCheckboxList input[type=checkbox]').forEach(cb => cb.checked = false);
+            updateDowntimeLabel();
+            renderDowntimeTimeline(getFilteredDowntime());
+        });
+    })();
+
+    function updateDowntimeLabel() {
+        const checked = document.querySelectorAll('#downtimeCheckboxList input[type=checkbox]:checked');
+        const total   = document.querySelectorAll('#downtimeCheckboxList input[type=checkbox]').length;
+        const label   = document.getElementById('downtimeDropdownLabel');
+        if (checked.length === 0)       label.textContent = 'No groups selected';
+        else if (checked.length === total) label.textContent = 'All Groups (' + total + ')';
+        else if (checked.length === 1)  label.textContent = checked[0].dataset.group;
+        else                            label.textContent = checked.length + ' groups selected';
+    }
+
+    function populateDowntimeDropdown(timeline) {
+        const list   = document.getElementById('downtimeCheckboxList');
+        const prevSel = new Set(
+            [...document.querySelectorAll('#downtimeCheckboxList input[type=checkbox]:checked')]
+                .map(cb => cb.value)
+        );
+        list.innerHTML = '';
+        timeline.forEach((row, i) => {
+            // On first load (prevSel empty): default-check top group with most events
+            const isChecked = prevSel.size > 0 ? prevSel.has(row.group) : (i === 0);
+            const div = document.createElement('div');
+            div.className = 'px-3 py-1';
+            div.style.cursor = 'pointer';
+            div.innerHTML = `<label class="d-flex align-items-center gap-2 mb-0" style="cursor:pointer;font-size:13px;width:100%;">
+                <input type="checkbox" value="${row.group}" data-group="${row.group}" ${isChecked ? 'checked' : ''} style="cursor:pointer;flex-shrink:0;">
+                <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${row.group}</span>
+                <span class="text-muted ms-1" style="font-size:11px;flex-shrink:0;">${row.events.length}x</span>
+            </label>`;
+            div.querySelector('input').addEventListener('change', function() {
+                updateDowntimeLabel();
+                renderDowntimeTimeline(getFilteredDowntime());
+            });
+            list.appendChild(div);
+        });
+        updateDowntimeLabel();
     }
 
     function getFilteredDowntime() {
-        const val = document.getElementById('downtimeGroupSelect').value;
-        if (val === '__all__') return allDowntimeData;
-        return allDowntimeData.filter(r => r.group === val);
+        const checked = [...document.querySelectorAll('#downtimeCheckboxList input[type=checkbox]:checked')]
+            .map(cb => cb.value);
+        if (checked.length === 0) return [];
+        return allDowntimeData.filter(r => checked.includes(r.group));
     }
-
-    document.getElementById('downtimeGroupSelect').addEventListener('change', function() {
-        renderDowntimeTimeline(getFilteredDowntime());
-    });
 
     function renderDowntimeTimeline(timeline) {
         if (chartDowntime) chartDowntime.destroy();
