@@ -588,23 +588,21 @@ class DashboardController extends Controller
         $useWeekly = in_array($period, ['3M', '6M', '1Y']);
 
         if ($useWeekly) {
-            // Get Monday of the week: subtract (WEEKDAY = 0..6, Monday=0) days from the date
-            $groupExpr = 'YEARWEEK(r.submitted_at, 1)';
-            $labelExpr = "DATE_ADD(DATE(r.submitted_at), INTERVAL(-(WEEKDAY(r.submitted_at))) DAY) as bucket_date";
+            $bucketExpr = "DATE_ADD(DATE(r.submitted_at), INTERVAL(-(WEEKDAY(r.submitted_at))) DAY)";
         } else {
-            $groupExpr = 'DATE(r.submitted_at)';
-            $labelExpr = 'DATE(r.submitted_at) as bucket_date';
+            $bucketExpr = "DATE(r.submitted_at)";
         }
 
         // MTTR per bucket = in_progress_at → report_submitted_at (work_duration)
+        // GROUP BY and SELECT use identical expression to satisfy only_full_group_by
         $mttrRows = DB::connection('site')->table('cm_reports as r')
             ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
             ->whereNotNull('req.in_progress_at')
             ->whereNotNull('req.report_submitted_at')
-            ->selectRaw("{$labelExpr}, AVG(TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at)) as avg_minutes")
-            ->groupByRaw($groupExpr)
-            ->orderBy('bucket_date')
+            ->selectRaw("{$bucketExpr} as bucket_date, AVG(TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at)) as avg_minutes")
+            ->groupByRaw($bucketExpr)
+            ->orderByRaw($bucketExpr)
             ->get()
             ->keyBy('bucket_date');
 
