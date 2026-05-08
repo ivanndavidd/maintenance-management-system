@@ -510,6 +510,7 @@ class DashboardController extends Controller
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
             ->whereNotNull('req.in_progress_at')
             ->whereNotNull('req.report_submitted_at')
+            ->whereRaw('TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at) <= 1440')
             ->selectRaw('SUM(TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at)) as total_minutes')
             ->value('total_minutes') ?? 0;
         $totalRepairHours = $totalRepairMinutes / 60;
@@ -609,12 +610,13 @@ class DashboardController extends Controller
                 $bucketHours   = 24;
         }
 
-        // MTTR per bucket = avg repair duration for tickets in that bucket
+        // MTTR per bucket = avg repair duration for tickets in that bucket (outliers > 24h excluded)
         $mttrRows = DB::connection('site')->table('cm_reports as r')
             ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
             ->whereNotNull('req.in_progress_at')
             ->whereNotNull('req.report_submitted_at')
+            ->whereRaw('TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at) <= 1440')
             ->selectRaw("{$bucketExpr} as bucket_date, AVG(TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at)) as avg_minutes")
             ->groupByRaw($bucketExpr)
             ->orderByRaw($bucketExpr)
@@ -652,7 +654,7 @@ class DashboardController extends Controller
     private function getMttrByGroup(Carbon $dateFrom, Carbon $dateTo): array
     {
         // MTTR = work_duration = in_progress_at → report_submitted_at
-        // Grouped by group_assets.group_name via assets_master
+        // Outliers > 24h (1440 min) are excluded — likely forgotten-to-close tickets
         $rows = DB::connection('site')->table('cm_reports as r')
             ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
             ->join('assets_master as a', 'a.id', '=', 'r.asset_id')
@@ -661,6 +663,7 @@ class DashboardController extends Controller
             ->whereNotNull('r.asset_id')
             ->whereNotNull('req.in_progress_at')
             ->whereNotNull('req.report_submitted_at')
+            ->whereRaw('TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at) <= 1440')
             ->selectRaw('g.group_name, AVG(TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at)) as avg_minutes, COUNT(*) as ticket_count')
             ->groupBy('g.group_id', 'g.group_name')
             ->orderBy('avg_minutes', 'desc')
@@ -672,6 +675,7 @@ class DashboardController extends Controller
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
             ->whereNotNull('req.in_progress_at')
             ->whereNotNull('req.report_submitted_at')
+            ->whereRaw('TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at) <= 1440')
             ->selectRaw('AVG(TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at)) as avg_minutes, COUNT(*) as ticket_count')
             ->first();
 
