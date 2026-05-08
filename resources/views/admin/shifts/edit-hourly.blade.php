@@ -64,33 +64,41 @@
 
     <!-- User Selection Panel -->
     <div class="card mb-4">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center gap-2 flex-wrap">
             <h5 class="mb-0">
                 <i class="fas fa-users"></i> Select User to Assign
                 <span class="text-muted small" id="selected-user-display"></span>
             </h5>
+            <input type="text" id="userSearch" class="form-control form-control-sm"
+                   placeholder="Search user..." style="max-width:200px;"
+                   oninput="filterUsers(this.value)">
         </div>
-        <div class="card-body">
-            <div class="row" id="user-selection">
+        <div class="card-body pb-2">
+            <div class="row g-2" id="user-selection"
+                 style="max-height:220px; overflow-y:auto; overflow-x:hidden;">
                 @foreach($users as $user)
-                    <div class="col-md-2 col-sm-3 col-4 mb-2">
+                    <div class="col-md-2 col-sm-3 col-4 user-card-wrapper"
+                         data-name="{{ strtolower($user->name) }}">
                         <div class="user-select-card p-2 border rounded text-center cursor-pointer"
                              data-user-id="{{ $user->id }}"
                              data-user-name="{{ $user->name }}"
                              data-user-color="{{ \App\Models\ShiftAssignment::generateColorForUser($user->id) }}">
-                            <div class="user-avatar mx-auto mb-2"
-                                 style="width: 40px; height: 40px; background-color: {{ \App\Models\ShiftAssignment::generateColorForUser($user->id) }}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">
+                            <div class="user-avatar mx-auto mb-1"
+                                 style="width:40px;height:40px;background-color:{{ \App\Models\ShiftAssignment::generateColorForUser($user->id) }};border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:18px;">
                                 {{ substr($user->name, 0, 1) }}
                             </div>
-                            <div class="small fw-bold">{{ $user->name }}</div>
-                            <div class="text-muted" style="font-size: 10px;">
+                            <div class="small fw-bold" style="font-size:11px;line-height:1.2;">{{ $user->name }}</div>
+                            <div class="text-muted" style="font-size:10px;">
                                 <span class="user-hours-{{ $user->id }}">{{ $userHours[$user->id] ?? 0 }}</span>h
                             </div>
                         </div>
                     </div>
                 @endforeach
+                <div id="userSearchEmpty" class="col-12 text-center text-muted py-3 d-none">
+                    <i class="fas fa-search me-1"></i> No users found
+                </div>
             </div>
-            <div class="alert alert-info mb-0 mt-3">
+            <div class="alert alert-info mb-0 mt-2 py-2">
                 <small>
                     <i class="fas fa-info-circle"></i>
                     <strong>Instructions:</strong>
@@ -787,6 +795,18 @@ const removeAssignmentUrl = '{{ route(($routePrefix ?? "admin").".shifts.remove-
 const clearAllAssignmentsUrl = '{{ route(($routePrefix ?? "admin").".shifts.clear-all-assignments", $shift) }}';
 
 let selectedUser = null;
+
+function filterUsers(query) {
+    const q = query.toLowerCase().trim();
+    const wrappers = document.querySelectorAll('.user-card-wrapper');
+    let visible = 0;
+    wrappers.forEach(w => {
+        const match = !q || w.dataset.name.includes(q);
+        w.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+    document.getElementById('userSearchEmpty').classList.toggle('d-none', visible > 0);
+}
 let isSelecting = false;
 let isRemovingMode = false;
 let startCell = null;
