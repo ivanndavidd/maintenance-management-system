@@ -76,6 +76,15 @@
                         </td>
                         <td><small class="text-muted">Will be deleted (reassign via shift schedule)</small></td>
                     </tr>
+                    <tr>
+                        <td>Stock Opname Assignments</td>
+                        <td class="text-center">
+                            <span class="badge {{ $linked['opname_assignments'] > 0 ? 'bg-danger' : 'bg-secondary' }}">
+                                {{ $linked['opname_assignments'] }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">Will be reassigned to selected user</small></td>
+                    </tr>
                 </tbody>
             </table>
         </div>

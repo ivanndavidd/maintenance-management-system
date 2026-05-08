@@ -304,6 +304,25 @@ class UserController extends Controller
             DB::connection('site')->table('shift_assignments')
                 ->where('user_id', $user->id)->delete();
 
+            // Stock opname user assignments pivot — replace entry
+            $opnameRows = DB::connection('site')->table('stock_opname_user_assignments')
+                ->where('user_id', $user->id)->get();
+            foreach ($opnameRows as $row) {
+                $alreadyAssigned = DB::connection('site')->table('stock_opname_user_assignments')
+                    ->where('schedule_id', $row->schedule_id)
+                    ->where('user_id', $toId)->exists();
+                if (!$alreadyAssigned) {
+                    DB::connection('site')->table('stock_opname_user_assignments')
+                        ->where('schedule_id', $row->schedule_id)
+                        ->where('user_id', $user->id)
+                        ->update(['user_id' => $toId]);
+                } else {
+                    DB::connection('site')->table('stock_opname_user_assignments')
+                        ->where('schedule_id', $row->schedule_id)
+                        ->where('user_id', $user->id)->delete();
+                }
+            }
+
             if ($action === 'delete') {
                 $user->delete();
             } else {
@@ -338,16 +357,21 @@ class UserController extends Controller
         $shiftAssignments = DB::connection('site')->table('shift_assignments')
             ->where('user_id', $user->id)->count();
 
+        $opnameAssignments = DB::connection('site')->table('stock_opname_user_assignments')
+            ->where('user_id', $user->id)->count();
+
         $linked = [
-            'cm_reports'        => $cmReports,       // info only — not reassigned
-            'cm_requests'       => $cmRequests,
-            'pm_tasks'          => $pmTasks,
-            'sparepart_usages'  => $sparepartUsages,
-            'shift_assignments' => $shiftAssignments,
+            'cm_reports'         => $cmReports,       // info only — not reassigned
+            'cm_requests'        => $cmRequests,
+            'pm_tasks'           => $pmTasks,
+            'sparepart_usages'   => $sparepartUsages,
+            'shift_assignments'  => $shiftAssignments,
+            'opname_assignments' => $opnameAssignments,
         ];
 
         // CM reports are kept as-is; only reassignable items block the flow
-        $reassignable = $cmRequests + $pmTasks + $sparepartUsages + $shiftAssignments;
+        $reassignable = $cmRequests + $pmTasks + $sparepartUsages
+                      + $shiftAssignments + $opnameAssignments;
 
         $linked['has_linked'] = $reassignable > 0;
 
