@@ -186,18 +186,26 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
+                        @if(Route::has($routePrefix.'.spareparts.edit'))
                         <a href="{{ route($routePrefix.'.spareparts.edit', $sparepart) }}" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i> Edit Sparepart
                         </a>
+                        @endif
+                        @if(Route::has($routePrefix.'.spareparts.adjustments.create'))
                         <a href="{{ route($routePrefix.'.spareparts.adjustments.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-sliders-h"></i> Adjust Stock
                         </a>
+                        @endif
+                        @if(Route::has($routePrefix.'.spareparts.purchase-orders.create'))
                         <a href="{{ route($routePrefix.'.spareparts.purchase-orders.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-success btn-sm">
                             <i class="fas fa-shopping-cart"></i> Create Purchase Order
                         </a>
+                        @endif
+                        @if(Route::has($routePrefix.'.spareparts.opname.executions.create'))
                         <a href="{{ route($routePrefix.'.spareparts.opname.executions.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-info btn-sm">
                             <i class="fas fa-clipboard-check"></i> Record Opname
                         </a>
+                        @endif
                         <a href="{{ route($routePrefix.'.spareparts.index') }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-arrow-left"></i> Back to List
                         </a>
@@ -226,9 +234,11 @@
                         <div class="col-6"><small class="text-muted">Minimum:</small> <strong>{{ $sparepart->minimum_stock }} {{ $sparepart->unit }}</strong></div>
                         <div class="col-12"><small class="text-muted">Suggested Order:</small> <strong>{{ max($sparepart->minimum_stock * 2 - $sparepart->quantity, 0) }} {{ $sparepart->unit }}</strong></div>
                     </div>
+                    @if(Route::has($routePrefix.'.spareparts.purchase-orders.create'))
                     <a href="{{ route($routePrefix.'.spareparts.purchase-orders.create') }}?sparepart_id={{ $sparepart->id }}" class="btn btn-warning btn-sm w-100">
                         <i class="fas fa-shopping-cart"></i> Order Now
                     </a>
+                    @endif
                 </div>
             </div>
             @endif
