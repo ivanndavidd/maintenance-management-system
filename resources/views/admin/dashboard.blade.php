@@ -757,6 +757,89 @@
         </div>
     </div>
 
+    <!-- Maintenance Performance Metrics -->
+    @if(auth()->user()->hasRole('admin'))
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h6 class="mb-0"><i class="fas fa-tachometer-alt text-primary"></i> Maintenance Performance Metrics</h6>
+                        <small class="text-muted" id="metricsDateRange"></small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <input type="radio" class="btn-check" name="metricsTimeframe" id="metrics1M" value="1M" checked>
+                            <label class="btn btn-outline-primary" for="metrics1M">1M</label>
+                            <input type="radio" class="btn-check" name="metricsTimeframe" id="metrics3M" value="3M">
+                            <label class="btn btn-outline-primary" for="metrics3M">3M</label>
+                            <input type="radio" class="btn-check" name="metricsTimeframe" id="metrics6M" value="6M">
+                            <label class="btn btn-outline-primary" for="metrics6M">6M</label>
+                            <input type="radio" class="btn-check" name="metricsTimeframe" id="metrics1Y" value="1Y">
+                            <label class="btn btn-outline-primary" for="metrics1Y">1Y</label>
+                            <input type="radio" class="btn-check" name="metricsTimeframe" id="metricsCustom" value="custom">
+                            <label class="btn btn-outline-primary" for="metricsCustom"><i class="fas fa-calendar-alt"></i></label>
+                        </div>
+                        <div id="metricsCustomRange" style="display:none;" class="d-flex align-items-center gap-1">
+                            <input type="date" class="form-control form-control-sm" id="metricsDateFrom" style="max-width:140px;">
+                            <span>-</span>
+                            <input type="date" class="form-control form-control-sm" id="metricsDateTo" style="max-width:140px;">
+                            <button class="btn btn-primary btn-sm" onclick="loadMetrics()">Go</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {{-- MTTR Card --}}
+                        <div class="col-12 col-md-6">
+                            <div class="card border-0 bg-light h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-primary">MTTR</h6>
+                                            <small class="text-muted">Mean Time To Repair</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold fs-4 text-primary" id="mttrOverall">-</div>
+                                            <small class="text-muted">hours avg (<span id="mttrCount">-</span> tickets)</small>
+                                        </div>
+                                    </div>
+                                    <div style="position:relative; height:200px;">
+                                        <canvas id="mttrChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{-- MTBF Card --}}
+                        <div class="col-12 col-md-6">
+                            <div class="card border-0 bg-light h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-success">MTBF</h6>
+                                            <small class="text-muted">Mean Time Between Failures</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold fs-4 text-success" id="mtbfOverall">-</div>
+                                            <small class="text-muted">hours avg between breakdowns</small>
+                                        </div>
+                                    </div>
+                                    <div style="position:relative; height:200px;">
+                                        <canvas id="mtbfChart"></canvas>
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Higher = more reliable (longer between failures)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Recent CMR Tickets -->
     <div class="row mb-4">
         <div class="col-12">
@@ -1204,6 +1287,110 @@
     // Load KPI data on page load
     document.addEventListener('DOMContentLoaded', function() {
         loadKpiData('1M');
+    });
+    @endif
+
+    @if(auth()->user()->hasRole('admin'))
+    // ========== Maintenance Metrics (MTTR / MTBF) ==========
+    let mttrChart = null;
+    let mtbfChart = null;
+
+    document.querySelectorAll('input[name="metricsTimeframe"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.getElementById('metricsCustomRange').style.display =
+                this.value === 'custom' ? 'flex' : 'none';
+            if (this.value !== 'custom') loadMetrics();
+        });
+    });
+
+    function loadMetrics() {
+        const period = document.querySelector('input[name="metricsTimeframe"]:checked').value;
+        let url = '{{ route("admin.dashboard.maintenance-metrics") }}?period=' + period;
+        if (period === 'custom') {
+            const from = document.getElementById('metricsDateFrom').value;
+            const to   = document.getElementById('metricsDateTo').value;
+            if (!from || !to) return;
+            url += '&date_from=' + from + '&date_to=' + to;
+        }
+
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('metricsDateRange').textContent =
+                    data.date_from + ' — ' + data.date_to;
+                updateMttr(data.mttr);
+                updateMtbf(data.mtbf);
+            })
+            .catch(err => console.error('Metrics load error:', err));
+    }
+
+    function updateMttr(mttr) {
+        document.getElementById('mttrOverall').textContent = mttr.overall_hours + 'h';
+        document.getElementById('mttrCount').textContent   = mttr.overall_count;
+
+        const labels = mttr.by_group.map(g => g.group);
+        const values = mttr.by_group.map(g => g.avg_hours);
+
+        if (mttrChart) mttrChart.destroy();
+        const ctx = document.getElementById('mttrChart');
+        if (!ctx) return;
+        mttrChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Avg MTTR (hours)',
+                    data: values,
+                    backgroundColor: 'rgba(13,110,253,0.7)',
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Hours' } },
+                    x: { ticks: { font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    function updateMtbf(mtbf) {
+        document.getElementById('mtbfOverall').textContent = mtbf.overall_hours + 'h';
+
+        const labels = mtbf.by_group.map(g => g.group);
+        const values = mtbf.by_group.map(g => g.avg_hours);
+
+        if (mtbfChart) mtbfChart.destroy();
+        const ctx = document.getElementById('mtbfChart');
+        if (!ctx) return;
+        mtbfChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Avg MTBF (hours)',
+                    data: values,
+                    backgroundColor: 'rgba(25,135,84,0.7)',
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Hours' } },
+                    x: { ticks: { font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMetrics();
     });
     @endif
 </script>

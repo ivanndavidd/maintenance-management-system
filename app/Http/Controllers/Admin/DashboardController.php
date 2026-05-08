@@ -466,4 +466,134 @@ class DashboardController extends Controller
             ],
         ];
     }
+
+    /**
+     * MTBF & MTTR metrics — AJAX endpoint
+     */
+    public function maintenanceMetrics(Request $request)
+    {
+        $period = $request->get('period', '1M');
+        $now    = Carbon::now();
+
+        if ($period === 'custom') {
+            $dateFrom = Carbon::parse($request->get('date_from'))->startOfDay();
+            $dateTo   = Carbon::parse($request->get('date_to'))->endOfDay();
+        } else {
+            $dateTo   = $now->copy()->endOfDay();
+            $dateFrom = match ($period) {
+                '3M'    => $now->copy()->subMonths(3)->startOfDay(),
+                '6M'    => $now->copy()->subMonths(6)->startOfDay(),
+                '1Y'    => $now->copy()->subYear()->startOfDay(),
+                default => $now->copy()->subMonth()->startOfDay(),
+            };
+        }
+
+        return response()->json([
+            'period'    => $period,
+            'date_from' => $dateFrom->toDateString(),
+            'date_to'   => $dateTo->toDateString(),
+            'mttr'      => $this->getMttrByGroup($dateFrom, $dateTo),
+            'mtbf'      => $this->getMtbfByGroup($dateFrom, $dateTo),
+        ]);
+    }
+
+    private function getMttrByGroup(Carbon $dateFrom, Carbon $dateTo): array
+    {
+        // MTTR = cm_reports.submitted_at - corrective_maintenance_requests.created_at (in hours)
+        // Grouped by group_assets.group_name via assets_master
+        $rows = DB::connection('site')->table('cm_reports as r')
+            ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
+            ->join('assets_master as a', 'a.id', '=', 'r.asset_id')
+            ->join('group_assets as g', 'g.group_id', '=', 'a.group_id')
+            ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
+            ->whereNotNull('r.asset_id')
+            ->selectRaw('g.group_name, AVG(TIMESTAMPDIFF(MINUTE, req.created_at, r.submitted_at)) as avg_minutes, COUNT(*) as ticket_count')
+            ->groupBy('g.group_id', 'g.group_name')
+            ->orderBy('avg_minutes', 'desc')
+            ->get();
+
+        // Overall average
+        $overallRow = DB::connection('site')->table('cm_reports as r')
+            ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
+            ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
+            ->selectRaw('AVG(TIMESTAMPDIFF(MINUTE, req.created_at, r.submitted_at)) as avg_minutes, COUNT(*) as ticket_count')
+            ->first();
+
+        return [
+            'overall_hours'  => $overallRow->avg_minutes ? round($overallRow->avg_minutes / 60, 1) : 0,
+            'overall_count'  => (int) $overallRow->ticket_count,
+            'by_group'       => $rows->map(fn($r) => [
+                'group'        => $r->group_name,
+                'avg_hours'    => $r->avg_minutes ? round($r->avg_minutes / 60, 1) : 0,
+                'ticket_count' => (int) $r->ticket_count,
+            ])->values()->toArray(),
+        ];
+    }
+
+    private function getMtbfByGroup(Carbon $dateFrom, Carbon $dateTo): array
+    {
+        // MTBF = average interval between consecutive CM tickets for the same asset
+        // Get all CM tickets with asset_id in range, ordered per asset
+        $tickets = DB::connection('site')->table('cm_reports as r')
+            ->join('assets_master as a', 'a.id', '=', 'r.asset_id')
+            ->join('group_assets as g', 'g.group_id', '=', 'a.group_id')
+            ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
+            ->whereNotNull('r.asset_id')
+            ->selectRaw('r.asset_id, g.group_id, g.group_name, r.submitted_at')
+            ->orderBy('r.asset_id')
+            ->orderBy('r.submitted_at')
+            ->get();
+
+        // Calculate intervals per asset, then average per group
+        $groupIntervals = [];
+        $assetTickets   = $tickets->groupBy('asset_id');
+
+        foreach ($assetTickets as $assetId => $assetRows) {
+            $sorted = $assetRows->sortBy('submitted_at')->values();
+            if ($sorted->count() < 2) continue;
+
+            $groupName = $sorted->first()->group_name;
+            if (!isset($groupIntervals[$groupName])) {
+                $groupIntervals[$groupName] = [];
+            }
+
+            for ($i = 1; $i < $sorted->count(); $i++) {
+                $prev = Carbon::parse($sorted[$i - 1]->submitted_at);
+                $curr = Carbon::parse($sorted[$i]->submitted_at);
+                $groupIntervals[$groupName][] = $prev->diffInHours($curr);
+            }
+        }
+
+        // Overall intervals (all assets)
+        $allIntervals = [];
+        foreach ($assetTickets as $assetRows) {
+            $sorted = $assetRows->sortBy('submitted_at')->values();
+            if ($sorted->count() < 2) continue;
+            for ($i = 1; $i < $sorted->count(); $i++) {
+                $prev = Carbon::parse($sorted[$i - 1]->submitted_at);
+                $curr = Carbon::parse($sorted[$i]->submitted_at);
+                $allIntervals[] = $prev->diffInHours($curr);
+            }
+        }
+
+        $overallHours = count($allIntervals) > 0
+            ? round(array_sum($allIntervals) / count($allIntervals), 1)
+            : 0;
+
+        $byGroup = [];
+        foreach ($groupIntervals as $groupName => $intervals) {
+            $byGroup[] = [
+                'group'     => $groupName,
+                'avg_hours' => round(array_sum($intervals) / count($intervals), 1),
+                'intervals' => count($intervals),
+            ];
+        }
+
+        usort($byGroup, fn($a, $b) => $a['avg_hours'] <=> $b['avg_hours']);
+
+        return [
+            'overall_hours' => $overallHours,
+            'by_group'      => $byGroup,
+        ];
+    }
 }
