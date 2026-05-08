@@ -405,7 +405,7 @@ class DashboardController extends Controller
             'severity'      => [
                 'critical' => (int) ($severityCounts['critical'] ?? 0),
                 'medium'   => (int) ($severityCounts['medium']   ?? 0),
-                'low'      => (int) ($severityCounts['low']      ?? 0),
+                'minor'    => (int) ($severityCounts['minor']    ?? 0),
             ],
         ];
     }

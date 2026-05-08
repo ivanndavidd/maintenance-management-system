@@ -435,7 +435,7 @@
                                         <div class="col-4 text-center">
                                             <div class="rounded p-1" style="background:#f0fff4;">
                                                 <div class="fw-bold text-success" id="cmSevLow" style="font-size:16px;">-</div>
-                                                <div style="font-size:9px;color:#198754;">Low</div>
+                                                <div style="font-size:9px;color:#198754;">Minor</div>
                                             </div>
                                         </div>
                                     </div>
@@ -1129,7 +1129,7 @@
         if (cm.severity) {
             document.getElementById('cmSevCritical').textContent = cm.severity.critical ?? 0;
             document.getElementById('cmSevMedium').textContent   = cm.severity.medium   ?? 0;
-            document.getElementById('cmSevLow').textContent      = cm.severity.low      ?? 0;
+            document.getElementById('cmSevLow').textContent      = cm.severity.minor    ?? 0;
         }
 
         if (cmKpiChart) cmKpiChart.destroy();
