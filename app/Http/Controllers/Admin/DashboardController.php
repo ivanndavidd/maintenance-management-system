@@ -588,8 +588,9 @@ class DashboardController extends Controller
         $useWeekly = in_array($period, ['3M', '6M', '1Y']);
 
         if ($useWeekly) {
+            // YEARWEEK mode 1 = ISO week (Monday start); STR_TO_DATE gives the Monday of that week
             $groupExpr = 'YEARWEEK(r.submitted_at, 1)';
-            $labelExpr = 'MIN(DATE(r.submitted_at)) as bucket_date';
+            $labelExpr = "STR_TO_DATE(CONCAT(YEARWEEK(r.submitted_at, 1), ' Monday'), '%X%V %W') as bucket_date";
         } else {
             $groupExpr = 'DATE(r.submitted_at)';
             $labelExpr = 'DATE(r.submitted_at) as bucket_date';
@@ -626,10 +627,12 @@ class DashboardController extends Controller
             for ($i = 1; $i < $sorted->count(); $i++) {
                 $prev = Carbon::parse($sorted[$i - 1]->submitted_at);
                 $curr = Carbon::parse($sorted[$i]->submitted_at);
+                // Calculate interval BEFORE any mutation of $curr
                 $intervalHours = $prev->diffInMinutes($curr) / 60;
 
                 if ($useWeekly) {
-                    $bucketKey = $curr->startOfWeek()->toDateString();
+                    // Use copy() to avoid mutating $curr; match MTTR bucket key format (week start = Monday)
+                    $bucketKey = $curr->copy()->startOfWeek(Carbon::MONDAY)->toDateString();
                 } else {
                     $bucketKey = $curr->toDateString();
                 }
