@@ -729,17 +729,12 @@
                         <small class="text-muted" id="metricsDateRange"></small>
                     </div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <div class="btn-group btn-group-sm">
-                            <input type="radio" class="btn-check" name="metricsTimeframe" id="metrics1M" value="1M" checked>
-                            <label class="btn btn-outline-primary" for="metrics1M">1M</label>
-                            <input type="radio" class="btn-check" name="metricsTimeframe" id="metrics3M" value="3M">
-                            <label class="btn btn-outline-primary" for="metrics3M">3M</label>
-                            <input type="radio" class="btn-check" name="metricsTimeframe" id="metrics6M" value="6M">
-                            <label class="btn btn-outline-primary" for="metrics6M">6M</label>
-                            <input type="radio" class="btn-check" name="metricsTimeframe" id="metrics1Y" value="1Y">
-                            <label class="btn btn-outline-primary" for="metrics1Y">1Y</label>
-                            <input type="radio" class="btn-check" name="metricsTimeframe" id="metricsCustom" value="custom">
-                            <label class="btn btn-outline-primary" for="metricsCustom"><i class="fas fa-calendar-alt"></i></label>
+                        <div class="btn-group btn-group-sm" id="metricsTimeframeBtns">
+                            <button type="button" class="btn btn-outline-primary active" data-period="1M">1M</button>
+                            <button type="button" class="btn btn-outline-primary" data-period="3M">3M</button>
+                            <button type="button" class="btn btn-outline-primary" data-period="6M">6M</button>
+                            <button type="button" class="btn btn-outline-primary" data-period="1Y">1Y</button>
+                            <button type="button" class="btn btn-outline-primary" data-period="custom"><i class="fas fa-calendar-alt"></i></button>
                         </div>
                         <div id="metricsCustomRange" style="display:none;" class="d-flex align-items-center gap-1">
                             <input type="date" class="form-control form-control-sm" id="metricsDateFrom" style="max-width:140px;">
@@ -1234,16 +1229,23 @@
     // ========== Maintenance Performance Metrics ==========
     let chartTrend = null, chartMtbfGroup = null, chartMttrGroup = null, chartCategory = null, chartDowntime = null;
 
-    document.querySelectorAll('input[name="metricsTimeframe"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.getElementById('metricsCustomRange').style.display =
-                this.value === 'custom' ? 'flex' : 'none';
-            if (this.value !== 'custom') loadMetrics();
-        });
+    document.getElementById('metricsTimeframeBtns').addEventListener('click', function(e) {
+        const btn = e.target.closest('[data-period]');
+        if (!btn) return;
+        const period = btn.dataset.period;
+
+        // Update active state
+        this.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.getElementById('metricsCustomRange').style.display =
+            period === 'custom' ? 'flex' : 'none';
+        if (period !== 'custom') loadMetrics();
     });
 
     function loadMetrics() {
-        const period = document.querySelector('input[name="metricsTimeframe"]:checked').value;
+        const activeBtn = document.querySelector('#metricsTimeframeBtns .btn.active');
+        const period = activeBtn ? activeBtn.dataset.period : '1M';
         let url = '{{ route("admin.dashboard.maintenance-metrics") }}?period=' + period;
         if (period === 'custom') {
             const from = document.getElementById('metricsDateFrom').value;
