@@ -420,25 +420,19 @@
                                         <small class="text-muted fw-semibold">Severity Breakdown</small>
                                     </div>
                                     <div class="row g-1" id="cmSeverityRow">
-                                        <div class="col-3 text-center">
+                                        <div class="col-4 text-center">
                                             <div class="rounded p-1" style="background:#fff0f0;">
                                                 <div class="fw-bold text-danger" id="cmSevCritical" style="font-size:16px;">-</div>
                                                 <div style="font-size:9px;color:#dc3545;">Critical</div>
                                             </div>
                                         </div>
-                                        <div class="col-3 text-center">
-                                            <div class="rounded p-1" style="background:#fff5e6;">
-                                                <div class="fw-bold text-warning" id="cmSevHigh" style="font-size:16px;">-</div>
-                                                <div style="font-size:9px;color:#fd7e14;">High</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-3 text-center">
+                                        <div class="col-4 text-center">
                                             <div class="rounded p-1" style="background:#fffbe6;">
                                                 <div class="fw-bold" id="cmSevMedium" style="font-size:16px;color:#ffc107;">-</div>
                                                 <div style="font-size:9px;color:#ffc107;">Medium</div>
                                             </div>
                                         </div>
-                                        <div class="col-3 text-center">
+                                        <div class="col-4 text-center">
                                             <div class="rounded p-1" style="background:#f0fff4;">
                                                 <div class="fw-bold text-success" id="cmSevLow" style="font-size:16px;">-</div>
                                                 <div style="font-size:9px;color:#198754;">Low</div>
@@ -1134,7 +1128,6 @@
 
         if (cm.severity) {
             document.getElementById('cmSevCritical').textContent = cm.severity.critical ?? 0;
-            document.getElementById('cmSevHigh').textContent     = cm.severity.high     ?? 0;
             document.getElementById('cmSevMedium').textContent   = cm.severity.medium   ?? 0;
             document.getElementById('cmSevLow').textContent      = cm.severity.low      ?? 0;
         }

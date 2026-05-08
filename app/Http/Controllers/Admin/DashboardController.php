@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
+use App\Models\CmReport;
 use App\Models\CorrectiveMaintenanceRequest;
 use App\Models\PmSchedule;
 use App\Models\PmTask;
@@ -386,8 +387,9 @@ class DashboardController extends Controller
         $total         = (clone $base)->count();
 
         try {
-            $severityCounts = (clone $base)->selectRaw('severity, COUNT(*) as count')
+            $severityCounts = CmReport::whereBetween('created_at', [$dateFrom, $dateTo])
                 ->whereNotNull('severity')
+                ->selectRaw('severity, COUNT(*) as count')
                 ->groupBy('severity')
                 ->pluck('count', 'severity');
         } catch (\Exception $e) {
@@ -402,7 +404,6 @@ class DashboardController extends Controller
             'total'         => $total,
             'severity'      => [
                 'critical' => (int) ($severityCounts['critical'] ?? 0),
-                'high'     => (int) ($severityCounts['high']     ?? 0),
                 'medium'   => (int) ($severityCounts['medium']   ?? 0),
                 'low'      => (int) ($severityCounts['low']      ?? 0),
             ],
