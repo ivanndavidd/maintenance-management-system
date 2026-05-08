@@ -14,6 +14,89 @@
         </nav>
     </div>
 
+    <!-- Inventory Statistics -->
+    <div class="card mb-3">
+        <div class="card-header bg-white">
+            <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Inventory Statistics</h6>
+        </div>
+        <div class="card-body p-2">
+            <div class="row text-center g-2">
+                <div class="col-6 col-lg-3">
+                    <div class="p-2">
+                        <h5 class="text-primary mb-0">{{ $stats['total'] }}</h5>
+                        <small class="text-muted">Total</small>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="p-2">
+                        <h5 class="text-warning mb-0">{{ $stats['low_stock'] }}</h5>
+                        <small class="text-muted">Low Stock</small>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="p-2">
+                        <h5 class="text-danger mb-0">{{ $stats['out_of_stock'] }}</h5>
+                        <small class="text-muted">Out of Stock</small>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="p-2">
+                        <h6 class="text-success mb-0">Rp {{ number_format($stats['total_value'], 0, ',', '.') }}</h6>
+                        <small class="text-muted">Total Value</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-3 g-2">
+        <div class="col-6 col-md-3">
+            <a href="{{ route($routePrefix.'.spareparts.index') }}" class="text-decoration-none">
+                <div class="card bg-primary text-white h-100 {{ !request('stock_status') ? 'border-3 border-white' : '' }}" style="cursor: pointer;">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-boxes fa-3x mb-2"></i>
+                        <h6 class="mb-1">Total Spareparts</h6>
+                        <h4 class="mb-0">{{ $stats['total'] }}</h4>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{{ route($routePrefix.'.spareparts.index', ['stock_status' => 'normal']) }}" class="text-decoration-none">
+                <div class="card bg-success text-white h-100 {{ request('stock_status') == 'normal' ? 'border-3 border-white' : '' }}" style="cursor: pointer;">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-check-circle fa-3x mb-2"></i>
+                        <h6 class="mb-1">In Stock</h6>
+                        <h4 class="mb-0">{{ $stats['total'] - $stats['low_stock'] - $stats['out_of_stock'] }}</h4>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{{ route($routePrefix.'.spareparts.index', ['stock_status' => 'low']) }}" class="text-decoration-none">
+                <div class="card bg-warning text-white h-100 {{ request('stock_status') == 'low' ? 'border-3 border-white' : '' }}" style="cursor: pointer;">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-2"></i>
+                        <h6 class="mb-1">Low Stock</h6>
+                        <h4 class="mb-0">{{ $stats['low_stock'] }}</h4>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{{ route($routePrefix.'.spareparts.index', ['stock_status' => 'out']) }}" class="text-decoration-none">
+                <div class="card bg-danger text-white h-100 {{ request('stock_status') == 'out' ? 'border-3 border-white' : '' }}" style="cursor: pointer;">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-times-circle fa-3x mb-2"></i>
+                        <h6 class="mb-1">Out of Stock</h6>
+                        <h4 class="mb-0">{{ $stats['out_of_stock'] }}</h4>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
     <!-- Master Data Section -->
     <div id="master-data" class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -178,44 +261,6 @@
         </div>
     </div>
 
-    <!-- Statistics Section -->
-    <div class="row mt-3">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">Inventory Statistics</h6>
-                </div>
-                <div class="card-body p-2">
-                    <div class="row g-2">
-                        <div class="col-6 col-lg-3">
-                            <div class="text-center p-2">
-                                <h5 class="text-primary mb-0">{{ $stats['total'] }}</h5>
-                                <small class="text-muted">Total</small>
-                            </div>
-                        </div>
-                        <div class="col-6 col-lg-3">
-                            <div class="text-center p-2">
-                                <h5 class="text-warning mb-0">{{ $stats['low_stock'] }}</h5>
-                                <small class="text-muted">Low Stock</small>
-                            </div>
-                        </div>
-                        <div class="col-6 col-lg-3">
-                            <div class="text-center p-2">
-                                <h5 class="text-danger mb-0">{{ $stats['out_of_stock'] }}</h5>
-                                <small class="text-muted">Out of Stock</small>
-                            </div>
-                        </div>
-                        <div class="col-6 col-lg-3">
-                            <div class="text-center p-2">
-                                <h6 class="text-success mb-0">Rp {{ number_format($stats['total_value'], 0, ',', '.') }}</h6>
-                                <small class="text-muted">Total Value</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 @endsection
