@@ -238,7 +238,7 @@ class UserController extends Controller
         $linked = $this->checkLinkedData($user);
 
         if ($linked['has_linked']) {
-            return redirect()->route('supervisor.users.reassign-form', $user)
+            return redirect()->route('supervisor.users.reassign-form', [$user, 'action' => 'delete'])
                 ->with('warning', 'This user has linked data. Please reassign before deleting.');
         }
 
@@ -249,14 +249,15 @@ class UserController extends Controller
     }
 
     /**
-     * Show reassign form before deleting user
+     * Show reassign form before deactivating/deleting user
      */
-    public function reassignForm(User $user)
+    public function reassignForm(Request $request, User $user)
     {
         if (!$this->canManageUser($user)) {
             abort(403, 'You are not authorized to manage this user.');
         }
 
+        $action = $request->get('action', 'deactivate');
         $linked = $this->checkLinkedData($user);
         $candidates = User::where('id', '!=', $user->id)
             ->where('is_active', true)
@@ -264,11 +265,11 @@ class UserController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('supervisor.users.reassign', compact('user', 'linked', 'candidates'));
+        return view('supervisor.users.reassign', compact('user', 'linked', 'candidates', 'action'));
     }
 
     /**
-     * Reassign linked data to another user then delete
+     * Reassign linked data to another user then deactivate or delete
      */
     public function reassign(Request $request, User $user)
     {
@@ -278,11 +279,13 @@ class UserController extends Controller
 
         $request->validate([
             'reassign_to' => 'required|exists:users,id|different:' . $user->id,
+            'action'      => 'in:deactivate,delete',
         ]);
 
-        $toId = $request->reassign_to;
+        $toId   = $request->reassign_to;
+        $action = $request->input('action', 'deactivate');
 
-        DB::connection('site')->transaction(function () use ($user, $toId) {
+        DB::connection('site')->transaction(function () use ($user, $toId, $action) {
             // CM reports submitted_by
             DB::connection('site')->table('cm_reports')
                 ->where('submitted_by', $user->id)->update(['submitted_by' => $toId]);
@@ -299,15 +302,22 @@ class UserController extends Controller
             DB::connection('site')->table('sparepart_usages')
                 ->where('used_by', $user->id)->update(['used_by' => $toId]);
 
-            // Shift assignments — just delete (will be reassigned via shift schedule)
+            // Shift assignments — delete (will be reassigned via shift schedule)
             DB::connection('site')->table('shift_assignments')
                 ->where('user_id', $user->id)->delete();
 
-            $user->delete();
+            if ($action === 'delete') {
+                $user->delete();
+            } else {
+                $user->update(['is_active' => false]);
+            }
         });
 
-        return redirect()->route('supervisor.users.index')
-            ->with('success', 'User data reassigned and user deleted successfully.');
+        $message = $action === 'delete'
+            ? 'User data reassigned and user deleted successfully.'
+            : 'User data reassigned and user deactivated successfully.';
+
+        return redirect()->route('supervisor.users.index')->with('success', $message);
     }
 
     /**
@@ -351,6 +361,15 @@ class UserController extends Controller
         // Verify user has allowed role or no role
         if (!$this->canManageUser($user)) {
             abort(403, 'You are not authorized to change this user status.');
+        }
+
+        // When deactivating an active user, check for linked data first
+        if ($user->is_active) {
+            $linked = $this->checkLinkedData($user);
+            if ($linked['has_linked']) {
+                return redirect()->route('supervisor.users.reassign-form', [$user, 'action' => 'deactivate'])
+                    ->with('warning', 'This user has linked data. Please reassign before deactivating.');
+            }
         }
 
         $user->update([
