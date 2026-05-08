@@ -132,6 +132,11 @@ Route::middleware(['auth'])->group(function () {
                 'kpiData',
             ])->name('dashboard.kpi-data')->middleware(RoleMiddleware::class . ':admin');
 
+            Route::get('/dashboard/maintenance-metrics', [
+                App\Http\Controllers\Admin\DashboardController::class,
+                'maintenanceMetrics',
+            ])->name('dashboard.maintenance-metrics');
+
             // Site Management (Admin Only)
             Route::prefix('sites')
                 ->name('sites.')
