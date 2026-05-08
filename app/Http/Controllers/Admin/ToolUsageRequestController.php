@@ -66,26 +66,19 @@ class ToolUsageRequestController extends Controller
             return back()->with('error', "Insufficient stock. Available: {$tool->quantity} {$tool->unit}.");
         }
 
-        $isConsumable = strtolower($tool->equipment_type) === 'consumable';
-
         $toolRequest->update([
-            'status'       => $isConsumable ? 'approved' : 'approved',
+            'status'       => 'approved',
             'reviewed_by'  => auth()->id(),
             'reviewed_at'  => now(),
             'review_notes' => $request->review_notes,
         ]);
-
-        // Consumable: deduct stock immediately on approval
-        if ($isConsumable) {
-            $tool->decrement('quantity', $toolRequest->quantity_requested);
-        }
 
         $toolRequest->load('requester', 'reviewer');
         if ($toolRequest->requester?->email) {
             Mail::to($toolRequest->requester->email)->queue(new ToolRequestApproved($toolRequest));
         }
 
-        return back()->with('success', 'Request approved.' . ($isConsumable ? ' Stock has been deducted.' : ' User can now pick up the tool.'));
+        return back()->with('success', 'Request approved. User can now pick up the tool.');
     }
 
     public function reject(Request $request, ToolUsageRequest $toolRequest)
@@ -120,11 +113,6 @@ class ToolUsageRequestController extends Controller
         }
 
         $toolRequest->load('tool');
-
-        if (strtolower($toolRequest->tool->equipment_type) === 'consumable') {
-            return back()->with('error', 'Consumable items do not have an in-use state.');
-        }
-
         $toolRequest->tool->decrement('quantity', $toolRequest->quantity_requested);
         $toolRequest->update(['status' => 'in_use']);
 
@@ -144,10 +132,6 @@ class ToolUsageRequestController extends Controller
         }
 
         $toolRequest->load('tool');
-
-        if (strtolower($toolRequest->tool->equipment_type) === 'consumable') {
-            return back()->with('error', 'Consumable items cannot be returned.');
-        }
 
         $request->validate([
             'return_notes' => 'nullable|string|max:1000',

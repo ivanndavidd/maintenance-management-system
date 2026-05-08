@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Mail\ToolRequestSubmitted;
 use App\Mail\ToolRequestReturned;
+use App\Mail\ToolRequestSubmitted;
 use App\Models\Tool;
 use App\Models\ToolUsageRequest;
 use Illuminate\Http\Request;
@@ -148,29 +148,4 @@ class ToolUsageRequestController extends Controller
         return back()->with('success', 'Tool marked as returned. Stock has been updated.');
     }
 
-    // For consumable: mark as used (stock already deducted when approved)
-    public function markUsed(Request $request, ToolUsageRequest $toolRequest)
-    {
-        if ($toolRequest->requested_by !== auth()->id()) {
-            abort(403);
-        }
-
-        $toolRequest->load('tool');
-
-        if (!$toolRequest->canBeMarkedUsed()) {
-            return back()->with('error', 'This request cannot be marked as used.');
-        }
-
-        $request->validate([
-            'return_notes' => 'nullable|string|max:1000',
-        ]);
-
-        $toolRequest->update([
-            'status'       => 'used',
-            'returned_at'  => now(),
-            'return_notes' => $request->return_notes,
-        ]);
-
-        return back()->with('success', 'Consumable marked as used.');
-    }
 }

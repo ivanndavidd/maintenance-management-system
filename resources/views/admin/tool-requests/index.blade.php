@@ -86,11 +86,6 @@
                         <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                             <span class="fw-bold text-primary" style="font-size:13px;">{{ $req->request_number }}</span>
                             <span class="badge bg-{{ $req->getStatusBadgeClass() }}">{{ $req->getStatusLabel() }}</span>
-                            @if($req->tool)
-                                <span class="badge {{ strtolower($req->tool->equipment_type) === 'consumable' ? 'bg-info' : 'bg-primary' }}" style="font-size:10px;">
-                                    {{ $req->tool->equipment_type }}
-                                </span>
-                            @endif
                         </div>
                         <div class="fw-bold">{{ $req->tool->sparepart_name ?? '-' }}</div>
                         <div class="text-muted" style="font-size:12px;">
@@ -103,17 +98,13 @@
                         <div class="text-muted" style="font-size:12px; margin-top:2px;">
                             <i class="fas fa-bullseye me-1"></i>{{ Str::limit($req->purpose, 70) }}
                         </div>
-                        {{-- Overdue flag for non-consumable not yet returned --}}
-                        @if($req->tool && strtolower($req->tool->equipment_type) !== 'consumable'
-                            && in_array($req->status, ['approved','in_use'])
-                            && $req->return_date && $req->return_date->isPast())
+                        @if(in_array($req->status, ['approved','in_use']) && $req->return_date && $req->return_date->isPast())
                         <div class="mt-1">
                             <span class="badge bg-danger" style="font-size:10px;">
                                 <i class="fas fa-exclamation-triangle me-1"></i>Overdue — was due {{ $req->return_date->format('d M Y') }}
                             </span>
                         </div>
-                        @elseif($req->tool && strtolower($req->tool->equipment_type) !== 'consumable'
-                            && in_array($req->status, ['approved','in_use']))
+                        @elseif(in_array($req->status, ['approved','in_use']))
                         <div class="mt-1">
                             <span class="badge bg-warning text-dark" style="font-size:10px;">
                                 <i class="fas fa-clock me-1"></i>Not yet returned
@@ -136,7 +127,7 @@
                             <i class="fas fa-times"></i>
                         </button>
                         @endif
-                        @if($req->status === 'approved' && !$req->isConsumable())
+                        @if($req->status === 'approved')
                         <form action="{{ route($routePrefix.'.tool-requests.in-use', $req) }}" method="POST"
                               onsubmit="return confirm('Mark {{ $req->request_number }} as in use? Stock will be deducted.')">
                             @csrf
@@ -145,7 +136,7 @@
                             </button>
                         </form>
                         @endif
-                        @if(in_array($req->status, ['approved', 'in_use']) && !$req->isConsumable())
+                        @if(in_array($req->status, ['approved', 'in_use']))
                         <button type="button" class="btn btn-sm btn-success"
                                 onclick="quickReturn({{ $req->id }}, '{{ $req->request_number }}', {{ $req->status === 'in_use' ? 'true' : 'false' }})"
                                 title="Mark as Returned">
