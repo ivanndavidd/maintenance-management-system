@@ -385,10 +385,14 @@ class DashboardController extends Controller
         $cancelled     = (clone $base)->where('status', 'cancelled')->count();
         $total         = (clone $base)->count();
 
-        $severityCounts = (clone $base)->selectRaw('severity, COUNT(*) as count')
-            ->whereNotNull('severity')
-            ->groupBy('severity')
-            ->pluck('count', 'severity');
+        try {
+            $severityCounts = (clone $base)->selectRaw('severity, COUNT(*) as count')
+                ->whereNotNull('severity')
+                ->groupBy('severity')
+                ->pluck('count', 'severity');
+        } catch (\Exception $e) {
+            $severityCounts = collect();
+        }
 
         return [
             'open'          => $open,
