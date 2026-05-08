@@ -77,15 +77,6 @@
                         <td><small class="text-muted">Will be deleted (reassign via shift schedule)</small></td>
                     </tr>
                     <tr>
-                        <td>Stock Opname Schedules</td>
-                        <td class="text-center">
-                            <span class="badge {{ $linked['opname_schedules'] > 0 ? 'bg-danger' : 'bg-secondary' }}">
-                                {{ $linked['opname_schedules'] }}
-                            </span>
-                        </td>
-                        <td><small class="text-muted">Will be reassigned to selected user</small></td>
-                    </tr>
-                    <tr>
                         <td>Stock Opname Assignments</td>
                         <td class="text-center">
                             <span class="badge {{ $linked['opname_assignments'] > 0 ? 'bg-danger' : 'bg-secondary' }}">
