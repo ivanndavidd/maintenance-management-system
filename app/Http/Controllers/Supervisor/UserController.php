@@ -304,10 +304,6 @@ class UserController extends Controller
             DB::connection('site')->table('shift_assignments')
                 ->where('user_id', $user->id)->delete();
 
-            // Stock opname schedules assigned_to
-            DB::connection('site')->table('stock_opname_schedules')
-                ->where('assigned_to', $user->id)->update(['assigned_to' => $toId]);
-
             // Stock opname assigned users pivot — replace entry
             $existing = DB::connection('site')->table('stock_opname_assigned_users')
                 ->where('user_id', $user->id)->get();
@@ -361,9 +357,6 @@ class UserController extends Controller
         $shiftAssignments = DB::connection('site')->table('shift_assignments')
             ->where('user_id', $user->id)->count();
 
-        $opnameSchedules = DB::connection('site')->table('stock_opname_schedules')
-            ->where('assigned_to', $user->id)->count();
-
         $opnameAssignments = DB::connection('site')->table('stock_opname_assigned_users')
             ->where('user_id', $user->id)->count();
 
@@ -373,13 +366,12 @@ class UserController extends Controller
             'pm_tasks'           => $pmTasks,
             'sparepart_usages'   => $sparepartUsages,
             'shift_assignments'  => $shiftAssignments,
-            'opname_schedules'   => $opnameSchedules,
             'opname_assignments' => $opnameAssignments,
         ];
 
         // CM reports are kept as-is; only reassignable items block the flow
         $reassignable = $cmRequests + $pmTasks + $sparepartUsages
-                      + $shiftAssignments + $opnameSchedules + $opnameAssignments;
+                      + $shiftAssignments + $opnameAssignments;
 
         $linked['has_linked'] = $reassignable > 0;
 
