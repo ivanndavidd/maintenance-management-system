@@ -8,12 +8,16 @@
         <a href="{{ route('supervisor.users.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-arrow-left"></i>
         </a>
-        <h4 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Reassign & Delete User</h4>
+        <h4 class="mb-0">
+            <i class="fas fa-exchange-alt me-2"></i>
+            Reassign & {{ $action === 'delete' ? 'Delete' : 'Deactivate' }} User
+        </h4>
     </div>
 
     <div class="alert alert-warning">
         <i class="fas fa-exclamation-triangle me-2"></i>
-        User <strong>{{ $user->name }}</strong> has linked data. Reassign all records to another user before deleting.
+        User <strong>{{ $user->name }}</strong> has linked data.
+        Reassign all records to another user before {{ $action === 'delete' ? 'deleting' : 'deactivating' }}.
     </div>
 
     {{-- Linked data summary --}}
@@ -85,6 +89,7 @@
         <div class="card-body">
             <form action="{{ route('supervisor.users.reassign', $user) }}" method="POST">
                 @csrf
+                <input type="hidden" name="action" value="{{ $action }}">
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Reassign all data to <span class="text-danger">*</span></label>
                     <select name="reassign_to" class="form-select" required>
@@ -101,9 +106,10 @@
                     @enderror
                 </div>
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-danger"
-                            onclick="return confirm('Reassign all data from {{ $user->name }} and permanently delete this user?')">
-                        <i class="fas fa-exchange-alt me-1"></i> Reassign & Delete User
+                    <button type="submit" class="btn btn-{{ $action === 'delete' ? 'danger' : 'warning' }}"
+                            onclick="return confirm('Reassign all data from {{ $user->name }} and {{ $action === 'delete' ? 'permanently delete' : 'deactivate' }} this user?')">
+                        <i class="fas fa-exchange-alt me-1"></i>
+                        Reassign & {{ $action === 'delete' ? 'Delete' : 'Deactivate' }} User
                     </button>
                     <a href="{{ route('supervisor.users.index') }}" class="btn btn-outline-secondary">Cancel</a>
                 </div>
