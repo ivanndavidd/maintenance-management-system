@@ -630,22 +630,19 @@ class DashboardController extends Controller
 
     private function getMetricsTrend(Carbon $dateFrom, Carbon $dateTo, string $granularity): array
     {
-        // bucket expressions and operating hours per bucket
+        // bucket expressions
         switch ($granularity) {
             case 'weekly':
                 $bucketExpr    = "DATE_ADD(DATE(r.submitted_at), INTERVAL(-(WEEKDAY(r.submitted_at))) DAY)";
                 $bucketExprAll = "DATE_ADD(DATE(submitted_at), INTERVAL(-(WEEKDAY(submitted_at))) DAY)";
-                $bucketHours   = 168; // 7 × 24
                 break;
             case 'monthly':
                 $bucketExpr    = "DATE_FORMAT(r.submitted_at, '%Y-%m-01')";
                 $bucketExprAll = "DATE_FORMAT(submitted_at, '%Y-%m-01')";
-                $bucketHours   = 720; // ~30 × 24 (approximate; close enough for trend)
                 break;
             default: // daily
                 $bucketExpr    = "DATE(r.submitted_at)";
                 $bucketExprAll = "DATE(submitted_at)";
-                $bucketHours   = 24;
         }
 
         // MTTR per bucket = avg repair duration for tickets in that bucket (outliers > 24h excluded)
@@ -661,25 +658,44 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('bucket_date');
 
-        // MTBF per bucket = bucket operating hours / number of failures in that bucket
-        $mtbfRows = DB::connection('site')->table('cm_reports')
+        // Rolling MTBF: cumulative failures per bucket, then compute running hours / cumulative failures
+        // Each bucket_date carries the count of failures that occurred in that bucket.
+        // We then walk the sorted buckets and accumulate both running hours and failure count.
+        $mtbfBuckets = DB::connection('site')->table('cm_reports')
             ->whereBetween('submitted_at', [$dateFrom, $dateTo])
             ->selectRaw("{$bucketExprAll} as bucket_date, COUNT(*) as failure_count")
             ->groupByRaw($bucketExprAll)
             ->orderByRaw($bucketExprAll)
-            ->get()
-            ->keyBy('bucket_date');
+            ->get();
 
-        $allDates = collect($mttrRows->keys())->merge($mtbfRows->keys())->unique()->sort()->values();
+        // Build rolling (cumulative) MTBF keyed by bucket_date
+        $cumulativeFailures = 0;
+        $mtbfRolling = [];
+        foreach ($mtbfBuckets as $row) {
+            $cumulativeFailures += $row->failure_count;
+            // Running hours = hours elapsed from period start to the END of this bucket
+            $bucketEnd = Carbon::parse($row->bucket_date);
+            switch ($granularity) {
+                case 'weekly':  $bucketEnd->addDays(7);  break;
+                case 'monthly': $bucketEnd->addMonth();  break;
+                default:        $bucketEnd->addDay();    break;
+            }
+            // Cap at period end
+            if ($bucketEnd->gt($dateTo)) {
+                $bucketEnd = $dateTo->copy();
+            }
+            $runningHours = max(1, $dateFrom->diffInMinutes($bucketEnd) / 60);
+            $mtbfRolling[$row->bucket_date] = round($runningHours / $cumulativeFailures, 1);
+        }
 
-        return $allDates->map(function ($date) use ($mttrRows, $mtbfRows, $bucketHours) {
+        $allDates = collect($mttrRows->keys())
+            ->merge(array_keys($mtbfRolling))
+            ->unique()->sort()->values();
+
+        return $allDates->map(function ($date) use ($mttrRows, $mtbfRolling) {
             $mttrRow = $mttrRows->get($date);
-            $mtbfRow = $mtbfRows->get($date);
-
             $mttr = $mttrRow ? round($mttrRow->avg_minutes / 60, 2) : null;
-            $mtbf = ($mtbfRow && $mtbfRow->failure_count > 0)
-                ? round($bucketHours / $mtbfRow->failure_count, 1)
-                : null;
+            $mtbf = $mtbfRolling[$date] ?? null;
 
             return [
                 'label' => $date,

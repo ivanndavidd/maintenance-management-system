@@ -1416,7 +1416,7 @@
                 labels,
                 datasets: [
                     {
-                        label: 'MTBF (hours)',
+                        label: 'Rolling MTBF (hours)',
                         data: mtbfVals,
                         borderColor: '#28a745',
                         backgroundColor: 'rgba(40,167,69,0.08)',
@@ -1454,7 +1454,7 @@
                 scales: {
                     yMtbf: {
                         type: 'linear', position: 'left', beginAtZero: true,
-                        title: { display: true, text: 'MTBF (hours)', font: { size: 10 } },
+                        title: { display: true, text: 'Rolling MTBF (hours)', font: { size: 10 } },
                         ticks: { font: { size: 10 } },
                         grid: { color: 'rgba(0,0,0,0.05)' }
                     },
