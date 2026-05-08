@@ -828,6 +828,33 @@
                         </div>
                     </div>
 
+                    {{-- Downtime Timeline --}}
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">
+                                        Downtime Timeline
+                                        <small class="text-muted fw-normal ms-1">— running vs downtime per group</small>
+                                    </h6>
+                                    <div style="position:relative; height:220px;">
+                                        <canvas id="downtimeTimelineChart"></canvas>
+                                    </div>
+                                    <div class="d-flex gap-3 justify-content-center mt-2">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#28a745;"></span>
+                                            <small class="text-muted">Running</small>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#dc3545;"></span>
+                                            <small class="text-muted">Downtime</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- MTTR by Group + Failure Pareto --}}
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
@@ -1205,7 +1232,7 @@
 
     @if(auth()->user()->hasRole('admin'))
     // ========== Maintenance Performance Metrics ==========
-    let chartTrend = null, chartMtbfGroup = null, chartMttrGroup = null, chartCategory = null;
+    let chartTrend = null, chartMtbfGroup = null, chartMttrGroup = null, chartCategory = null, chartDowntime = null;
 
     document.querySelectorAll('input[name="metricsTimeframe"]').forEach(radio => {
         radio.addEventListener('change', function() {
@@ -1240,6 +1267,7 @@
                 renderTrendChart(data.trend);
                 renderMtbfGroupChart(data.mtbf.by_group);
                 renderMttrGroupChart(data.mttr.by_group);
+                renderDowntimeTimeline(data.downtime_timeline);
                 renderCategoryChart(data.by_category);
             })
             .catch(err => console.error('Metrics load error:', err));
@@ -1394,6 +1422,74 @@
                 scales: {
                     y: { beginAtZero: true, title: { display: true, text: 'Hours', font: { size: 10 } }, ticks: { font: { size: 10 } } },
                     x: { ticks: { font: { size: 10 }, maxRotation: 30 } }
+                }
+            }
+        });
+    }
+
+    function renderDowntimeTimeline(timeline) {
+        if (chartDowntime) chartDowntime.destroy();
+        const ctx = document.getElementById('downtimeTimelineChart');
+        if (!ctx) return;
+
+        if (!timeline || !timeline.length) return;
+
+        const labels       = timeline.map(d => d.group);
+        const runningData  = timeline.map(d => d.running_hours);
+        const downtimeData = timeline.map(d => d.downtime_hours);
+        const periodHours  = timeline[0]?.period_hours ?? 24;
+
+        chartDowntime = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Running',
+                        data: runningData,
+                        backgroundColor: 'rgba(40,167,69,0.8)',
+                        borderRadius: { topLeft: 0, bottomLeft: 4, topRight: 0, bottomRight: 0 },
+                        borderSkipped: false,
+                    },
+                    {
+                        label: 'Downtime',
+                        data: downtimeData,
+                        backgroundColor: 'rgba(220,53,69,0.85)',
+                        borderRadius: { topLeft: 0, bottomLeft: 0, topRight: 4, bottomRight: 4 },
+                        borderSkipped: false,
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                const hrs = ctx.parsed.x;
+                                const pct = periodHours > 0 ? (hrs / periodHours * 100).toFixed(1) : 0;
+                                return ` ${ctx.dataset.label}: ${hrs}h (${pct}%)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        beginAtZero: true,
+                        max: periodHours,
+                        ticks: {
+                            font: { size: 10 },
+                            callback: v => v + 'h'
+                        },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    y: {
+                        stacked: true,
+                        ticks: { font: { size: 11 } }
+                    }
                 }
             }
         });
