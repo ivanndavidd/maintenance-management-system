@@ -729,6 +729,11 @@
                         <small class="text-muted" id="metricsDateRange"></small>
                     </div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <select class="form-select form-select-sm" id="metricsGranularity" style="width:auto;">
+                            <option value="daily">Daily</option>
+                            <option value="weekly" selected>Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
                         <div class="btn-group btn-group-sm" id="metricsTimeframeBtns">
                             <button type="button" class="btn btn-outline-primary active" data-period="1M">1M</button>
                             <button type="button" class="btn btn-outline-primary" data-period="3M">3M</button>
@@ -803,7 +808,10 @@
                         <div class="col-12 col-md-8">
                             <div class="card border-0 bg-light">
                                 <div class="card-body">
-                                    <h6 class="fw-bold mb-3">MTBF & MTTR Trend</h6>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="fw-bold mb-0">MTBF & MTTR Trend</h6>
+                                        <small class="text-muted" id="trendChartGranularityLabel">Weekly</small>
+                                    </div>
                                     <div style="position:relative; height:220px;">
                                         <canvas id="mtbfMttrTrendChart"></canvas>
                                     </div>
@@ -1238,15 +1246,26 @@
         this.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
+        // Auto-switch granularity default when period changes
+        const gran = document.getElementById('metricsGranularity');
+        if (period === '1M') gran.value = 'daily';
+        else if (period === '3M') gran.value = 'weekly';
+        else if (period === '6M' || period === '1Y') gran.value = 'weekly';
+
         document.getElementById('metricsCustomRange').style.display =
             period === 'custom' ? 'flex' : 'none';
         if (period !== 'custom') loadMetrics();
     });
 
+    document.getElementById('metricsGranularity').addEventListener('change', function() {
+        loadMetrics();
+    });
+
     function loadMetrics() {
         const activeBtn = document.querySelector('#metricsTimeframeBtns .btn.active');
         const period = activeBtn ? activeBtn.dataset.period : '1M';
-        let url = '{{ route("admin.dashboard.maintenance-metrics") }}?period=' + period;
+        const granularity = document.getElementById('metricsGranularity').value;
+        let url = '{{ route("admin.dashboard.maintenance-metrics") }}?period=' + period + '&granularity=' + granularity;
         if (period === 'custom') {
             const from = document.getElementById('metricsDateFrom').value;
             const to   = document.getElementById('metricsDateTo').value;
@@ -1266,7 +1285,7 @@
                 document.getElementById('metricsAvailability').textContent = data.availability + '%';
                 document.getElementById('metricsFailures').textContent = data.total_failures;
 
-                renderTrendChart(data.trend);
+                renderTrendChart(data.trend, data.granularity);
                 renderMtbfGroupChart(data.mtbf.by_group);
                 renderMttrGroupChart(data.mttr.by_group);
                 renderDowntimeTimeline(data.downtime_timeline);
@@ -1275,10 +1294,13 @@
             .catch(err => console.error('Metrics load error:', err));
     }
 
-    function renderTrendChart(trend) {
+    function renderTrendChart(trend, granularity) {
         if (chartTrend) chartTrend.destroy();
         const ctx = document.getElementById('mtbfMttrTrendChart');
         if (!ctx || !trend.length) return;
+
+        const granLabel = granularity === 'weekly' ? 'Weekly' : granularity === 'monthly' ? 'Monthly' : 'Daily';
+        document.getElementById('trendChartGranularityLabel').textContent = granLabel;
 
         const labels   = trend.map(d => d.label);
         const mtbfVals = trend.map(d => d.mtbf);

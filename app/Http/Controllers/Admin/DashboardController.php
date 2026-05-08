@@ -489,6 +489,12 @@ class DashboardController extends Controller
             };
         }
 
+        // granularity: daily | weekly | monthly (auto-default based on period if not set)
+        $granularity = $request->get('granularity');
+        if (!in_array($granularity, ['daily', 'weekly', 'monthly'])) {
+            $granularity = in_array($period, ['3M', '6M', '1Y']) ? 'weekly' : 'daily';
+        }
+
         $mttr = $this->getMttrByGroup($dateFrom, $dateTo);
         $mtbf = $this->getMtbfByGroup($dateFrom, $dateTo);
 
@@ -511,8 +517,8 @@ class DashboardController extends Controller
             ? round(max(0, ($periodHours - $totalRepairHours) / $periodHours * 100), 1)
             : 100;
 
-        // MTBF & MTTR trend by week/day depending on period
-        $trend = $this->getMetricsTrend($dateFrom, $dateTo, $period);
+        // MTBF & MTTR trend by granularity
+        $trend = $this->getMetricsTrend($dateFrom, $dateTo, $granularity);
 
         // Failure count by problem_category
         $categoryRows = DB::connection('site')->table('corrective_maintenance_requests')
@@ -570,6 +576,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'period'            => $period,
+            'granularity'       => $granularity,
             'date_from'         => $dateFrom->toDateString(),
             'date_to'           => $dateTo->toDateString(),
             'mttr'              => $mttr,
@@ -582,19 +589,27 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function getMetricsTrend(Carbon $dateFrom, Carbon $dateTo, string $period): array
+    private function getMetricsTrend(Carbon $dateFrom, Carbon $dateTo, string $granularity): array
     {
-        // Use weekly buckets for 3M+, daily for 1M or shorter
-        $useWeekly = in_array($period, ['3M', '6M', '1Y']);
-
-        if ($useWeekly) {
-            $bucketExpr = "DATE_ADD(DATE(r.submitted_at), INTERVAL(-(WEEKDAY(r.submitted_at))) DAY)";
-        } else {
-            $bucketExpr = "DATE(r.submitted_at)";
+        // bucket expressions and operating hours per bucket
+        switch ($granularity) {
+            case 'weekly':
+                $bucketExpr    = "DATE_ADD(DATE(r.submitted_at), INTERVAL(-(WEEKDAY(r.submitted_at))) DAY)";
+                $bucketExprAll = "DATE_ADD(DATE(submitted_at), INTERVAL(-(WEEKDAY(submitted_at))) DAY)";
+                $bucketHours   = 168; // 7 × 24
+                break;
+            case 'monthly':
+                $bucketExpr    = "DATE_FORMAT(r.submitted_at, '%Y-%m-01')";
+                $bucketExprAll = "DATE_FORMAT(submitted_at, '%Y-%m-01')";
+                $bucketHours   = 720; // ~30 × 24 (approximate; close enough for trend)
+                break;
+            default: // daily
+                $bucketExpr    = "DATE(r.submitted_at)";
+                $bucketExprAll = "DATE(submitted_at)";
+                $bucketHours   = 24;
         }
 
-        // MTTR per bucket = in_progress_at → report_submitted_at (work_duration)
-        // GROUP BY and SELECT use identical expression to satisfy only_full_group_by
+        // MTTR per bucket = avg repair duration for tickets in that bucket
         $mttrRows = DB::connection('site')->table('cm_reports as r')
             ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
@@ -606,53 +621,29 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('bucket_date');
 
-        // MTBF per bucket: for each bucket, get all tickets with asset_id ordered by submitted_at,
-        // calculate intervals between consecutive tickets across the whole period,
-        // then assign each interval to the bucket of the later ticket.
-        $allTickets = DB::connection('site')->table('cm_reports as r')
-            ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
-            ->whereNotNull('r.asset_id')
-            ->selectRaw('r.asset_id, r.submitted_at')
-            ->orderBy('r.asset_id')
-            ->orderBy('r.submitted_at')
-            ->get();
+        // MTBF per bucket = bucket operating hours / number of failures in that bucket
+        $mtbfRows = DB::connection('site')->table('cm_reports')
+            ->whereBetween('submitted_at', [$dateFrom, $dateTo])
+            ->selectRaw("{$bucketExprAll} as bucket_date, COUNT(*) as failure_count")
+            ->groupByRaw($bucketExprAll)
+            ->orderByRaw($bucketExprAll)
+            ->get()
+            ->keyBy('bucket_date');
 
-        // Calculate intervals per asset, bucket them by date of the later ticket
-        $mtbfBuckets = [];
-        $assetGroups = $allTickets->groupBy('asset_id');
-        foreach ($assetGroups as $rows) {
-            $sorted = $rows->sortBy('submitted_at')->values();
-            for ($i = 1; $i < $sorted->count(); $i++) {
-                $prev = Carbon::parse($sorted[$i - 1]->submitted_at);
-                $curr = Carbon::parse($sorted[$i]->submitted_at);
-                // Calculate interval BEFORE any mutation of $curr
-                $intervalHours = $prev->diffInMinutes($curr) / 60;
+        $allDates = collect($mttrRows->keys())->merge($mtbfRows->keys())->unique()->sort()->values();
 
-                if ($useWeekly) {
-                    // Use copy() to avoid mutating $curr; match MTTR bucket key format (week start = Monday)
-                    $bucketKey = $curr->copy()->startOfWeek(Carbon::MONDAY)->toDateString();
-                } else {
-                    $bucketKey = $curr->toDateString();
-                }
+        return $allDates->map(function ($date) use ($mttrRows, $mtbfRows, $bucketHours) {
+            $mttrRow = $mttrRows->get($date);
+            $mtbfRow = $mtbfRows->get($date);
 
-                $mtbfBuckets[$bucketKey][] = $intervalHours;
-            }
-        }
-
-        // Only show buckets where MTTR exists (has CM tickets that day/week)
-        // For MTBF, use the value from that bucket if available, else null (spanGaps fills the line)
-        $allDates = collect($mttrRows->keys())->sort()->values();
-
-        return $allDates->map(function ($date) use ($mttrRows, $mtbfBuckets) {
-            $mttr      = $mttrRows->get($date);
-            $intervals = $mtbfBuckets[$date] ?? [];
-            $mtbf      = count($intervals) > 0
-                ? round(array_sum($intervals) / count($intervals), 1)
+            $mttr = $mttrRow ? round($mttrRow->avg_minutes / 60, 2) : null;
+            $mtbf = ($mtbfRow && $mtbfRow->failure_count > 0)
+                ? round($bucketHours / $mtbfRow->failure_count, 1)
                 : null;
 
             return [
                 'label' => $date,
-                'mttr'  => $mttr ? round($mttr->avg_minutes / 60, 2) : null,
+                'mttr'  => $mttr,
                 'mtbf'  => $mtbf,
             ];
         })->values()->toArray();
@@ -697,62 +688,34 @@ class DashboardController extends Controller
 
     private function getMtbfByGroup(Carbon $dateFrom, Carbon $dateTo): array
     {
-        // MTBF = average interval between consecutive CM tickets for the same asset
-        // Get all CM tickets with asset_id in range, ordered per asset
-        $tickets = DB::connection('site')->table('cm_reports as r')
+        // MTBF = Total Operating Time / Number of Failures
+        // Operating time = entire period span in hours
+        $periodHours = max(1, $dateFrom->diffInHours($dateTo));
+
+        // Failure count per group
+        $rows = DB::connection('site')->table('cm_reports as r')
             ->join('assets_master as a', 'a.id', '=', 'r.asset_id')
             ->join('group_assets as g', 'g.group_id', '=', 'a.group_id')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
             ->whereNotNull('r.asset_id')
-            ->selectRaw('r.asset_id, g.group_id, g.group_name, r.submitted_at')
-            ->orderBy('r.asset_id')
-            ->orderBy('r.submitted_at')
+            ->selectRaw('g.group_id, g.group_name, COUNT(*) as failure_count')
+            ->groupBy('g.group_id', 'g.group_name')
             ->get();
 
-        // Calculate intervals per asset, then average per group
-        $groupIntervals = [];
-        $assetTickets   = $tickets->groupBy('asset_id');
+        // Overall failure count
+        $totalFailures = DB::connection('site')->table('cm_reports')
+            ->whereBetween('submitted_at', [$dateFrom, $dateTo])
+            ->count();
 
-        foreach ($assetTickets as $assetId => $assetRows) {
-            $sorted = $assetRows->sortBy('submitted_at')->values();
-            if ($sorted->count() < 2) continue;
-
-            $groupName = $sorted->first()->group_name;
-            if (!isset($groupIntervals[$groupName])) {
-                $groupIntervals[$groupName] = [];
-            }
-
-            for ($i = 1; $i < $sorted->count(); $i++) {
-                $prev = Carbon::parse($sorted[$i - 1]->submitted_at);
-                $curr = Carbon::parse($sorted[$i]->submitted_at);
-                $groupIntervals[$groupName][] = $prev->diffInHours($curr);
-            }
-        }
-
-        // Overall intervals (all assets)
-        $allIntervals = [];
-        foreach ($assetTickets as $assetRows) {
-            $sorted = $assetRows->sortBy('submitted_at')->values();
-            if ($sorted->count() < 2) continue;
-            for ($i = 1; $i < $sorted->count(); $i++) {
-                $prev = Carbon::parse($sorted[$i - 1]->submitted_at);
-                $curr = Carbon::parse($sorted[$i]->submitted_at);
-                $allIntervals[] = $prev->diffInHours($curr);
-            }
-        }
-
-        $overallHours = count($allIntervals) > 0
-            ? round(array_sum($allIntervals) / count($allIntervals), 1)
+        $overallHours = $totalFailures > 0
+            ? round($periodHours / $totalFailures, 1)
             : 0;
 
-        $byGroup = [];
-        foreach ($groupIntervals as $groupName => $intervals) {
-            $byGroup[] = [
-                'group'     => $groupName,
-                'avg_hours' => round(array_sum($intervals) / count($intervals), 1),
-                'intervals' => count($intervals),
-            ];
-        }
+        $byGroup = $rows->map(fn($r) => [
+            'group'         => $r->group_name,
+            'avg_hours'     => $r->failure_count > 0 ? round($periodHours / $r->failure_count, 1) : 0,
+            'failure_count' => (int) $r->failure_count,
+        ])->values()->toArray();
 
         usort($byGroup, fn($a, $b) => $a['avg_hours'] <=> $b['avg_hours']);
 
