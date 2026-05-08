@@ -883,6 +883,10 @@
                                         </div>{{-- end d-flex gap-2 --}}
                                     </div>
                                     <div style="height:220px; overflow-y:auto; overflow-x:hidden;" id="downtimeScrollWrap">
+                                        <div id="downtimeEmptyMsg" style="display:none; height:100%; align-items:center; justify-content:center; flex-direction:column; gap:6px; color:#adb5bd;">
+                                            <i class="fas fa-check-circle fa-2x text-success opacity-50"></i>
+                                            <span class="fw-semibold">No Downtime Occurred</span>
+                                        </div>
                                         <div id="downtimeTimelineWrap" style="position:relative; height:220px;">
                                             <canvas id="downtimeTimelineChart"></canvas>
                                         </div>
@@ -1658,12 +1662,15 @@
         const canvas = document.getElementById('downtimeTimelineChart');
         if (!canvas) return;
 
+        const emptyMsg = document.getElementById('downtimeEmptyMsg');
         if (!timeline || !timeline.length) {
             wrap.style.height = '80px';
             canvas.style.display = 'none';
+            if (emptyMsg) emptyMsg.style.display = 'flex';
             return;
         }
         canvas.style.display = '';
+        if (emptyMsg) emptyMsg.style.display = 'none';
 
         const rowHeight = 36;
         const totalHeight = timeline.length * rowHeight + 50;
