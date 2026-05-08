@@ -117,13 +117,14 @@ class DashboardController extends Controller
             ->orderBy('month')
             ->pluck('total_cost', 'month');
 
-        // Fill missing months with 0
+        // Build both 3M and 6M datasets
         $costTrend = [];
         for ($i = 5; $i >= 0; $i--) {
             $key = Carbon::now()->subMonths($i)->format('Y-m');
             $costTrend[] = [
                 'month' => Carbon::now()->subMonths($i)->format('M Y'),
                 'cost'  => (float) ($repairCostTrend[$key] ?? 0),
+                'scope' => $i < 3 ? '3M' : '6M', // last 3 months flagged as 3M
             ];
         }
 
