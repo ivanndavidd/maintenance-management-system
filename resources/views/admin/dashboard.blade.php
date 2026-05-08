@@ -1583,8 +1583,8 @@
         }
         canvas.style.display = '';
 
-        const rowHeight = 40;
-        const totalHeight = Math.max(160, timeline.length * rowHeight + 50);
+        const rowHeight = 52;
+        const totalHeight = timeline.length * rowHeight + 60;
         wrap.style.height = totalHeight + 'px';
 
         const labels = timeline.map(d => d.group);
@@ -1597,7 +1597,7 @@
                 const { ctx, scales: { x, y } } = chart;
                 timeline.forEach((row, i) => {
                     const yCenter = y.getPixelForValue(i);
-                    const barH    = Math.max(6, y.width ? 18 : 18); // fixed bar height
+                    const barH    = Math.max(10, (y.getPixelForValue(1) - y.getPixelForValue(0)) * 0.6);
                     row.events.forEach(ev => {
                         const x0 = x.getPixelForValue(ev.x[0]);
                         const x1 = x.getPixelForValue(ev.x[1]);
@@ -1625,8 +1625,8 @@
                     backgroundColor: 'rgba(40,167,69,0.75)',
                     borderWidth: 0,
                     borderRadius: 3,
-                    barPercentage: 0.45,
-                    categoryPercentage: 0.9,
+                    barPercentage: 0.6,
+                    categoryPercentage: 1.0,
                 }]
             },
             options: {
