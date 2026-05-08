@@ -825,7 +825,11 @@
                                     <div style="position:relative; height:220px;">
                                         <canvas id="mtbfGroupChart"></canvas>
                                     </div>
-                                    <small class="text-muted d-block text-center mt-1"><i class="fas fa-info-circle me-1"></i>Higher = more reliable</small>
+                                    <div class="d-flex justify-content-center gap-3 mt-1">
+                                        <small class="text-success"><i class="fas fa-circle me-1"></i>1x failure</small>
+                                        <small class="text-warning"><i class="fas fa-circle me-1"></i>2–4x</small>
+                                        <small class="text-danger"><i class="fas fa-circle me-1"></i>≥5x</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1376,8 +1380,15 @@
             return;
         }
 
-        const labels = byGroup.map(g => g.group);
-        const values = byGroup.map(g => g.avg_hours);
+        const labels  = byGroup.map(g => g.group);
+        const values  = byGroup.map(g => g.avg_hours);
+        const counts  = byGroup.map(g => g.failure_count);
+
+        // Color by failure frequency: red ≥5 failures, yellow 2-4, green 1
+        const colors = counts.map(c =>
+            c >= 5 ? 'rgba(220,53,69,0.75)' :
+            c >= 2 ? 'rgba(255,193,7,0.75)' : 'rgba(25,135,84,0.75)'
+        );
 
         chartMtbfGroup = new Chart(ctx, {
             type: 'bar',
@@ -1386,17 +1397,22 @@
                 datasets: [{
                     label: 'MTBF (hours)',
                     data: values,
-                    backgroundColor: values.map(v =>
-                        v >= 100 ? 'rgba(25,135,84,0.75)' :
-                        v >= 48  ? 'rgba(255,193,7,0.75)' : 'rgba(220,53,69,0.75)'
-                    ),
+                    backgroundColor: colors,
                     borderRadius: 4,
                 }]
             },
             options: {
                 indexAxis: 'y',
                 responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` MTBF: ${ctx.parsed.x}h`,
+                            afterLabel: ctx => ` Failures: ${counts[ctx.dataIndex]}x`,
+                        }
+                    }
+                },
                 scales: {
                     x: { beginAtZero: true, title: { display: true, text: 'Hours', font: { size: 10 } }, ticks: { font: { size: 10 } } },
                     y: { ticks: { font: { size: 10 } } }
