@@ -385,12 +385,23 @@ class DashboardController extends Controller
         $cancelled     = (clone $base)->where('status', 'cancelled')->count();
         $total         = (clone $base)->count();
 
+        $severityCounts = (clone $base)->selectRaw('severity, COUNT(*) as count')
+            ->whereNotNull('severity')
+            ->groupBy('severity')
+            ->pluck('count', 'severity');
+
         return [
             'open'          => $open,
             'further_repair'=> $furtherRepair,
             'closed'        => $closed,
             'cancelled'     => $cancelled,
             'total'         => $total,
+            'severity'      => [
+                'critical' => (int) ($severityCounts['critical'] ?? 0),
+                'high'     => (int) ($severityCounts['high']     ?? 0),
+                'medium'   => (int) ($severityCounts['medium']   ?? 0),
+                'low'      => (int) ($severityCounts['low']      ?? 0),
+            ],
         ];
     }
 
