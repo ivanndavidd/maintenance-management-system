@@ -56,7 +56,7 @@ class ToolUsageRequest extends TenantModels
 
     public function isConsumable(): bool
     {
-        return $this->tool && strtolower($this->tool->equipment_type) === 'consumable';
+        return false;
     }
 
     public function getStatusBadgeClass(): string
@@ -92,15 +92,8 @@ class ToolUsageRequest extends TenantModels
         return $this->requested_by === $userId && $this->status === 'pending';
     }
 
-    // Non-consumable: track borrow → return
     public function canBeMarkedReturned(): bool
     {
-        return in_array($this->status, ['approved', 'in_use']) && !$this->isConsumable();
-    }
-
-    // Consumable: mark as used (stock already deducted on approve)
-    public function canBeMarkedUsed(): bool
-    {
-        return $this->status === 'approved' && $this->isConsumable();
+        return in_array($this->status, ['approved', 'in_use']);
     }
 }

@@ -30,11 +30,6 @@
                             @if($toolRequest->tool->material_code)
                                 <small class="text-muted ms-2">{{ $toolRequest->tool->material_code }}</small>
                             @endif
-                            @if($toolRequest->tool->equipment_type)
-                                <span class="badge ms-1 {{ $toolRequest->isConsumable() ? 'bg-info' : 'bg-primary' }}" style="font-size:10px;">
-                                    {{ $toolRequest->tool->equipment_type }}
-                                </span>
-                            @endif
                         </div>
                         <div class="col-6 col-md-3">
                             <small class="text-muted d-block">Qty Requested</small>
@@ -52,7 +47,7 @@
                         </div>
                         <div class="col-6 col-md-3">
                             <small class="text-muted d-block">Return Date</small>
-                            <span>{{ $toolRequest->return_date ? $toolRequest->return_date->format('d M Y') : ($toolRequest->isConsumable() ? 'N/A (consumable)' : '-') }}</span>
+                            <span>{{ $toolRequest->return_date ? $toolRequest->return_date->format('d M Y') : '-' }}</span>
                         </div>
                         <div class="col-12 col-md-6">
                             <small class="text-muted d-block">Requested By</small>
@@ -82,21 +77,13 @@
                 </div>
             </div>
 
-            {{-- Consumable info --}}
-            @if($toolRequest->isConsumable())
-            <div class="alert alert-info py-2" style="font-size:13px;">
-                <i class="fas fa-flask me-1"></i>
-                <strong>Consumable item</strong> — stock deducted on approval. No return required.
-            </div>
-            @else
             <div class="alert alert-primary py-2" style="font-size:13px;">
                 <i class="fas fa-tools me-1"></i>
-                <strong>Borrowing item</strong> — stock deducted when marked In Use. Restored when returned.
+                <strong>Borrowing</strong> — stock deducted when marked In Use. Restored when returned.
             </div>
-            @endif
 
             {{-- Overdue warning --}}
-            @if(!$toolRequest->isConsumable() && in_array($toolRequest->status, ['approved','in_use']) && $toolRequest->return_date && $toolRequest->return_date->isPast())
+            @if(in_array($toolRequest->status, ['approved','in_use']) && $toolRequest->return_date && $toolRequest->return_date->isPast())
             <div class="alert alert-danger py-2" style="font-size:13px;">
                 <i class="fas fa-exclamation-triangle me-1"></i>
                 <strong>Overdue!</strong> Expected return was {{ $toolRequest->return_date->format('d M Y') }}
@@ -106,10 +93,10 @@
 
             {{-- Review result --}}
             @if($toolRequest->reviewed_at)
-            <div class="card mb-3 border-{{ in_array($toolRequest->status, ['approved','in_use','used','returned']) ? 'success' : 'danger' }}">
-                <div class="card-header bg-{{ in_array($toolRequest->status, ['approved','in_use','used','returned']) ? 'success' : 'danger' }} text-white">
+            <div class="card mb-3 border-{{ in_array($toolRequest->status, ['approved','in_use','returned']) ? 'success' : 'danger' }}">
+                <div class="card-header bg-{{ in_array($toolRequest->status, ['approved','in_use','returned']) ? 'success' : 'danger' }} text-white">
                     <h6 class="mb-0 fw-bold">
-                        <i class="fas fa-{{ in_array($toolRequest->status, ['approved','in_use','used','returned']) ? 'check-circle' : 'times-circle' }}"></i>
+                        <i class="fas fa-{{ in_array($toolRequest->status, ['approved','in_use','returned']) ? 'check-circle' : 'times-circle' }}"></i>
                         Review Result
                     </h6>
                 </div>
@@ -139,14 +126,13 @@
             <div class="card mb-3 border-secondary">
                 <div class="card-header bg-secondary text-white">
                     <h6 class="mb-0 fw-bold">
-                        <i class="fas fa-{{ $toolRequest->status === 'used' ? 'check' : 'undo' }}"></i>
-                        {{ $toolRequest->status === 'used' ? 'Usage Confirmation' : 'Return Information' }}
+                        <i class="fas fa-undo"></i> Return Information
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="row g-2">
                         <div class="col-12 col-md-6">
-                            <small class="text-muted d-block">{{ $toolRequest->status === 'used' ? 'Confirmed At' : 'Returned At' }}</small>
+                            <small class="text-muted d-block">Returned At</small>
                             <span>{{ $toolRequest->returned_at->format('d M Y H:i') }}</span>
                         </div>
                         @if($toolRequest->return_notes)
@@ -178,7 +164,7 @@
                     </button>
                     @endif
 
-                    @if($toolRequest->status === 'approved' && !$toolRequest->isConsumable())
+                    @if($toolRequest->status === 'approved')
                     <form action="{{ route($routePrefix.'.tool-requests.in-use', $toolRequest) }}" method="POST"
                           onsubmit="return confirm('Mark this tool as in use? Stock will be deducted.')">
                         @csrf
@@ -188,8 +174,7 @@
                     </form>
                     @endif
 
-                    {{-- Admin can also force-mark as returned --}}
-                    @if(in_array($toolRequest->status, ['approved', 'in_use']) && !$toolRequest->isConsumable())
+                    @if(in_array($toolRequest->status, ['approved', 'in_use']))
                     <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#adminReturnModal">
                         <i class="fas fa-undo"></i> Mark as Returned
                     </button>
@@ -242,12 +227,6 @@
                 </div>
                 <div class="modal-body">
                     <p>Approve <strong>{{ $toolRequest->request_number }}</strong> — {{ $toolRequest->tool->sparepart_name }} ({{ $toolRequest->quantity_requested }} {{ $toolRequest->tool->unit }})?</p>
-                    @if($toolRequest->isConsumable())
-                    <div class="alert alert-warning py-2" style="font-size:13px;">
-                        <i class="fas fa-exclamation-triangle me-1"></i>
-                        Stock will be deducted by <strong>{{ $toolRequest->quantity_requested }} {{ $toolRequest->tool->unit }}</strong> immediately.
-                    </div>
-                    @endif
                     <div class="mb-3">
                         <label class="form-label">Notes <small class="text-muted">(optional)</small></label>
                         <textarea name="review_notes" class="form-control form-control-sm" rows="2"></textarea>
@@ -290,7 +269,7 @@
 @endif
 
 {{-- Admin Mark Returned Modal --}}
-@if(in_array($toolRequest->status, ['approved', 'in_use']) && !$toolRequest->isConsumable())
+@if(in_array($toolRequest->status, ['approved', 'in_use']))
 <div class="modal fade" id="adminReturnModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

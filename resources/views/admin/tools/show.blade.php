@@ -261,7 +261,6 @@
                             <th>Requested By</th>
                             <th class="text-center">Qty</th>
                             <th class="d-none d-md-table-cell">Purpose</th>
-                            <th class="text-center">Type</th>
                             <th class="text-center">Status</th>
                             <th class="d-none d-md-table-cell">Return Status</th>
                             <th class="d-none d-md-table-cell">Date</th>
@@ -288,21 +287,12 @@
                                 <span style="font-size:12px;">{{ Str::limit($req->purpose, 50) }}</span>
                             </td>
                             <td class="text-center">
-                                @if($req->isConsumable())
-                                    <span class="badge bg-info" style="font-size:10px;">Consumable</span>
-                                @else
-                                    <span class="badge bg-primary" style="font-size:10px;">Borrow</span>
-                                @endif
-                            </td>
-                            <td class="text-center">
                                 <span class="badge bg-{{ $req->getStatusBadgeClass() }}" style="font-size:10px;">
                                     {{ $req->getStatusLabel() }}
                                 </span>
                             </td>
                             <td class="d-none d-md-table-cell">
-                                @if($req->isConsumable())
-                                    <span class="text-muted" style="font-size:12px;">N/A</span>
-                                @elseif($req->status === 'returned')
+                                @if($req->status === 'returned')
                                     <span class="text-success" style="font-size:12px;">
                                         <i class="fas fa-check-circle me-1"></i>
                                         Returned {{ $req->returned_at?->format('d M Y') }}

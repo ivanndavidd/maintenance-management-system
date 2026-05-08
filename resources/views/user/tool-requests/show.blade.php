@@ -35,11 +35,6 @@
                             @if($toolRequest->tool->material_code)
                                 <small class="text-muted ms-2">{{ $toolRequest->tool->material_code }}</small>
                             @endif
-                            @if($toolRequest->tool->equipment_type)
-                                <span class="badge ms-1 {{ $toolRequest->isConsumable() ? 'bg-info' : 'bg-primary' }}" style="font-size:10px;">
-                                    {{ $toolRequest->tool->equipment_type }}
-                                </span>
-                            @endif
                         </div>
                         <div class="col-6 col-md-4">
                             <small class="text-muted d-block">Qty Requested</small>
@@ -146,13 +141,6 @@
                     </button>
                     @endif
 
-                    {{-- Consumable: Mark as Used --}}
-                    @if($toolRequest->canBeMarkedUsed())
-                    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#usedModal">
-                        <i class="fas fa-check"></i> Mark as Used
-                    </button>
-                    @endif
-
                     {{-- Cancel --}}
                     @if($toolRequest->canBeCancelledBy(auth()->id()))
                     <form action="{{ route('user.tool-requests.cancel', $toolRequest) }}" method="POST"
@@ -219,40 +207,6 @@
         </div>
     </div>
 </div>
-
-{{-- Used Modal (consumable) --}}
-@if($toolRequest->canBeMarkedUsed())
-<div class="modal fade" id="usedModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="{{ route('user.tool-requests.used', $toolRequest) }}" method="POST">
-                @csrf
-                <div class="modal-header">
-                    <h6 class="modal-title fw-bold"><i class="fas fa-check"></i> Confirm Usage</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="mb-3">Confirm that <strong>{{ $toolRequest->tool->sparepart_name }}</strong> ({{ $toolRequest->quantity_requested }} {{ $toolRequest->tool->unit }}) has been used up.</p>
-                    <div class="alert alert-info py-2" style="font-size:13px;">
-                        <i class="fas fa-flask me-1"></i> This is a consumable item. Stock was already deducted when approved.
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Notes <small class="text-muted">(optional)</small></label>
-                        <textarea name="return_notes" class="form-control" rows="2"
-                                  placeholder="Where and how it was used, etc."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-info btn-sm">
-                        <i class="fas fa-check"></i> Confirm Used
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endif
 
 {{-- Return Modal --}}
 @if($toolRequest->canBeMarkedReturned())
