@@ -147,7 +147,6 @@ class DashboardController extends Controller
             'cmrByStatus',
             'last7DaysTrend',
             'recentCmr',
-            'avgResolutionTime',
             'todayTasks',
             'calendarData',
             'sparepartStats',
