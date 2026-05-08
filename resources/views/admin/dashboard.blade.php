@@ -282,6 +282,59 @@
         background: rgba(255,255,255,0.8); display: flex;
         align-items: center; justify-content: center; z-index: 10; border-radius: 12px;
     }
+    /* Scrolling ticker */
+    .ticker-wrap {
+        background: linear-gradient(90deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        height: 36px;
+        font-size: 12px;
+        margin-bottom: 1rem;
+    }
+    .ticker-label {
+        background: #0f3460;
+        color: #56cfff;
+        font-weight: 700;
+        padding: 0 14px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+    }
+    .ticker-track {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+    }
+    .ticker-inner {
+        display: inline-flex;
+        gap: 0;
+        white-space: nowrap;
+        animation: tickerScroll 40s linear infinite;
+    }
+    .ticker-inner:hover { animation-play-state: paused; }
+    @keyframes tickerScroll {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+    .ticker-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0 20px;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .ticker-item .ti-label { color: #adb5bd; }
+    .ticker-item .ti-val   { color: #fff; font-weight: 600; }
+    .ticker-item .ti-ok    { color: #56d364; }
+    .ticker-item .ti-warn  { color: #f0c674; }
+    .ticker-item .ti-danger{ color: #ff6b6b; }
 </style>
 @endpush
 
@@ -296,6 +349,97 @@
         <div class="text-end">
             <small class="text-muted d-block">{{ Carbon\Carbon::now()->format('l, F d, Y') }}</small>
             <small class="text-muted">{{ Carbon\Carbon::now()->format('h:i A') }}</small>
+        </div>
+    </div>
+
+    {{-- Scrolling Today Summary Ticker --}}
+    @php
+        $s = $todaySummary;
+        $pmColor   = $s['pm_pending'] > 0 ? 'ti-warn' : 'ti-ok';
+        $cmColor   = $s['cm_open']   > 0 ? 'ti-warn' : 'ti-ok';
+        $opColor   = $s['opname_today'] > 0 ? 'ti-ok' : 'ti-label';
+    @endphp
+    <div class="ticker-wrap">
+        <div class="ticker-label"><i class="fas fa-broadcast-tower me-1"></i> LIVE &nbsp;{{ now()->format('H:i') }}</div>
+        <div class="ticker-track">
+            <div class="ticker-inner">
+                {{-- First copy --}}
+                <span class="ticker-item">
+                    <i class="fas fa-calendar-day ti-ok"></i>
+                    <span class="ti-label">Today:</span>
+                    <span class="ti-val">{{ $s['date'] }}</span>
+                </span>
+                <span class="ticker-item">
+                    <i class="fas fa-user-clock ti-ok"></i>
+                    <span class="ti-label">Shift Duty:</span>
+                    <span class="ti-val {{ $s['active_shifts'] > 0 ? 'ti-ok' : 'ti-warn' }}">{{ $s['active_shifts'] }} staff on duty</span>
+                </span>
+                <span class="ticker-item">
+                    <i class="fas fa-tools {{ $pmColor }}"></i>
+                    <span class="ti-label">PM Tasks:</span>
+                    <span class="ti-val">{{ $s['pm_total'] }} total</span>
+                    <span class="ti-ok">✓ {{ $s['pm_completed'] }} done</span>
+                    @if($s['pm_pending'] > 0)
+                    <span class="ti-warn">· {{ $s['pm_pending'] }} pending</span>
+                    @endif
+                </span>
+                <span class="ticker-item">
+                    <i class="fas fa-wrench {{ $cmColor }}"></i>
+                    <span class="ti-label">CM Tickets:</span>
+                    <span class="ti-val">{{ $s['cm_total'] }} today</span>
+                    @if($s['cm_open'] > 0)
+                    <span class="ti-warn">· {{ $s['cm_open'] }} open</span>
+                    @endif
+                    @if($s['cm_closed'] > 0)
+                    <span class="ti-ok">· {{ $s['cm_closed'] }} closed</span>
+                    @endif
+                </span>
+                <span class="ticker-item">
+                    <i class="fas fa-clipboard-list {{ $opColor }}"></i>
+                    <span class="ti-label">Stock Opname:</span>
+                    <span class="ti-val {{ $opColor }}">
+                        {{ $s['opname_today'] > 0 ? $s['opname_today'].' schedule(s) active today' : 'No schedule today' }}
+                    </span>
+                </span>
+                {{-- Duplicate for seamless loop --}}
+                <span class="ticker-item">
+                    <i class="fas fa-calendar-day ti-ok"></i>
+                    <span class="ti-label">Today:</span>
+                    <span class="ti-val">{{ $s['date'] }}</span>
+                </span>
+                <span class="ticker-item">
+                    <i class="fas fa-user-clock ti-ok"></i>
+                    <span class="ti-label">Shift Duty:</span>
+                    <span class="ti-val {{ $s['active_shifts'] > 0 ? 'ti-ok' : 'ti-warn' }}">{{ $s['active_shifts'] }} staff on duty</span>
+                </span>
+                <span class="ticker-item">
+                    <i class="fas fa-tools {{ $pmColor }}"></i>
+                    <span class="ti-label">PM Tasks:</span>
+                    <span class="ti-val">{{ $s['pm_total'] }} total</span>
+                    <span class="ti-ok">✓ {{ $s['pm_completed'] }} done</span>
+                    @if($s['pm_pending'] > 0)
+                    <span class="ti-warn">· {{ $s['pm_pending'] }} pending</span>
+                    @endif
+                </span>
+                <span class="ticker-item">
+                    <i class="fas fa-wrench {{ $cmColor }}"></i>
+                    <span class="ti-label">CM Tickets:</span>
+                    <span class="ti-val">{{ $s['cm_total'] }} today</span>
+                    @if($s['cm_open'] > 0)
+                    <span class="ti-warn">· {{ $s['cm_open'] }} open</span>
+                    @endif
+                    @if($s['cm_closed'] > 0)
+                    <span class="ti-ok">· {{ $s['cm_closed'] }} closed</span>
+                    @endif
+                </span>
+                <span class="ticker-item">
+                    <i class="fas fa-clipboard-list {{ $opColor }}"></i>
+                    <span class="ti-label">Stock Opname:</span>
+                    <span class="ti-val {{ $opColor }}">
+                        {{ $s['opname_today'] > 0 ? $s['opname_today'].' schedule(s) active today' : 'No schedule today' }}
+                    </span>
+                </span>
+            </div>
         </div>
     </div>
 
