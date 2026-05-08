@@ -538,13 +538,19 @@ class DashboardController extends Controller
             ->orderBy('g.group_name')
             ->get();
 
-        $periodHoursForTimeline = max(1, round($dateFrom->diffInHours($dateTo)));
-        $downtimeTimeline = $downtimeRows->map(fn($r) => [
-            'group'           => $r->group_name,
-            'downtime_hours'  => round($r->total_downtime_minutes / 60, 2),
-            'running_hours'   => round(max(0, $periodHoursForTimeline - ($r->total_downtime_minutes / 60)), 2),
-            'period_hours'    => $periodHoursForTimeline,
-        ])->values()->toArray();
+        // Timeline is always shown as a 24-hour day average
+        // avg daily downtime = total downtime / number of days in period
+        $periodDays = max(1, $dateFrom->diffInDays($dateTo));
+        $downtimeTimeline = $downtimeRows->map(function ($r) use ($periodDays) {
+            $avgDailyDowntimeHours = round($r->total_downtime_minutes / 60 / $periodDays, 2);
+            $avgDailyRunningHours  = round(max(0, 24 - $avgDailyDowntimeHours), 2);
+            return [
+                'group'          => $r->group_name,
+                'downtime_hours' => $avgDailyDowntimeHours,
+                'running_hours'  => $avgDailyRunningHours,
+                'period_hours'   => 24,
+            ];
+        })->values()->toArray();
 
         return response()->json([
             'period'            => $period,
