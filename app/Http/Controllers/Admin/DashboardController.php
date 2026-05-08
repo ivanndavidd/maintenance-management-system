@@ -489,13 +489,99 @@ class DashboardController extends Controller
             };
         }
 
+        $mttr = $this->getMttrByGroup($dateFrom, $dateTo);
+        $mtbf = $this->getMtbfByGroup($dateFrom, $dateTo);
+
+        // Total failures = count of CM reports in period with an asset_id (linked to equipment)
+        $totalFailures = DB::connection('site')->table('cm_reports')
+            ->whereBetween('submitted_at', [$dateFrom, $dateTo])
+            ->count();
+
+        // Availability = (period_hours - total_repair_hours) / period_hours * 100
+        $periodHours = $dateFrom->diffInHours($dateTo);
+        $totalRepairMinutes = DB::connection('site')->table('cm_reports as r')
+            ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
+            ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
+            ->selectRaw('SUM(TIMESTAMPDIFF(MINUTE, req.created_at, r.submitted_at)) as total_minutes')
+            ->value('total_minutes') ?? 0;
+        $totalRepairHours = $totalRepairMinutes / 60;
+        $availability = $periodHours > 0
+            ? round(max(0, ($periodHours - $totalRepairHours) / $periodHours * 100), 1)
+            : 100;
+
+        // MTBF & MTTR trend by week/day depending on period
+        $trend = $this->getMetricsTrend($dateFrom, $dateTo, $period);
+
+        // Failure count by problem_category
+        $categoryRows = DB::connection('site')->table('corrective_maintenance_requests')
+            ->whereBetween('created_at', [$dateFrom, $dateTo])
+            ->whereNotNull('problem_category')
+            ->selectRaw('problem_category, COUNT(*) as count')
+            ->groupBy('problem_category')
+            ->orderByDesc('count')
+            ->get();
+
+        $byCategory = $categoryRows->map(fn($r) => [
+            'category' => $r->problem_category,
+            'count'    => (int) $r->count,
+        ])->values()->toArray();
+
         return response()->json([
-            'period'    => $period,
-            'date_from' => $dateFrom->toDateString(),
-            'date_to'   => $dateTo->toDateString(),
-            'mttr'      => $this->getMttrByGroup($dateFrom, $dateTo),
-            'mtbf'      => $this->getMtbfByGroup($dateFrom, $dateTo),
+            'period'       => $period,
+            'date_from'    => $dateFrom->toDateString(),
+            'date_to'      => $dateTo->toDateString(),
+            'mttr'         => $mttr,
+            'mtbf'         => $mtbf,
+            'availability' => $availability,
+            'total_failures' => $totalFailures,
+            'trend'        => $trend,
+            'by_category'  => $byCategory,
         ]);
+    }
+
+    private function getMetricsTrend(Carbon $dateFrom, Carbon $dateTo, string $period): array
+    {
+        // Use weekly buckets for 3M+, daily for 1M or shorter
+        $useWeekly = in_array($period, ['3M', '6M', '1Y']);
+
+        if ($useWeekly) {
+            $groupExpr = 'YEARWEEK(r.submitted_at, 1)';
+            $labelExpr = 'MIN(DATE(r.submitted_at)) as bucket_date';
+        } else {
+            $groupExpr = 'DATE(r.submitted_at)';
+            $labelExpr = 'DATE(r.submitted_at) as bucket_date';
+        }
+
+        // MTTR per bucket
+        $mttrRows = DB::connection('site')->table('cm_reports as r')
+            ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
+            ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
+            ->selectRaw("{$labelExpr}, AVG(TIMESTAMPDIFF(MINUTE, req.created_at, r.submitted_at)) as avg_minutes")
+            ->groupByRaw($groupExpr)
+            ->orderBy('bucket_date')
+            ->get()
+            ->keyBy('bucket_date');
+
+        // Failure count per bucket (for MTBF proxy: avg interval implied by count)
+        $failureRows = DB::connection('site')->table('cm_reports as r')
+            ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
+            ->selectRaw("{$labelExpr}, COUNT(*) as failures")
+            ->groupByRaw($groupExpr)
+            ->orderBy('bucket_date')
+            ->get()
+            ->keyBy('bucket_date');
+
+        $labels = collect($mttrRows->keys())->merge($failureRows->keys())->unique()->sort()->values();
+
+        return $labels->map(function ($date) use ($mttrRows, $failureRows) {
+            $mttr = $mttrRows->get($date);
+            $fail = $failureRows->get($date);
+            return [
+                'label'    => $date,
+                'mttr'     => $mttr ? round($mttr->avg_minutes / 60, 2) : null,
+                'failures' => $fail ? (int) $fail->failures : 0,
+            ];
+        })->values()->toArray();
     }
 
     private function getMttrByGroup(Carbon $dateFrom, Carbon $dateTo): array
