@@ -526,16 +526,37 @@ class DashboardController extends Controller
             'count'    => (int) $r->count,
         ])->values()->toArray();
 
+        // Downtime timeline: total downtime hours per group within period
+        $downtimeRows = DB::connection('site')->table('cm_reports as r')
+            ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
+            ->join('assets_master as a', 'a.id', '=', 'r.asset_id')
+            ->join('group_assets as g', 'g.group_id', '=', 'a.group_id')
+            ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
+            ->whereNotNull('r.asset_id')
+            ->selectRaw('g.group_name, SUM(TIMESTAMPDIFF(MINUTE, req.created_at, r.submitted_at)) as total_downtime_minutes')
+            ->groupBy('g.group_id', 'g.group_name')
+            ->orderBy('g.group_name')
+            ->get();
+
+        $periodHoursForTimeline = max(1, round($dateFrom->diffInHours($dateTo)));
+        $downtimeTimeline = $downtimeRows->map(fn($r) => [
+            'group'           => $r->group_name,
+            'downtime_hours'  => round($r->total_downtime_minutes / 60, 2),
+            'running_hours'   => round(max(0, $periodHoursForTimeline - ($r->total_downtime_minutes / 60)), 2),
+            'period_hours'    => $periodHoursForTimeline,
+        ])->values()->toArray();
+
         return response()->json([
-            'period'       => $period,
-            'date_from'    => $dateFrom->toDateString(),
-            'date_to'      => $dateTo->toDateString(),
-            'mttr'         => $mttr,
-            'mtbf'         => $mtbf,
-            'availability' => $availability,
-            'total_failures' => $totalFailures,
-            'trend'        => $trend,
-            'by_category'  => $byCategory,
+            'period'            => $period,
+            'date_from'         => $dateFrom->toDateString(),
+            'date_to'           => $dateTo->toDateString(),
+            'mttr'              => $mttr,
+            'mtbf'              => $mtbf,
+            'availability'      => $availability,
+            'total_failures'    => $totalFailures,
+            'trend'             => $trend,
+            'by_category'       => $byCategory,
+            'downtime_timeline' => $downtimeTimeline,
         ]);
     }
 
