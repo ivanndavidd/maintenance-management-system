@@ -1597,7 +1597,7 @@
                 const { ctx, scales: { x, y } } = chart;
                 timeline.forEach((row, i) => {
                     const yCenter = y.getPixelForValue(i);
-                    const barH    = Math.max(10, (y.getPixelForValue(1) - y.getPixelForValue(0)) * 0.6);
+                    const barH    = Math.abs(y.getPixelForValue(0) - y.getPixelForValue(1)) * 0.45;
                     row.events.forEach(ev => {
                         const x0 = x.getPixelForValue(ev.x[0]);
                         const x1 = x.getPixelForValue(ev.x[1]);
