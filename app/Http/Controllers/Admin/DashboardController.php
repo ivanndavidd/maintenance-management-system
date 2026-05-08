@@ -145,13 +145,16 @@ class DashboardController extends Controller
             $costTrend[$year] = $months;
         }
 
+        // === Today Summary (ticker) ===
+        $today = Carbon::today();
+        $todaySummary = $this->getTodaySummary($today);
+
         // === Calendar Data for Supervisor ===
         $todayTasks = collect();
         $calendarData = [];
 
         if (auth()->user()->hasRole('supervisor_maintenance')) {
             $userId = auth()->id();
-            $today = Carbon::today();
 
             // Get today's tasks
             $todayTasks = $this->getTodayTasks($userId, $today);
@@ -168,7 +171,8 @@ class DashboardController extends Controller
             'todayTasks',
             'calendarData',
             'sparepartStats',
-            'costTrend'
+            'costTrend',
+            'todaySummary'
         ));
     }
 
@@ -187,6 +191,54 @@ class DashboardController extends Controller
         }
 
         return $data;
+    }
+
+    /**
+     * Today's operational summary for the scrolling ticker
+     */
+    private function getTodaySummary(Carbon $today): array
+    {
+        $dateStr = $today->toDateString();
+
+        // Active shifts today (distinct users on shift)
+        $activeShifts = DB::connection('site')->table('shift_assignments as sa')
+            ->join('shift_schedules as ss', 'ss.id', '=', 'sa.shift_schedule_id')
+            ->where('ss.status', 'active')
+            ->where('ss.start_date', '<=', $dateStr)
+            ->where('ss.end_date', '>=', $dateStr)
+            ->where('sa.day_of_week', strtolower($today->format('l')))
+            ->selectRaw('COUNT(DISTINCT sa.user_id) as cnt')
+            ->value('cnt') ?? 0;
+
+        // PM tasks today
+        $pmTotal     = PmTask::whereDate('task_date', $today)->count();
+        $pmCompleted = PmTask::whereDate('task_date', $today)->where('status', 'completed')->count();
+        $pmPending   = $pmTotal - $pmCompleted;
+
+        // CM tasks today (created today)
+        $cmTotal     = CorrectiveMaintenanceRequest::whereDate('created_at', $today)->count();
+        $cmOpen      = CorrectiveMaintenanceRequest::whereDate('created_at', $today)
+                        ->whereIn('status', ['pending', 'received', 'in_progress'])->count();
+        $cmClosed    = CorrectiveMaintenanceRequest::whereDate('created_at', $today)
+                        ->whereIn('status', ['completed', 'done'])->count();
+
+        // Stock opname today
+        $opnameToday = DB::connection('site')->table('stock_opname_schedules')
+            ->whereDate('execution_date', $today)
+            ->whereIn('status', ['active', 'completed'])
+            ->count();
+
+        return [
+            'date'           => $today->format('l, d M Y'),
+            'active_shifts'  => (int) $activeShifts,
+            'pm_total'       => $pmTotal,
+            'pm_completed'   => $pmCompleted,
+            'pm_pending'     => $pmPending,
+            'cm_total'       => $cmTotal,
+            'cm_open'        => $cmOpen,
+            'cm_closed'      => $cmClosed,
+            'opname_today'   => (int) $opnameToday,
+        ];
     }
 
     /**
