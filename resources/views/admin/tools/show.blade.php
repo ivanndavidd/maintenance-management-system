@@ -248,89 +248,180 @@
         </div>
     </div>
 
-    {{-- Usage / Borrowing History --}}
+    {{-- Usage & Adjustment History --}}
     <div class="card mt-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold"><i class="fas fa-history me-1"></i> Usage & Borrowing History</h6>
-            <span class="badge bg-secondary">{{ $usageHistory->count() }} records</span>
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="historyTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" id="usage-tab" data-bs-toggle="tab" data-bs-target="#usagePane" type="button">
+                        <i class="fas fa-history me-1"></i> Usage & Borrowing History
+                        <span class="badge bg-secondary ms-1">{{ $usageHistory->count() }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="adj-tab" data-bs-toggle="tab" data-bs-target="#adjPane" type="button">
+                        <i class="fas fa-sliders-h me-1"></i> Adjustment History
+                        <span class="badge bg-secondary ms-1">{{ $adjustmentHistory->count() }}</span>
+                    </button>
+                </li>
+            </ul>
         </div>
         <div class="card-body p-0">
-            @if($usageHistory->isEmpty())
-                <div class="text-center py-4 text-muted">
-                    <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-                    No usage history yet.
-                </div>
-            @else
-            <div class="table-responsive">
-                <table class="table table-sm table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Request No</th>
-                            <th>Requested By</th>
-                            <th class="text-center">Qty</th>
-                            <th class="d-none d-md-table-cell">Purpose</th>
-                            <th class="text-center">Status</th>
-                            <th class="d-none d-md-table-cell">Return Status</th>
-                            <th class="d-none d-md-table-cell">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($usageHistory as $req)
-                        <tr>
-                            <td>
-                                <a href="{{ route($routePrefix.'.tool-requests.show', $req) }}" class="text-primary fw-bold" style="font-size:12px;">
-                                    {{ $req->request_number }}
-                                </a>
-                            </td>
-                            <td>
-                                <span style="font-size:13px;">{{ $req->requester->name ?? '-' }}</span>
-                                <div class="d-md-none text-muted" style="font-size:11px;">
-                                    {{ $req->usage_date->format('d M Y') }}
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-primary">{{ $req->quantity_requested }} {{ $tool->unit }}</span>
-                            </td>
-                            <td class="d-none d-md-table-cell">
-                                <span style="font-size:12px;">{{ Str::limit($req->purpose, 50) }}</span>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-{{ $req->getStatusBadgeClass() }}" style="font-size:10px;">
-                                    {{ $req->getStatusLabel() }}
-                                </span>
-                            </td>
-                            <td class="d-none d-md-table-cell">
-                                @if($req->status === 'returned')
-                                    <span class="text-success" style="font-size:12px;">
-                                        <i class="fas fa-check-circle me-1"></i>
-                                        Returned {{ $req->returned_at?->format('d M Y') }}
-                                    </span>
-                                @elseif(in_array($req->status, ['approved','in_use']))
-                                    @if($req->return_date && $req->return_date->isPast())
-                                        <span class="text-danger fw-bold" style="font-size:12px;">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>Overdue
+            <div class="tab-content" id="historyTabContent">
+
+                {{-- Usage Tab --}}
+                <div class="tab-pane fade show active" id="usagePane" role="tabpanel">
+                    @if($usageHistory->isEmpty())
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                            No usage history yet.
+                        </div>
+                    @else
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Request No</th>
+                                    <th>Requested By</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="d-none d-md-table-cell">Purpose</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="d-none d-md-table-cell">Return Status</th>
+                                    <th class="d-none d-md-table-cell">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($usageHistory as $req)
+                                <tr>
+                                    <td>
+                                        <a href="{{ route($routePrefix.'.tool-requests.show', $req) }}" class="text-primary fw-bold" style="font-size:12px;">
+                                            {{ $req->request_number }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span style="font-size:13px;">{{ $req->requester->name ?? '-' }}</span>
+                                        <div class="d-md-none text-muted" style="font-size:11px;">
+                                            {{ $req->usage_date->format('d M Y') }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">{{ $req->quantity_requested }} {{ $tool->unit }}</span>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        <span style="font-size:12px;">{{ Str::limit($req->purpose, 50) }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-{{ $req->getStatusBadgeClass() }}" style="font-size:10px;">
+                                            {{ $req->getStatusLabel() }}
                                         </span>
-                                    @else
-                                        <span class="text-warning" style="font-size:12px;">
-                                            <i class="fas fa-clock me-1"></i>Not returned
-                                            @if($req->return_date)
-                                                <small class="text-muted">(due {{ $req->return_date->format('d M Y') }})</small>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        @if($req->status === 'returned')
+                                            <span class="text-success" style="font-size:12px;">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                Returned {{ $req->returned_at?->format('d M Y') }}
+                                            </span>
+                                        @elseif(in_array($req->status, ['approved','in_use']))
+                                            @if($req->return_date && $req->return_date->isPast())
+                                                <span class="text-danger fw-bold" style="font-size:12px;">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>Overdue
+                                                </span>
+                                            @else
+                                                <span class="text-warning" style="font-size:12px;">
+                                                    <i class="fas fa-clock me-1"></i>Not returned
+                                                    @if($req->return_date)
+                                                        <small class="text-muted">(due {{ $req->return_date->format('d M Y') }})</small>
+                                                    @endif
+                                                </span>
                                             @endif
-                                        </span>
-                                    @endif
-                                @else
-                                    <span class="text-muted" style="font-size:12px;">-</span>
-                                @endif
-                            </td>
-                            <td class="d-none d-md-table-cell">
-                                <span style="font-size:12px;">{{ $req->usage_date->format('d M Y') }}</span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                        @else
+                                            <span class="text-muted" style="font-size:12px;">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        <span style="font-size:12px;">{{ $req->usage_date->format('d M Y') }}</span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @endif
+                </div>
+
+                {{-- Adjustment Tab --}}
+                <div class="tab-pane fade" id="adjPane" role="tabpanel">
+                    @if($adjustmentHistory->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th class="d-none d-md-table-cell">Code</th>
+                                        <th>Type</th>
+                                        <th class="text-center">Qty Change</th>
+                                        <th class="d-none d-md-table-cell">Adjusted By</th>
+                                        <th class="d-none d-md-table-cell">Status</th>
+                                        <th class="d-none d-lg-table-cell">Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($adjustmentHistory as $adj)
+                                    @php
+                                        $isAdd = $adj->adjustment_type === 'add' || ($adj->adjustment_type === 'correction' && $adj->adjustment_qty > 0);
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            <small>{{ $adj->created_at->format('d M Y') }}</small>
+                                            <div class="d-md-none">
+                                                <small class="text-muted">{{ $adj->adjustedByUser?->name ?? '-' }}</small>
+                                            </div>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            <small class="text-muted">{{ $adj->adjustment_code ?? '-' }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ $isAdd ? 'success' : 'danger' }}">
+                                                {{ ucfirst(str_replace('_', ' ', $adj->adjustment_type)) }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="fw-bold {{ $isAdd ? 'text-success' : 'text-danger' }}">
+                                                {{ $isAdd ? '+' : '-' }}{{ abs($adj->adjustment_qty) }}
+                                            </span>
+                                            <br><small class="text-muted">{{ $adj->quantity_before }} → {{ $adj->quantity_after }}</small>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            <small>{{ $adj->adjustedByUser?->name ?? '-' }}</small>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            @php
+                                                $statusColor = match($adj->status ?? '') {
+                                                    'approved' => 'success',
+                                                    'pending'  => 'warning',
+                                                    'rejected' => 'danger',
+                                                    default    => 'secondary',
+                                                };
+                                            @endphp
+                                            <span class="badge bg-{{ $statusColor }}">{{ ucfirst($adj->status ?? '-') }}</span>
+                                        </td>
+                                        <td class="d-none d-lg-table-cell">
+                                            <small class="text-muted">{{ $adj->reason ?? '-' }}</small>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                            No adjustment history found.
+                        </div>
+                    @endif
+                </div>
+
             </div>
-            @endif
         </div>
     </div>
 </div>

@@ -143,7 +143,14 @@ class ToolController extends Controller
             ->limit(50)
             ->get();
 
-        return view('admin.tools.show', compact('tool', 'usageHistory'));
+        $adjustmentHistory = \App\Models\StockAdjustment::where('item_type', 'tool')
+            ->where('item_id', $tool->id)
+            ->with(['adjustedByUser', 'approvedByUser'])
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
+
+        return view('admin.tools.show', compact('tool', 'usageHistory', 'adjustmentHistory'));
     }
 
     /**
