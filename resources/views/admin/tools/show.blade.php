@@ -189,15 +189,21 @@
                     <h6 class="mb-0 fw-bold">Actions</h6>
                 </div>
                 <div class="card-body d-grid gap-2">
+                    @if(Route::has($routePrefix.'.tools.edit'))
                     <a href="{{ route($routePrefix.'.tools.edit', $tool) }}" class="btn btn-warning btn-sm">
                         <i class="fas fa-edit"></i> Edit Tool
                     </a>
+                    @endif
+                    @if(Route::has($routePrefix.'.adjustments.create'))
                     <a href="{{ route($routePrefix.'.adjustments.create') }}?tool_id={{ $tool->id }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-sliders-h"></i> Adjust Stock
                     </a>
+                    @endif
+                    @if(Route::has($routePrefix.'.purchase-orders.create'))
                     <a href="{{ route($routePrefix.'.purchase-orders.create') }}?tool_id={{ $tool->id }}" class="btn btn-success btn-sm">
                         <i class="fas fa-shopping-cart"></i> Create Purchase Order
                     </a>
+                    @endif
                     @if(Route::has($routePrefix.'.opname.executions.create'))
                     <a href="{{ route($routePrefix.'.opname.executions.create') }}?tool_id={{ $tool->id }}" class="btn btn-info btn-sm">
                         <i class="fas fa-clipboard-check"></i> Record Opname
@@ -231,9 +237,11 @@
                         <div class="col-6"><small class="text-muted">Minimum:</small> <strong>{{ $tool->minimum_stock }} {{ $tool->unit }}</strong></div>
                         <div class="col-12"><small class="text-muted">Suggested Order:</small> <strong>{{ max($tool->minimum_stock * 2 - $tool->quantity, 0) }} {{ $tool->unit }}</strong></div>
                     </div>
+                    @if(Route::has($routePrefix.'.purchase-orders.create'))
                     <a href="{{ route($routePrefix.'.purchase-orders.create') }}?tool_id={{ $tool->id }}" class="btn btn-warning btn-sm w-100">
                         <i class="fas fa-shopping-cart"></i> Order Now
                     </a>
+                    @endif
                 </div>
             </div>
             @endif
