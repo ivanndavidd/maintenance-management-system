@@ -835,18 +835,18 @@
                                 <div class="card-body">
                                     <h6 class="fw-bold mb-3">
                                         Downtime Timeline
-                                        <small class="text-muted fw-normal ms-1">— running vs downtime per group</small>
+                                        <small class="text-muted fw-normal ms-1">— time-of-day each downtime event occurred</small>
                                     </h6>
-                                    <div style="position:relative; height:220px;">
+                                    <div id="downtimeTimelineWrap" style="position:relative; height:220px;">
                                         <canvas id="downtimeTimelineChart"></canvas>
                                     </div>
                                     <div class="d-flex gap-3 justify-content-center mt-2">
                                         <div class="d-flex align-items-center gap-1">
-                                            <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#28a745;"></span>
+                                            <span style="display:inline-block;width:24px;height:10px;border-radius:2px;background:#28a745;"></span>
                                             <small class="text-muted">Running</small>
                                         </div>
                                         <div class="d-flex align-items-center gap-1">
-                                            <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#dc3545;"></span>
+                                            <span style="display:inline-block;width:24px;height:10px;border-radius:2px;background:#dc3545;"></span>
                                             <small class="text-muted">Downtime</small>
                                         </div>
                                     </div>
@@ -1429,65 +1429,88 @@
 
     function renderDowntimeTimeline(timeline) {
         if (chartDowntime) chartDowntime.destroy();
-        const ctx = document.getElementById('downtimeTimelineChart');
-        if (!ctx) return;
+        const wrap = document.getElementById('downtimeTimelineWrap');
+        const ctx  = document.getElementById('downtimeTimelineChart');
+        if (!ctx || !timeline || !timeline.length) return;
 
-        if (!timeline || !timeline.length) return;
+        // Resize height based on number of groups
+        const rowHeight = 40;
+        const totalHeight = Math.max(160, timeline.length * rowHeight + 60);
+        wrap.style.height = totalHeight + 'px';
 
-        const labels       = timeline.map(d => d.group);
-        const runningData  = timeline.map(d => d.running_hours);
-        const downtimeData = timeline.map(d => d.downtime_hours);
-        const periodHours  = timeline[0]?.period_hours ?? 24;
+        const labels = timeline.map(d => d.group);
+
+        // Dataset 1: full green bar (running) — [0, 24] for every group
+        const runningDataset = {
+            label: 'Running',
+            data: labels.map(() => [0, 24]),
+            backgroundColor: 'rgba(40,167,69,0.75)',
+            borderColor: 'rgba(40,167,69,0.9)',
+            borderWidth: 0,
+            borderRadius: 3,
+            barPercentage: 0.5,
+            categoryPercentage: 0.8,
+        };
+
+        // Datasets for downtime events — one dataset per group so they overlay correctly
+        // Each dataset contains one floating bar per group (null for other groups)
+        const downtimeDatasets = [];
+        timeline.forEach((row, groupIdx) => {
+            row.events.forEach((ev, evIdx) => {
+                // Find or create a dataset slot; pack events into shared datasets by slot index
+                if (!downtimeDatasets[evIdx]) {
+                    downtimeDatasets[evIdx] = {
+                        label: evIdx === 0 ? 'Downtime' : '_hidden',
+                        data: labels.map(() => null),
+                        backgroundColor: 'rgba(220,53,69,0.9)',
+                        borderColor: 'rgba(180,30,30,1)',
+                        borderWidth: 0,
+                        borderRadius: 2,
+                        barPercentage: 0.5,
+                        categoryPercentage: 0.8,
+                        _labels: labels.map(() => null),
+                    };
+                }
+                downtimeDatasets[evIdx].data[groupIdx] = ev.x;
+                downtimeDatasets[evIdx]._labels[groupIdx] = ev.label;
+            });
+        });
 
         chartDowntime = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels,
-                datasets: [
-                    {
-                        label: 'Running',
-                        data: runningData,
-                        backgroundColor: 'rgba(40,167,69,0.8)',
-                        borderRadius: { topLeft: 0, bottomLeft: 4, topRight: 0, bottomRight: 0 },
-                        borderSkipped: false,
-                    },
-                    {
-                        label: 'Downtime',
-                        data: downtimeData,
-                        backgroundColor: 'rgba(220,53,69,0.85)',
-                        borderRadius: { topLeft: 0, bottomLeft: 0, topRight: 4, bottomRight: 4 },
-                        borderSkipped: false,
-                    }
-                ]
+                datasets: [runningDataset, ...downtimeDatasets],
             },
             options: {
                 indexAxis: 'y',
-                responsive: true, maintainAspectRatio: false,
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        filter: tip => tip.datasetIndex > 0 && tip.parsed.x !== null,
                         callbacks: {
-                            label: function(ctx) {
-                                const hrs = ctx.parsed.x;
-                                const pct = periodHours > 0 ? (hrs / periodHours * 100).toFixed(1) : 0;
-                                return ` ${ctx.dataset.label}: ${hrs}h (${pct}%)`;
+                            title: tip => tip[0]?.label ?? '',
+                            label: function(tip) {
+                                const ds = tip.dataset;
+                                const lbl = ds._labels?.[tip.dataIndex];
+                                return lbl ? ' Downtime: ' + lbl : ' Downtime';
                             }
                         }
                     }
                 },
                 scales: {
                     x: {
-                        stacked: true,
-                        beginAtZero: true,
-                        max: periodHours,
+                        min: 0, max: 24,
                         ticks: {
                             font: { size: 10 },
-                            callback: v => v + 'h'
+                            stepSize: 4,
+                            callback: v => String(v).padStart(2,'0') + ':00'
                         },
-                        grid: { color: 'rgba(0,0,0,0.05)' }
+                        grid: { color: 'rgba(0,0,0,0.06)' }
                     },
                     y: {
-                        stacked: true,
                         ticks: { font: { size: 11 } }
                     }
                 }
