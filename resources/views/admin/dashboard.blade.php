@@ -730,8 +730,8 @@
                     </div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
                         <select class="form-select form-select-sm" id="metricsGranularity" style="width:auto;">
-                            <option value="daily">Daily</option>
-                            <option value="weekly" selected>Weekly</option>
+                            <option value="daily" selected>Daily</option>
+                            <option value="weekly">Weekly</option>
                             <option value="monthly">Monthly</option>
                         </select>
                         <div class="btn-group btn-group-sm" id="metricsTimeframeBtns">
@@ -810,7 +810,7 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h6 class="fw-bold mb-0">MTBF & MTTR Trend</h6>
-                                        <small class="text-muted" id="trendChartGranularityLabel">Weekly</small>
+                                        <small class="text-muted" id="trendChartGranularityLabel">Daily</small>
                                     </div>
                                     <div style="position:relative; height:220px;">
                                         <canvas id="mtbfMttrTrendChart"></canvas>
@@ -1253,7 +1253,7 @@
         // Auto-switch granularity default when period changes
         const gran = document.getElementById('metricsGranularity');
         if (period === '1M') gran.value = 'daily';
-        else if (period === '3M') gran.value = 'weekly';
+        else if (period === '3M') gran.value = 'daily';
         else if (period === '6M' || period === '1Y') gran.value = 'weekly';
 
         document.getElementById('metricsCustomRange').style.display =
