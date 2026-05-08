@@ -101,12 +101,31 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // === MTTR from CMR ===
-        $avgResolutionTime = CorrectiveMaintenanceRequest::whereIn('status', ['completed', 'done'])
-            ->whereNotNull('started_at')
-            ->whereNotNull('completed_at')
-            ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, started_at, completed_at)) as avg_hours')
-            ->first()->avg_hours ?? 0;
+        // === Sparepart Stock Summary ===
+        $sparepartStats = DB::connection('site')->table('spareparts')->selectRaw("
+            COUNT(*) as total,
+            SUM(quantity = 0) as out_of_stock,
+            SUM(quantity > 0 AND quantity <= minimum_stock) as low_stock
+        ")->first();
+
+        // === Repair Cost (last 6 months, monthly) ===
+        $repairCostTrend = DB::connection('site')->table('sparepart_usages as u')
+            ->join('spareparts as s', 's.id', '=', 'u.sparepart_id')
+            ->where('u.used_at', '>=', Carbon::now()->subMonths(5)->startOfMonth()->toDateString())
+            ->selectRaw("DATE_FORMAT(u.used_at, '%Y-%m') as month, SUM(u.quantity_used * s.parts_price) as total_cost")
+            ->groupByRaw("DATE_FORMAT(u.used_at, '%Y-%m')")
+            ->orderBy('month')
+            ->pluck('total_cost', 'month');
+
+        // Fill missing months with 0
+        $costTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $key = Carbon::now()->subMonths($i)->format('Y-m');
+            $costTrend[] = [
+                'month' => Carbon::now()->subMonths($i)->format('M Y'),
+                'cost'  => (float) ($repairCostTrend[$key] ?? 0),
+            ];
+        }
 
         // === Calendar Data for Supervisor ===
         $todayTasks = collect();
@@ -130,7 +149,9 @@ class DashboardController extends Controller
             'recentCmr',
             'avgResolutionTime',
             'todayTasks',
-            'calendarData'
+            'calendarData',
+            'sparepartStats',
+            'costTrend'
         ));
     }
 

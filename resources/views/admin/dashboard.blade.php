@@ -548,42 +548,45 @@
             </div>
         </div>
 
-        <!-- Operators Card -->
+        <!-- Sparepart Stock Card -->
         <div class="col-md-3 mb-3">
             <div class="card border-info h-100 shadow-sm">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <h6 class="text-muted mb-2">Operators</h6>
-                            <h5 class="mb-0 fw-bold">{{ $stats['total_operators'] }}</h5>
-                            <small class="text-success">{{ $stats['active_operators'] }} Active</small>
+                            <h6 class="text-muted mb-2">Sparepart Stock</h6>
+                            <h5 class="mb-1 fw-bold">{{ number_format($sparepartStats->total) }} <small class="text-muted fw-normal fs-6">items</small></h5>
+                            <div class="d-flex flex-column gap-1">
+                                <small><span class="badge bg-warning text-dark">{{ $sparepartStats->low_stock }}</span> Low Stock</small>
+                                <small><span class="badge bg-danger">{{ $sparepartStats->out_of_stock }}</span> Out of Stock</small>
+                            </div>
                         </div>
                         <div class="text-info opacity-25">
-                            <i class="fas fa-users fa-3x"></i>
+                            <i class="fas fa-boxes fa-3x"></i>
                         </div>
                     </div>
-                </div>
-                <div class="card-footer bg-info text-white">
-                    <a href="{{ route($routePrefix . '.users.index') }}" class="text-white text-decoration-none">
-                        View All Users <i class="fas fa-arrow-right"></i>
-                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- Avg Resolution Time Card -->
+        <!-- Repair Cost Card -->
         <div class="col-md-3 mb-3">
             <div class="card border-warning h-100 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+                <div class="card-body pb-1">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
                         <div>
-                            <h6 class="text-muted mb-2">Avg Resolution Time</h6>
-                            <h5 class="mb-0 fw-bold">{{ number_format($avgResolutionTime, 1) }}h</h5>
-                            <small class="text-muted">CMR completed tickets</small>
+                            <h6 class="text-muted mb-1">Repair Cost</h6>
+                            <h5 class="mb-0 fw-bold">
+                                Rp {{ number_format(collect($costTrend)->sum('cost'), 0, ',', '.') }}
+                            </h5>
+                            <small class="text-muted">last 6 months</small>
                         </div>
                         <div class="text-warning opacity-25">
-                            <i class="fas fa-clock fa-3x"></i>
+                            <i class="fas fa-wrench fa-3x"></i>
                         </div>
+                    </div>
+                    <div style="height:55px;">
+                        <canvas id="repairCostMiniChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -1261,6 +1264,43 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadKpiData('1M');
     });
+    @endif
+
+    // ========== Repair Cost Mini Chart ==========
+    @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('supervisor_maintenance'))
+    (function() {
+        const ctx = document.getElementById('repairCostMiniChart');
+        if (!ctx) return;
+        const costData = @json($costTrend);
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: costData.map(d => d.month),
+                datasets: [{
+                    data: costData.map(d => d.cost),
+                    backgroundColor: 'rgba(255,193,7,0.6)',
+                    borderColor: 'rgba(255,193,7,1)',
+                    borderWidth: 1,
+                    borderRadius: 2,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ' Rp ' + Number(ctx.parsed.y).toLocaleString('id-ID')
+                        }
+                    }
+                },
+                scales: {
+                    x: { display: false },
+                    y: { display: false, beginAtZero: true }
+                }
+            }
+        });
+    })();
     @endif
 
     @if(auth()->user()->hasRole('admin'))
