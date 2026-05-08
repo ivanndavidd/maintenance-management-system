@@ -856,6 +856,10 @@
                                             <h6 class="fw-bold mb-0">Downtime Timeline</h6>
                                             <small class="text-muted">time-of-day each downtime event occurred</small>
                                         </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                        {{-- Date picker --}}
+                                        <input type="date" id="downtimeDate" class="form-control form-control-sm" style="width:145px;"
+                                               value="{{ date('Y-m-d') }}">
                                         {{-- Custom multi-select dropdown --}}
                                         <div class="position-relative" id="downtimeDropdownWrap">
                                             <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
@@ -876,6 +880,7 @@
                                                 <div id="downtimeCheckboxList"></div>
                                             </div>
                                         </div>
+                                        </div>{{-- end d-flex gap-2 --}}
                                     </div>
                                     <div style="height:220px; overflow-y:auto; overflow-x:hidden;" id="downtimeScrollWrap">
                                         <div id="downtimeTimelineWrap" style="position:relative; height:220px;">
@@ -1383,10 +1388,6 @@
                 renderTrendChart(data.trend, data.granularity);
                 renderMtbfGroupChart(data.mtbf.by_group);
                 renderMttrGroupChart(data.mttr.by_group);
-                // Sort by failure count descending, most frequent first
-                allDowntimeData = [...data.downtime_timeline].sort((a, b) => b.events.length - a.events.length);
-                populateDowntimeDropdown(allDowntimeData);
-                renderDowntimeTimeline(getFilteredDowntime());
                 renderCategoryChart(data.by_category);
             })
             .catch(err => console.error('Metrics load error:', err));
@@ -1565,6 +1566,23 @@
             }
         });
     }
+
+    // Downtime date picker — fetch downtime for a specific day
+    function loadDowntimeForDate(date) {
+        const url = '{{ route("admin.dashboard.maintenance-metrics") }}?period=custom&granularity=daily&date_from=' + date + '&date_to=' + date;
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                allDowntimeData = [...data.downtime_timeline].sort((a, b) => b.events.length - a.events.length);
+                populateDowntimeDropdown(allDowntimeData);
+                renderDowntimeTimeline(getFilteredDowntime());
+            })
+            .catch(err => console.error('Downtime load error:', err));
+    }
+
+    document.getElementById('downtimeDate').addEventListener('change', function() {
+        loadDowntimeForDate(this.value);
+    });
 
     // Multi-select dropdown toggle
     (function() {
@@ -1833,6 +1851,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         loadMetrics();
+        loadDowntimeForDate(document.getElementById('downtimeDate').value);
     });
     @endif
 </script>
