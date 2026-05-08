@@ -574,18 +574,22 @@
             <div class="card border-warning h-100 shadow-sm">
                 <div class="card-body pb-1">
                     <div class="d-flex justify-content-between align-items-start mb-1">
-                        <div>
-                            <h6 class="text-muted mb-1">Repair Cost</h6>
-                            <h5 class="mb-0 fw-bold">
-                                Rp {{ number_format(collect($costTrend)->sum('cost'), 0, ',', '.') }}
-                            </h5>
-                            <small class="text-muted">last 6 months</small>
+                        <div style="flex:1;">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <h6 class="text-muted mb-0">Repair Cost</h6>
+                                <div class="btn-group btn-group-sm ms-2">
+                                    <button type="button" class="btn btn-outline-warning btn-xs py-0 px-1 active" id="costBtn3M" onclick="setCostScope('3M')" style="font-size:10px;">3M</button>
+                                    <button type="button" class="btn btn-outline-warning btn-xs py-0 px-1" id="costBtn6M" onclick="setCostScope('6M')" style="font-size:10px;">6M</button>
+                                </div>
+                            </div>
+                            <h5 class="mb-0 fw-bold" id="repairCostTotal">Rp -</h5>
+                            <small class="text-muted" id="repairCostLabel">last 3 months</small>
                         </div>
-                        <div class="text-warning opacity-25">
+                        <div class="text-warning opacity-25 ms-2">
                             <i class="fas fa-wrench fa-3x"></i>
                         </div>
                     </div>
-                    <div style="height:55px;">
+                    <div style="height:50px;">
                         <canvas id="repairCostMiniChart"></canvas>
                     </div>
                 </div>
@@ -1268,16 +1272,37 @@
 
     // ========== Repair Cost Mini Chart ==========
     @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('supervisor_maintenance'))
+    let repairCostChart = null;
+    const allCostData = @json($costTrend);
+
+    function setCostScope(scope) {
+        // Toggle buttons
+        document.getElementById('costBtn3M').classList.toggle('active', scope === '3M');
+        document.getElementById('costBtn6M').classList.toggle('active', scope === '6M');
+
+        const months = scope === '3M' ? 3 : 6;
+        const filtered = allCostData.slice(-months);
+        const total = filtered.reduce((s, d) => s + d.cost, 0);
+
+        document.getElementById('repairCostTotal').textContent = 'Rp ' + total.toLocaleString('id-ID', {maximumFractionDigits: 0});
+        document.getElementById('repairCostLabel').textContent = 'last ' + months + ' months';
+
+        if (repairCostChart) {
+            repairCostChart.data.labels   = filtered.map(d => d.month);
+            repairCostChart.data.datasets[0].data = filtered.map(d => d.cost);
+            repairCostChart.update();
+        }
+    }
+
     (function() {
         const ctx = document.getElementById('repairCostMiniChart');
         if (!ctx) return;
-        const costData = @json($costTrend);
-        new Chart(ctx, {
+        repairCostChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: costData.map(d => d.month),
+                labels: [],
                 datasets: [{
-                    data: costData.map(d => d.cost),
+                    data: [],
                     backgroundColor: 'rgba(255,193,7,0.6)',
                     borderColor: 'rgba(255,193,7,1)',
                     borderWidth: 1,
@@ -1300,6 +1325,7 @@
                 }
             }
         });
+        setCostScope('3M'); // default 3M
     })();
     @endif
 
