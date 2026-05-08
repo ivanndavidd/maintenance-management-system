@@ -868,8 +868,8 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div style="height:320px; overflow-y:auto; overflow-x:hidden;" id="downtimeScrollWrap">
-                                        <div id="downtimeTimelineWrap" style="position:relative; height:320px;">
+                                    <div style="height:220px; overflow-y:auto; overflow-x:hidden;" id="downtimeScrollWrap">
+                                        <div id="downtimeTimelineWrap" style="position:relative; height:220px;">
                                             <canvas id="downtimeTimelineChart"></canvas>
                                         </div>
                                     </div>
@@ -1583,8 +1583,8 @@
         }
         canvas.style.display = '';
 
-        const rowHeight = 52;
-        const totalHeight = timeline.length * rowHeight + 60;
+        const rowHeight = 36;
+        const totalHeight = timeline.length * rowHeight + 50;
         wrap.style.height = totalHeight + 'px';
 
         const labels = timeline.map(d => d.group);
@@ -1625,8 +1625,8 @@
                     backgroundColor: 'rgba(40,167,69,0.75)',
                     borderWidth: 0,
                     borderRadius: 3,
-                    barPercentage: 0.6,
-                    categoryPercentage: 1.0,
+                    barPercentage: 0.5,
+                    categoryPercentage: 0.8,
                 }]
             },
             options: {
