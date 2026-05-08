@@ -1430,75 +1430,63 @@
     function renderDowntimeTimeline(timeline) {
         if (chartDowntime) chartDowntime.destroy();
         const wrap = document.getElementById('downtimeTimelineWrap');
-        const ctx  = document.getElementById('downtimeTimelineChart');
-        if (!ctx || !timeline || !timeline.length) return;
+        const canvas = document.getElementById('downtimeTimelineChart');
+        if (!canvas || !timeline || !timeline.length) return;
 
-        // Resize height based on number of groups
-        const rowHeight = 40;
+        const rowHeight = 44;
         const totalHeight = Math.max(160, timeline.length * rowHeight + 60);
         wrap.style.height = totalHeight + 'px';
 
         const labels = timeline.map(d => d.group);
 
-        // Dataset 1: full green bar (running) — [0, 24] for every group
-        const runningDataset = {
-            label: 'Running',
-            data: labels.map(() => [0, 24]),
-            backgroundColor: 'rgba(40,167,69,0.75)',
-            borderColor: 'rgba(40,167,69,0.9)',
-            borderWidth: 0,
-            borderRadius: 3,
-            barPercentage: 0.5,
-            categoryPercentage: 0.8,
+        // One dataset: full [0,24] green bar per group (the running background)
+        // Downtime events drawn via custom plugin as red rectangles on top
+        const customPlugin = {
+            id: 'downtimeOverlay',
+            afterDatasetsDraw(chart) {
+                const { ctx, scales: { x, y } } = chart;
+                timeline.forEach((row, i) => {
+                    const yCenter = y.getPixelForValue(i);
+                    const barH    = Math.max(6, y.width ? 18 : 18); // fixed bar height
+                    row.events.forEach(ev => {
+                        const x0 = x.getPixelForValue(ev.x[0]);
+                        const x1 = x.getPixelForValue(ev.x[1]);
+                        const w  = Math.max(2, x1 - x0);
+                        ctx.save();
+                        ctx.fillStyle = 'rgba(220,53,69,0.9)';
+                        ctx.fillRect(x0, yCenter - barH / 2, w, barH);
+                        ctx.restore();
+                    });
+                });
+            }
         };
 
-        // Datasets for downtime events — one dataset per group so they overlay correctly
-        // Each dataset contains one floating bar per group (null for other groups)
-        const downtimeDatasets = [];
-        timeline.forEach((row, groupIdx) => {
-            row.events.forEach((ev, evIdx) => {
-                // Find or create a dataset slot; pack events into shared datasets by slot index
-                if (!downtimeDatasets[evIdx]) {
-                    downtimeDatasets[evIdx] = {
-                        label: evIdx === 0 ? 'Downtime' : '_hidden',
-                        data: labels.map(() => null),
-                        backgroundColor: 'rgba(220,53,69,0.9)',
-                        borderColor: 'rgba(180,30,30,1)',
-                        borderWidth: 0,
-                        borderRadius: 2,
-                        barPercentage: 0.5,
-                        categoryPercentage: 0.8,
-                        _labels: labels.map(() => null),
-                    };
-                }
-                downtimeDatasets[evIdx].data[groupIdx] = ev.x;
-                downtimeDatasets[evIdx]._labels[groupIdx] = ev.label;
-            });
-        });
+        // Tooltip state for hover
+        let hoveredEvent = null;
 
-        chartDowntime = new Chart(ctx, {
+        chartDowntime = new Chart(canvas, {
             type: 'bar',
+            plugins: [customPlugin],
             data: {
                 labels,
-                datasets: [runningDataset, ...downtimeDatasets],
+                datasets: [{
+                    label: 'Running',
+                    data: labels.map(() => [0, 24]),
+                    backgroundColor: 'rgba(40,167,69,0.75)',
+                    borderWidth: 0,
+                    borderRadius: 3,
+                    barPercentage: 0.45,
+                    categoryPercentage: 0.9,
+                }]
             },
             options: {
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: false,
                 plugins: {
                     legend: { display: false },
-                    tooltip: {
-                        filter: tip => tip.datasetIndex > 0 && tip.parsed.x !== null,
-                        callbacks: {
-                            title: tip => tip[0]?.label ?? '',
-                            label: function(tip) {
-                                const ds = tip.dataset;
-                                const lbl = ds._labels?.[tip.dataIndex];
-                                return lbl ? ' Downtime: ' + lbl : ' Downtime';
-                            }
-                        }
-                    }
+                    tooltip: { enabled: false },
                 },
                 scales: {
                     x: {
@@ -1516,6 +1504,44 @@
                 }
             }
         });
+
+        // Custom hover tooltip
+        const tooltip = document.createElement('div');
+        tooltip.style.cssText = 'position:absolute;background:rgba(0,0,0,0.8);color:#fff;padding:6px 10px;border-radius:6px;font-size:11px;pointer-events:none;display:none;z-index:100;white-space:nowrap;';
+        wrap.style.position = 'relative';
+        wrap.appendChild(tooltip);
+
+        canvas.addEventListener('mousemove', function(e) {
+            const rect  = canvas.getBoundingClientRect();
+            const mx    = e.clientX - rect.left;
+            const my    = e.clientY - rect.top;
+            const { scales: { x, y } } = chartDowntime;
+            const hoverX = x.getValueForPixel(mx);
+
+            let found = null;
+            timeline.forEach((row, i) => {
+                const yCenter = y.getPixelForValue(i);
+                const barH = 18;
+                if (Math.abs(my - yCenter) <= barH / 2) {
+                    row.events.forEach(ev => {
+                        if (hoverX >= ev.x[0] && hoverX <= ev.x[1]) {
+                            found = { group: row.group, label: ev.label };
+                        }
+                    });
+                }
+            });
+
+            if (found) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = (mx + 12) + 'px';
+                tooltip.style.top  = (my - 10) + 'px';
+                tooltip.innerHTML = `<strong>${found.group}</strong><br>Downtime: ${found.label}`;
+            } else {
+                tooltip.style.display = 'none';
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
     }
 
     function renderCategoryChart(byCategory) {
