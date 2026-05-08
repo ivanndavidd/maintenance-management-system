@@ -718,45 +718,6 @@
     </div>
     @endif
 
-    <!-- Charts Row -->
-    <div class="row mb-4">
-        <!-- CMR Trend -->
-        <div class="col-md-8 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0"><i class="fas fa-chart-line"></i> CMR Trend (Last 7 Days)</h6>
-                </div>
-                <div class="card-body">
-                    <canvas id="cmrTrendChart" height="80"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- CMR by Status -->
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0"><i class="fas fa-chart-pie"></i> CMR by Status</h6>
-                </div>
-                <div class="card-body">
-                    <div style="position: relative; height: 200px;">
-                        <canvas id="cmrStatusChart"></canvas>
-                    </div>
-                    <div class="mt-3">
-                        @foreach($cmrByStatus as $status => $count)
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="badge bg-{{ $status == 'completed' ? 'success' : ($status == 'in_progress' ? 'primary' : ($status == 'pending' ? 'warning' : 'secondary')) }}">
-                                {{ ucfirst(str_replace('_', ' ', $status)) }}
-                            </span>
-                            <strong class="small">{{ $count }}</strong>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Maintenance Performance Metrics -->
     @if(auth()->user()->hasRole('admin'))
     <div class="row mb-4">
@@ -768,7 +729,7 @@
                         <small class="text-muted" id="metricsDateRange"></small>
                     </div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <div class="btn-group btn-group-sm" role="group">
+                        <div class="btn-group btn-group-sm">
                             <input type="radio" class="btn-check" name="metricsTimeframe" id="metrics1M" value="1M" checked>
                             <label class="btn btn-outline-primary" for="metrics1M">1M</label>
                             <input type="radio" class="btn-check" name="metricsTimeframe" id="metrics3M" value="3M">
@@ -788,166 +749,118 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        {{-- MTTR Card --}}
-                        <div class="col-12 col-md-6">
-                            <div class="card border-0 bg-light h-100">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div>
-                                            <h6 class="fw-bold mb-0 text-primary">MTTR</h6>
-                                            <small class="text-muted">Mean Time To Repair</small>
-                                        </div>
-                                        <div class="text-end">
-                                            <div class="fw-bold fs-4 text-primary" id="mttrOverall">-</div>
-                                            <small class="text-muted">hours avg (<span id="mttrCount">-</span> tickets)</small>
-                                        </div>
+                <div class="card-body" id="metricsBody">
+
+                    {{-- Summary Cards Row --}}
+                    <div class="row g-2 mb-4">
+                        <div class="col-6 col-md-3">
+                            <div class="card border-0 h-100" style="background:#f0f9ff;">
+                                <div class="card-body py-3 px-3">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fas fa-clock text-primary"></i>
+                                        <small class="text-muted fw-semibold">MTBF</small>
                                     </div>
-                                    <div style="position:relative; height:200px;">
-                                        <canvas id="mttrChart"></canvas>
+                                    <div class="fw-bold fs-5 text-primary" id="mtbfOverall">-</div>
+                                    <small class="text-muted">hours avg between failures</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-0 h-100" style="background:#fff7f0;">
+                                <div class="card-body py-3 px-3">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fas fa-tools text-warning"></i>
+                                        <small class="text-muted fw-semibold">MTTR</small>
+                                    </div>
+                                    <div class="fw-bold fs-5 text-warning" id="mttrOverall">-</div>
+                                    <small class="text-muted">hours avg to repair (<span id="mttrCount">-</span> tickets)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-0 h-100" style="background:#f0fff4;">
+                                <div class="card-body py-3 px-3">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        <small class="text-muted fw-semibold">Availability</small>
+                                    </div>
+                                    <div class="fw-bold fs-5 text-success" id="metricsAvailability">-</div>
+                                    <small class="text-muted">uptime estimate</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card border-0 h-100" style="background:#fff0f0;">
+                                <div class="card-body py-3 px-3">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fas fa-exclamation-triangle text-danger"></i>
+                                        <small class="text-muted fw-semibold">Total Failures</small>
+                                    </div>
+                                    <div class="fw-bold fs-5 text-danger" id="metricsFailures">-</div>
+                                    <small class="text-muted">CM tickets in period</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- MTBF & MTTR Trend + MTBF by Group --}}
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-8">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">MTBF & MTTR Trend</h6>
+                                    <div style="position:relative; height:220px;">
+                                        <canvas id="mtbfMttrTrendChart"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        {{-- MTBF Card --}}
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-4">
                             <div class="card border-0 bg-light h-100">
                                 <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div>
-                                            <h6 class="fw-bold mb-0 text-success">MTBF</h6>
-                                            <small class="text-muted">Mean Time Between Failures</small>
-                                        </div>
-                                        <div class="text-end">
-                                            <div class="fw-bold fs-4 text-success" id="mtbfOverall">-</div>
-                                            <small class="text-muted">hours avg between breakdowns</small>
-                                        </div>
+                                    <h6 class="fw-bold mb-3">MTBF by Group Asset <small class="text-muted fw-normal">(hours)</small></h6>
+                                    <div style="position:relative; height:220px;">
+                                        <canvas id="mtbfGroupChart"></canvas>
                                     </div>
+                                    <small class="text-muted d-block text-center mt-1"><i class="fas fa-info-circle me-1"></i>Higher = more reliable</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- MTTR by Group + Failure Pareto --}}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">MTTR by Group Asset <small class="text-muted fw-normal">(hours)</small></h6>
                                     <div style="position:relative; height:200px;">
-                                        <canvas id="mtbfChart"></canvas>
+                                        <canvas id="mttrGroupChart"></canvas>
                                     </div>
-                                    <div class="text-center mt-2">
-                                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Higher = more reliable (longer between failures)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">Failure by Problem Category</h6>
+                                    <div style="position:relative; height:200px;">
+                                        <canvas id="failureParetoChart"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
     @endif
-
-    <!-- Recent CMR Tickets -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0"><i class="fas fa-clipboard-list"></i> Recent CMR Tickets</h6>
-                </div>
-                <div class="card-body p-0">
-                    @if($recentCmr->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Ticket</th>
-                                    <th>Equipment</th>
-                                    <th>Priority</th>
-                                    <th>Status</th>
-                                    <th>Technicians</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($recentCmr as $cmr)
-                                <tr>
-                                    <td><strong>{{ $cmr->ticket_number }}</strong></td>
-                                    <td>{{ $cmr->equipment_name ?? '-' }}</td>
-                                    <td><span class="badge {{ $cmr->getPriorityBadgeClass() }}">{{ ucfirst($cmr->priority) }}</span></td>
-                                    <td><span class="badge {{ $cmr->getStatusBadgeClass() }}">{{ ucfirst(str_replace('_', ' ', $cmr->status)) }}</span></td>
-                                    <td>{{ $cmr->technician_names }}</td>
-                                    <td><small>{{ $cmr->created_at->diffForHumans() }}</small></td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    @else
-                    <div class="text-center py-4">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-0">No recent tickets</p>
-                    </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-    // CMR Trend Chart
-    const trendCtx = document.getElementById('cmrTrendChart');
-    if (trendCtx) {
-        new Chart(trendCtx, {
-            type: 'line',
-            data: {
-                labels: {!! json_encode(array_column($last7DaysTrend, 'date')) !!},
-                datasets: [{
-                    label: 'Created',
-                    data: {!! json_encode(array_column($last7DaysTrend, 'created')) !!},
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    tension: 0.4,
-                    fill: true
-                }, {
-                    label: 'Completed',
-                    data: {!! json_encode(array_column($last7DaysTrend, 'completed')) !!},
-                    borderColor: 'rgb(54, 162, 235)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'top' } },
-                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-            }
-        });
-    }
-
-    // CMR Status Doughnut
-    const statusCtx = document.getElementById('cmrStatusChart');
-    if (statusCtx) {
-        new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: {!! json_encode(array_map(fn($s) => ucfirst(str_replace('_', ' ', $s)), array_keys($cmrByStatus->toArray()))) !!},
-                datasets: [{
-                    data: {!! json_encode(array_values($cmrByStatus->toArray())) !!},
-                    backgroundColor: [
-                        'rgba(40, 167, 69, 0.8)',
-                        'rgba(0, 123, 255, 0.8)',
-                        'rgba(255, 193, 7, 0.8)',
-                        'rgba(108, 117, 125, 0.8)',
-                        'rgba(220, 53, 69, 0.8)'
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
-
     @if(auth()->user()->hasRole('supervisor_maintenance'))
     // Calendar functionality for supervisor
     let currentMonth = {{ now()->month }};
@@ -1291,9 +1204,8 @@
     @endif
 
     @if(auth()->user()->hasRole('admin'))
-    // ========== Maintenance Metrics (MTTR / MTBF) ==========
-    let mttrChart = null;
-    let mtbfChart = null;
+    // ========== Maintenance Performance Metrics ==========
+    let chartTrend = null, chartMtbfGroup = null, chartMttrGroup = null, chartCategory = null;
 
     document.querySelectorAll('input[name="metricsTimeframe"]').forEach(radio => {
         radio.addEventListener('change', function() {
@@ -1316,74 +1228,232 @@
         fetch(url)
             .then(r => r.json())
             .then(data => {
-                document.getElementById('metricsDateRange').textContent =
-                    data.date_from + ' — ' + data.date_to;
-                updateMttr(data.mttr);
-                updateMtbf(data.mtbf);
+                document.getElementById('metricsDateRange').textContent = data.date_from + ' — ' + data.date_to;
+
+                // Summary cards
+                document.getElementById('mtbfOverall').textContent     = data.mtbf.overall_hours + 'h';
+                document.getElementById('mttrOverall').textContent     = data.mttr.overall_hours + 'h';
+                document.getElementById('mttrCount').textContent       = data.mttr.overall_count;
+                document.getElementById('metricsAvailability').textContent = data.availability + '%';
+                document.getElementById('metricsFailures').textContent = data.total_failures;
+
+                renderTrendChart(data.trend);
+                renderMtbfGroupChart(data.mtbf.by_group);
+                renderMttrGroupChart(data.mttr.by_group);
+                renderCategoryChart(data.by_category);
             })
             .catch(err => console.error('Metrics load error:', err));
     }
 
-    function updateMttr(mttr) {
-        document.getElementById('mttrOverall').textContent = mttr.overall_hours + 'h';
-        document.getElementById('mttrCount').textContent   = mttr.overall_count;
+    function renderTrendChart(trend) {
+        if (chartTrend) chartTrend.destroy();
+        const ctx = document.getElementById('mtbfMttrTrendChart');
+        if (!ctx || !trend.length) return;
 
-        const labels = mttr.by_group.map(g => g.group);
-        const values = mttr.by_group.map(g => g.avg_hours);
+        const labels   = trend.map(d => d.label);
+        const mttrVals = trend.map(d => d.mttr);
+        const failVals = trend.map(d => d.failures);
 
-        if (mttrChart) mttrChart.destroy();
-        const ctx = document.getElementById('mttrChart');
+        chartTrend = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'MTTR (hours)',
+                        data: mttrVals,
+                        borderColor: '#fd7e14',
+                        backgroundColor: 'rgba(253,126,20,0.1)',
+                        tension: 0.4, fill: true,
+                        yAxisID: 'yMttr',
+                        spanGaps: true,
+                    },
+                    {
+                        label: 'Failures',
+                        data: failVals,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220,53,69,0.15)',
+                        tension: 0.3, fill: false,
+                        yAxisID: 'yFail',
+                        borderDash: [4, 3],
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { position: 'top', labels: { font: { size: 11 }, padding: 10 } } },
+                scales: {
+                    yMttr: {
+                        type: 'linear', position: 'left', beginAtZero: true,
+                        title: { display: true, text: 'MTTR (h)', font: { size: 10 } },
+                        ticks: { font: { size: 10 } }
+                    },
+                    yFail: {
+                        type: 'linear', position: 'right', beginAtZero: true,
+                        title: { display: true, text: 'Failures', font: { size: 10 } },
+                        grid: { drawOnChartArea: false },
+                        ticks: { font: { size: 10 }, stepSize: 1 }
+                    },
+                    x: { ticks: { font: { size: 10 }, maxRotation: 45, minRotation: 0 } }
+                }
+            }
+        });
+    }
+
+    function renderMtbfGroupChart(byGroup) {
+        if (chartMtbfGroup) chartMtbfGroup.destroy();
+        const ctx = document.getElementById('mtbfGroupChart');
         if (!ctx) return;
-        mttrChart = new Chart(ctx, {
+
+        if (!byGroup.length) {
+            ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+            return;
+        }
+
+        const labels = byGroup.map(g => g.group);
+        const values = byGroup.map(g => g.avg_hours);
+
+        chartMtbfGroup = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'MTBF (hours)',
+                    data: values,
+                    backgroundColor: values.map(v =>
+                        v >= 100 ? 'rgba(25,135,84,0.75)' :
+                        v >= 48  ? 'rgba(255,193,7,0.75)' : 'rgba(220,53,69,0.75)'
+                    ),
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, title: { display: true, text: 'Hours', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+                    y: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
+    function renderMttrGroupChart(byGroup) {
+        if (chartMttrGroup) chartMttrGroup.destroy();
+        const ctx = document.getElementById('mttrGroupChart');
+        if (!ctx) return;
+
+        if (!byGroup.length) return;
+
+        const sorted = [...byGroup].sort((a, b) => b.avg_hours - a.avg_hours);
+        const labels = sorted.map(g => g.group);
+        const values = sorted.map(g => g.avg_hours);
+        const counts = sorted.map(g => g.ticket_count);
+
+        chartMttrGroup = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels,
                 datasets: [{
                     label: 'Avg MTTR (hours)',
                     data: values,
-                    backgroundColor: 'rgba(13,110,253,0.7)',
+                    backgroundColor: values.map(v =>
+                        v > 8 ? 'rgba(220,53,69,0.75)' :
+                        v > 4 ? 'rgba(255,193,7,0.75)' : 'rgba(25,135,84,0.75)'
+                    ),
                     borderRadius: 4,
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(ctx) {
+                                return `Tickets: ${counts[ctx.dataIndex]}`;
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    y: { beginAtZero: true, title: { display: true, text: 'Hours' } },
-                    x: { ticks: { font: { size: 11 } } }
+                    y: { beginAtZero: true, title: { display: true, text: 'Hours', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+                    x: { ticks: { font: { size: 10 }, maxRotation: 30 } }
                 }
             }
         });
     }
 
-    function updateMtbf(mtbf) {
-        document.getElementById('mtbfOverall').textContent = mtbf.overall_hours + 'h';
-
-        const labels = mtbf.by_group.map(g => g.group);
-        const values = mtbf.by_group.map(g => g.avg_hours);
-
-        if (mtbfChart) mtbfChart.destroy();
-        const ctx = document.getElementById('mtbfChart');
+    function renderCategoryChart(byCategory) {
+        if (chartCategory) chartCategory.destroy();
+        const ctx = document.getElementById('failureParetoChart');
         if (!ctx) return;
-        mtbfChart = new Chart(ctx, {
+
+        if (!byCategory.length) return;
+
+        const categoryLabels = {
+            conveyor_totebox: 'Conveyor Totebox',
+            conveyor_paket: 'Conveyor Paket',
+            lift_merah: 'Lift Merah',
+            lift_kuning: 'Lift Kuning',
+            chute: 'Chute',
+            others: 'Others',
+        };
+
+        const labels = byCategory.map(d => categoryLabels[d.category] ?? d.category);
+        const counts = byCategory.map(d => d.count);
+        const total  = counts.reduce((a, b) => a + b, 0);
+
+        // Cumulative %
+        let cumulative = 0;
+        const cumulativePct = counts.map(c => {
+            cumulative += c;
+            return total > 0 ? parseFloat((cumulative / total * 100).toFixed(1)) : 0;
+        });
+
+        chartCategory = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels,
-                datasets: [{
-                    label: 'Avg MTBF (hours)',
-                    data: values,
-                    backgroundColor: 'rgba(25,135,84,0.7)',
-                    borderRadius: 4,
-                }]
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Failures',
+                        data: counts,
+                        backgroundColor: 'rgba(13,110,253,0.7)',
+                        borderRadius: 4,
+                        yAxisID: 'yCount',
+                    },
+                    {
+                        type: 'line',
+                        label: 'Cumulative %',
+                        data: cumulativePct,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'transparent',
+                        tension: 0.3,
+                        pointRadius: 4,
+                        yAxisID: 'yPct',
+                    }
+                ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { font: { size: 11 }, padding: 10 } } },
                 scales: {
-                    y: { beginAtZero: true, title: { display: true, text: 'Hours' } },
-                    x: { ticks: { font: { size: 11 } } }
+                    yCount: {
+                        type: 'linear', position: 'left', beginAtZero: true,
+                        title: { display: true, text: 'Count', font: { size: 10 } },
+                        ticks: { font: { size: 10 }, stepSize: 1 }
+                    },
+                    yPct: {
+                        type: 'linear', position: 'right', min: 0, max: 100,
+                        title: { display: true, text: '%', font: { size: 10 } },
+                        grid: { drawOnChartArea: false },
+                        ticks: { font: { size: 10 }, callback: v => v + '%' }
+                    },
+                    x: { ticks: { font: { size: 10 }, maxRotation: 30 } }
                 }
             }
         });
