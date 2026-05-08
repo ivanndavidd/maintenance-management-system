@@ -1251,8 +1251,8 @@
         if (!ctx || !trend.length) return;
 
         const labels   = trend.map(d => d.label);
+        const mtbfVals = trend.map(d => d.mtbf);
         const mttrVals = trend.map(d => d.mttr);
-        const failVals = trend.map(d => d.failures);
 
         chartTrend = new Chart(ctx, {
             type: 'line',
@@ -1260,40 +1260,53 @@
                 labels,
                 datasets: [
                     {
-                        label: 'MTTR (hours)',
-                        data: mttrVals,
-                        borderColor: '#fd7e14',
-                        backgroundColor: 'rgba(253,126,20,0.1)',
-                        tension: 0.4, fill: true,
-                        yAxisID: 'yMttr',
+                        label: 'MTBF (hours)',
+                        data: mtbfVals,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40,167,69,0.08)',
+                        tension: 0.4, fill: false,
+                        yAxisID: 'yMtbf',
                         spanGaps: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
                     },
                     {
-                        label: 'Failures',
-                        data: failVals,
+                        label: 'MTTR (hours)',
+                        data: mttrVals,
                         borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220,53,69,0.15)',
-                        tension: 0.3, fill: false,
-                        yAxisID: 'yFail',
-                        borderDash: [4, 3],
+                        backgroundColor: 'rgba(220,53,69,0.08)',
+                        tension: 0.4, fill: false,
+                        yAxisID: 'yMttr',
+                        spanGaps: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
                     }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { position: 'top', labels: { font: { size: 11 }, padding: 10 } } },
+                plugins: {
+                    legend: { position: 'top', labels: { font: { size: 11 }, padding: 12,
+                        usePointStyle: true, pointStyle: 'circle' } },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y + 'h' : 'N/A'}`
+                        }
+                    }
+                },
                 scales: {
-                    yMttr: {
+                    yMtbf: {
                         type: 'linear', position: 'left', beginAtZero: true,
-                        title: { display: true, text: 'MTTR (h)', font: { size: 10 } },
-                        ticks: { font: { size: 10 } }
+                        title: { display: true, text: 'MTBF (hours)', font: { size: 10 } },
+                        ticks: { font: { size: 10 } },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
                     },
-                    yFail: {
+                    yMttr: {
                         type: 'linear', position: 'right', beginAtZero: true,
-                        title: { display: true, text: 'Failures', font: { size: 10 } },
+                        title: { display: true, text: 'MTTR (hours)', font: { size: 10 } },
                         grid: { drawOnChartArea: false },
-                        ticks: { font: { size: 10 }, stepSize: 1 }
+                        ticks: { font: { size: 10 } }
                     },
                     x: { ticks: { font: { size: 10 }, maxRotation: 45, minRotation: 0 } }
                 }

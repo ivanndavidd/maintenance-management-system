@@ -562,24 +562,53 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('bucket_date');
 
-        // Failure count per bucket (for MTBF proxy: avg interval implied by count)
-        $failureRows = DB::connection('site')->table('cm_reports as r')
+        // MTBF per bucket: for each bucket, get all tickets with asset_id ordered by submitted_at,
+        // calculate intervals between consecutive tickets across the whole period,
+        // then assign each interval to the bucket of the later ticket.
+        $allTickets = DB::connection('site')->table('cm_reports as r')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
-            ->selectRaw("{$labelExpr}, COUNT(*) as failures")
-            ->groupByRaw($groupExpr)
-            ->orderBy('bucket_date')
-            ->get()
-            ->keyBy('bucket_date');
+            ->whereNotNull('r.asset_id')
+            ->selectRaw('r.asset_id, r.submitted_at')
+            ->orderBy('r.asset_id')
+            ->orderBy('r.submitted_at')
+            ->get();
 
-        $labels = collect($mttrRows->keys())->merge($failureRows->keys())->unique()->sort()->values();
+        // Calculate intervals per asset, bucket them by date of the later ticket
+        $mtbfBuckets = [];
+        $assetGroups = $allTickets->groupBy('asset_id');
+        foreach ($assetGroups as $rows) {
+            $sorted = $rows->sortBy('submitted_at')->values();
+            for ($i = 1; $i < $sorted->count(); $i++) {
+                $prev = Carbon::parse($sorted[$i - 1]->submitted_at);
+                $curr = Carbon::parse($sorted[$i]->submitted_at);
+                $intervalHours = $prev->diffInMinutes($curr) / 60;
 
-        return $labels->map(function ($date) use ($mttrRows, $failureRows) {
+                if ($useWeekly) {
+                    $bucketKey = $curr->startOfWeek()->toDateString();
+                } else {
+                    $bucketKey = $curr->toDateString();
+                }
+
+                $mtbfBuckets[$bucketKey][] = $intervalHours;
+            }
+        }
+
+        // Merge all bucket dates
+        $allDates = collect($mttrRows->keys())
+            ->merge(array_keys($mtbfBuckets))
+            ->unique()->sort()->values();
+
+        return $allDates->map(function ($date) use ($mttrRows, $mtbfBuckets) {
             $mttr = $mttrRows->get($date);
-            $fail = $failureRows->get($date);
+            $intervals = $mtbfBuckets[$date] ?? [];
+            $mtbf = count($intervals) > 0
+                ? round(array_sum($intervals) / count($intervals), 1)
+                : null;
+
             return [
-                'label'    => $date,
-                'mttr'     => $mttr ? round($mttr->avg_minutes / 60, 2) : null,
-                'failures' => $fail ? (int) $fail->failures : 0,
+                'label' => $date,
+                'mttr'  => $mttr ? round($mttr->avg_minutes / 60, 2) : null,
+                'mtbf'  => $mtbf,
             ];
         })->values()->toArray();
     }
