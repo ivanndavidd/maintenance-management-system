@@ -286,9 +286,7 @@ class UserController extends Controller
         $action = $request->input('action', 'deactivate');
 
         DB::connection('site')->transaction(function () use ($user, $toId, $action) {
-            // CM reports submitted_by
-            DB::connection('site')->table('cm_reports')
-                ->where('submitted_by', $user->id)->update(['submitted_by' => $toId]);
+            // CM reports — kept as-is, not reassigned
 
             // Corrective maintenance assigned_to
             DB::connection('site')->table('corrective_maintenance_requests')
@@ -306,6 +304,29 @@ class UserController extends Controller
             DB::connection('site')->table('shift_assignments')
                 ->where('user_id', $user->id)->delete();
 
+            // Stock opname schedules assigned_to
+            DB::connection('site')->table('stock_opname_schedules')
+                ->where('assigned_to', $user->id)->update(['assigned_to' => $toId]);
+
+            // Stock opname assigned users pivot — replace entry
+            $existing = DB::connection('site')->table('stock_opname_assigned_users')
+                ->where('user_id', $user->id)->get();
+            foreach ($existing as $row) {
+                $alreadyAssigned = DB::connection('site')->table('stock_opname_assigned_users')
+                    ->where('schedule_id', $row->schedule_id)
+                    ->where('user_id', $toId)->exists();
+                if (!$alreadyAssigned) {
+                    DB::connection('site')->table('stock_opname_assigned_users')
+                        ->where('schedule_id', $row->schedule_id)
+                        ->where('user_id', $user->id)
+                        ->update(['user_id' => $toId]);
+                } else {
+                    DB::connection('site')->table('stock_opname_assigned_users')
+                        ->where('schedule_id', $row->schedule_id)
+                        ->where('user_id', $user->id)->delete();
+                }
+            }
+
             if ($action === 'delete') {
                 $user->delete();
             } else {
@@ -321,7 +342,7 @@ class UserController extends Controller
     }
 
     /**
-     * Check if user has any linked records that would block deletion
+     * Check if user has any linked records that would block deactivation/deletion
      */
     private function checkLinkedData(User $user): array
     {
@@ -340,15 +361,27 @@ class UserController extends Controller
         $shiftAssignments = DB::connection('site')->table('shift_assignments')
             ->where('user_id', $user->id)->count();
 
+        $opnameSchedules = DB::connection('site')->table('stock_opname_schedules')
+            ->where('assigned_to', $user->id)->count();
+
+        $opnameAssignments = DB::connection('site')->table('stock_opname_assigned_users')
+            ->where('user_id', $user->id)->count();
+
         $linked = [
-            'cm_reports'       => $cmReports,
-            'cm_requests'      => $cmRequests,
-            'pm_tasks'         => $pmTasks,
-            'sparepart_usages' => $sparepartUsages,
-            'shift_assignments'=> $shiftAssignments,
+            'cm_reports'         => $cmReports,       // info only — not reassigned
+            'cm_requests'        => $cmRequests,
+            'pm_tasks'           => $pmTasks,
+            'sparepart_usages'   => $sparepartUsages,
+            'shift_assignments'  => $shiftAssignments,
+            'opname_schedules'   => $opnameSchedules,
+            'opname_assignments' => $opnameAssignments,
         ];
 
-        $linked['has_linked'] = collect($linked)->sum() > 0;
+        // CM reports are kept as-is; only reassignable items block the flow
+        $reassignable = $cmRequests + $pmTasks + $sparepartUsages
+                      + $shiftAssignments + $opnameSchedules + $opnameAssignments;
+
+        $linked['has_linked'] = $reassignable > 0;
 
         return $linked;
     }

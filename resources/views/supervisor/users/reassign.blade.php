@@ -33,14 +33,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr class="table-light">
                         <td>CM Reports (submitted by)</td>
                         <td class="text-center">
-                            <span class="badge {{ $linked['cm_reports'] > 0 ? 'bg-danger' : 'bg-secondary' }}">
-                                {{ $linked['cm_reports'] }}
-                            </span>
+                            <span class="badge bg-secondary">{{ $linked['cm_reports'] }}</span>
                         </td>
-                        <td><small class="text-muted">Will be reassigned to selected user</small></td>
+                        <td><small class="text-muted"><i class="fas fa-info-circle me-1"></i>Kept as-is — historical record</small></td>
                     </tr>
                     <tr>
                         <td>CM Requests (assigned to)</td>
@@ -77,6 +75,24 @@
                             </span>
                         </td>
                         <td><small class="text-muted">Will be deleted (reassign via shift schedule)</small></td>
+                    </tr>
+                    <tr>
+                        <td>Stock Opname Schedules</td>
+                        <td class="text-center">
+                            <span class="badge {{ $linked['opname_schedules'] > 0 ? 'bg-danger' : 'bg-secondary' }}">
+                                {{ $linked['opname_schedules'] }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">Will be reassigned to selected user</small></td>
+                    </tr>
+                    <tr>
+                        <td>Stock Opname Assignments</td>
+                        <td class="text-center">
+                            <span class="badge {{ $linked['opname_assignments'] > 0 ? 'bg-danger' : 'bg-secondary' }}">
+                                {{ $linked['opname_assignments'] }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">Will be reassigned to selected user</small></td>
                     </tr>
                 </tbody>
             </table>
