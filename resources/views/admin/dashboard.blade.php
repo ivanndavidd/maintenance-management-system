@@ -1298,6 +1298,12 @@
             .catch(err => console.error('Metrics load error:', err));
     }
 
+    function fmtDuration(hours) {
+        if (hours === null || hours === undefined) return 'N/A';
+        if (hours < 1) return Math.round(hours * 60) + ' min';
+        return hours + 'h';
+    }
+
     function renderTrendChart(trend, granularity) {
         if (chartTrend) chartTrend.destroy();
         const ctx = document.getElementById('mtbfMttrTrendChart');
@@ -1347,7 +1353,7 @@
                         usePointStyle: true, pointStyle: 'circle' } },
                     tooltip: {
                         callbacks: {
-                            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y + 'h' : 'N/A'}`
+                            label: ctx => ` ${ctx.dataset.label}: ${fmtDuration(ctx.parsed.y)}`
                         }
                     }
                 },
@@ -1408,7 +1414,7 @@
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: ctx => ` MTBF: ${ctx.parsed.x}h`,
+                            label: ctx => ` MTBF: ${fmtDuration(ctx.parsed.x)}`,
                             afterLabel: ctx => ` Failures: ${counts[ctx.dataIndex]}x`,
                         }
                     }
@@ -1453,9 +1459,8 @@
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            afterLabel: function(ctx) {
-                                return `Tickets: ${counts[ctx.dataIndex]}`;
-                            }
+                            label: ctx => ` Avg MTTR (hours): ${fmtDuration(ctx.parsed.y)}`,
+                            afterLabel: ctx => `Tickets: ${counts[ctx.dataIndex]}`,
                         }
                     }
                 },
