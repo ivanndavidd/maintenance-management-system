@@ -499,10 +499,12 @@ class DashboardController extends Controller
 
         // Availability = (period_hours - total_repair_hours) / period_hours * 100
         $periodHours = $dateFrom->diffInHours($dateTo);
-        $totalRepairMinutes = DB::connection('site')->table('cm_reports as r')
-            ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
+        $totalRepairMinutes = DB::connection('site')->table('corrective_maintenance_requests as req')
+            ->join('cm_reports as r', 'r.cm_request_id', '=', 'req.id')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
-            ->selectRaw('SUM(TIMESTAMPDIFF(MINUTE, req.created_at, r.submitted_at)) as total_minutes')
+            ->whereNotNull('req.in_progress_at')
+            ->whereNotNull('req.report_submitted_at')
+            ->selectRaw('SUM(TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at)) as total_minutes')
             ->value('total_minutes') ?? 0;
         $totalRepairHours = $totalRepairMinutes / 60;
         $availability = $periodHours > 0
@@ -534,9 +536,11 @@ class DashboardController extends Controller
             ->join('group_assets as g', 'g.group_id', '=', 'a.group_id')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
             ->whereNotNull('r.asset_id')
-            ->selectRaw('g.group_name, req.created_at as start_at, r.submitted_at as end_at, r.id as report_id')
+            ->whereNotNull('req.in_progress_at')
+            ->whereNotNull('req.report_submitted_at')
+            ->selectRaw('g.group_name, req.in_progress_at as start_at, req.report_submitted_at as end_at, r.id as report_id')
             ->orderBy('g.group_name')
-            ->orderBy('req.created_at')
+            ->orderBy('req.in_progress_at')
             ->get();
 
         // Group events by group_name, convert time-of-day to fractional hours (0–24)
@@ -591,11 +595,13 @@ class DashboardController extends Controller
             $labelExpr = 'DATE(r.submitted_at) as bucket_date';
         }
 
-        // MTTR per bucket = submitted_at - corrective_maintenance_requests.created_at
+        // MTTR per bucket = in_progress_at → report_submitted_at (work_duration)
         $mttrRows = DB::connection('site')->table('cm_reports as r')
             ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
-            ->selectRaw("{$labelExpr}, AVG(TIMESTAMPDIFF(MINUTE, req.created_at, r.submitted_at)) as avg_minutes")
+            ->whereNotNull('req.in_progress_at')
+            ->whereNotNull('req.report_submitted_at')
+            ->selectRaw("{$labelExpr}, AVG(TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at)) as avg_minutes")
             ->groupByRaw($groupExpr)
             ->orderBy('bucket_date')
             ->get()
@@ -653,7 +659,7 @@ class DashboardController extends Controller
 
     private function getMttrByGroup(Carbon $dateFrom, Carbon $dateTo): array
     {
-        // MTTR = cm_reports.submitted_at - corrective_maintenance_requests.created_at
+        // MTTR = work_duration = in_progress_at → report_submitted_at
         // Grouped by group_assets.group_name via assets_master
         $rows = DB::connection('site')->table('cm_reports as r')
             ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
@@ -661,7 +667,9 @@ class DashboardController extends Controller
             ->join('group_assets as g', 'g.group_id', '=', 'a.group_id')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
             ->whereNotNull('r.asset_id')
-            ->selectRaw('g.group_name, AVG(TIMESTAMPDIFF(MINUTE, req.created_at, r.submitted_at)) as avg_minutes, COUNT(*) as ticket_count')
+            ->whereNotNull('req.in_progress_at')
+            ->whereNotNull('req.report_submitted_at')
+            ->selectRaw('g.group_name, AVG(TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at)) as avg_minutes, COUNT(*) as ticket_count')
             ->groupBy('g.group_id', 'g.group_name')
             ->orderBy('avg_minutes', 'desc')
             ->get();
@@ -670,7 +678,9 @@ class DashboardController extends Controller
         $overallRow = DB::connection('site')->table('cm_reports as r')
             ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
-            ->selectRaw('AVG(TIMESTAMPDIFF(MINUTE, req.created_at, r.submitted_at)) as avg_minutes, COUNT(*) as ticket_count')
+            ->whereNotNull('req.in_progress_at')
+            ->whereNotNull('req.report_submitted_at')
+            ->selectRaw('AVG(TIMESTAMPDIFF(MINUTE, req.in_progress_at, req.report_submitted_at)) as avg_minutes, COUNT(*) as ticket_count')
             ->first();
 
         return [
