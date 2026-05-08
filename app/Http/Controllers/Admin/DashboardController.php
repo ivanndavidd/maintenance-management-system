@@ -526,31 +526,43 @@ class DashboardController extends Controller
             'count'    => (int) $r->count,
         ])->values()->toArray();
 
-        // Downtime timeline: total downtime hours per group within period
-        $downtimeRows = DB::connection('site')->table('cm_reports as r')
+        // Downtime timeline: each CM ticket as an event (start=created_at, end=submitted_at)
+        // Mapped to fractional hours within a 24h day (time-of-day only, date collapsed)
+        $downtimeEvents = DB::connection('site')->table('cm_reports as r')
             ->join('corrective_maintenance_requests as req', 'req.id', '=', 'r.cm_request_id')
             ->join('assets_master as a', 'a.id', '=', 'r.asset_id')
             ->join('group_assets as g', 'g.group_id', '=', 'a.group_id')
             ->whereBetween('r.submitted_at', [$dateFrom, $dateTo])
             ->whereNotNull('r.asset_id')
-            ->selectRaw('g.group_name, SUM(TIMESTAMPDIFF(MINUTE, req.created_at, r.submitted_at)) as total_downtime_minutes')
-            ->groupBy('g.group_id', 'g.group_name')
+            ->selectRaw('g.group_name, req.created_at as start_at, r.submitted_at as end_at, r.id as report_id')
             ->orderBy('g.group_name')
+            ->orderBy('req.created_at')
             ->get();
 
-        // Timeline is always shown as a 24-hour day average
-        // avg daily downtime = total downtime / number of days in period
-        $periodDays = max(1, $dateFrom->diffInDays($dateTo));
-        $downtimeTimeline = $downtimeRows->map(function ($r) use ($periodDays) {
-            $avgDailyDowntimeHours = round($r->total_downtime_minutes / 60 / $periodDays, 2);
-            $avgDailyRunningHours  = round(max(0, 24 - $avgDailyDowntimeHours), 2);
-            return [
-                'group'          => $r->group_name,
-                'downtime_hours' => $avgDailyDowntimeHours,
-                'running_hours'  => $avgDailyRunningHours,
-                'period_hours'   => 24,
+        // Group events by group_name, convert time-of-day to fractional hours (0–24)
+        $groupedEvents = [];
+        foreach ($downtimeEvents as $ev) {
+            $start = Carbon::parse($ev->start_at);
+            $end   = Carbon::parse($ev->end_at);
+            $startH = $start->hour + $start->minute / 60 + $start->second / 3600;
+            $endH   = $end->hour   + $end->minute   / 60 + $end->second   / 3600;
+            // If end < start (crosses midnight), cap at 24
+            if ($endH < $startH) $endH = 24;
+            $endH = min(24, $endH);
+
+            $groupedEvents[$ev->group_name][] = [
+                'x'     => [$startH, $endH],
+                'label' => $start->format('H:i') . '–' . $end->format('H:i') . ' (' . round($end->diffInMinutes($start)) . 'm)',
             ];
-        })->values()->toArray();
+        }
+
+        $downtimeTimeline = [];
+        foreach ($groupedEvents as $group => $events) {
+            $downtimeTimeline[] = [
+                'group'  => $group,
+                'events' => $events,
+            ];
+        }
 
         return response()->json([
             'period'            => $period,
