@@ -166,12 +166,11 @@
                 <div class="card-body p-3">
                     @php
                         $steps = [
-                            ['status' => 'pending',   'label' => 'Submitted',  'icon' => 'paper-plane'],
-                            ['status' => 'approved',  'label' => 'Approved',   'icon' => 'check-circle'],
-                            ['status' => 'in_use',    'label' => 'In Use',     'icon' => 'tools'],
-                            ['status' => 'returned',  'label' => 'Returned',   'icon' => 'undo'],
+                            ['status' => 'pending',  'label' => 'Submitted', 'icon' => 'paper-plane'],
+                            ['status' => 'in_use',   'label' => 'Approved & In Use', 'icon' => 'tools'],
+                            ['status' => 'returned', 'label' => 'Returned',  'icon' => 'undo'],
                         ];
-                        $order = ['pending'=>0,'approved'=>1,'in_use'=>2,'returned'=>3];
+                        $order = ['pending'=>0,'approved'=>1,'in_use'=>1,'returned'=>2];
                         $currentOrder = $order[$toolRequest->status] ?? -1;
                         if (in_array($toolRequest->status, ['rejected','cancelled'])) $currentOrder = -1;
                     @endphp

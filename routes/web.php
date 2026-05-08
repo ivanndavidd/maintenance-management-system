@@ -646,7 +646,6 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/{toolRequest}', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'show'])->name('show');
                 Route::post('/{toolRequest}/approve', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'approve'])->name('approve');
                 Route::post('/{toolRequest}/reject', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'reject'])->name('reject');
-                Route::post('/{toolRequest}/in-use', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'markInUse'])->name('in-use');
                 Route::post('/{toolRequest}/mark-returned', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'markReturned'])->name('mark-returned');
             });
         });
@@ -918,7 +917,6 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/{toolRequest}', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'show'])->name('show');
                 Route::post('/{toolRequest}/approve', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'approve'])->name('approve');
                 Route::post('/{toolRequest}/reject', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'reject'])->name('reject');
-                Route::post('/{toolRequest}/in-use', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'markInUse'])->name('in-use');
                 Route::post('/{toolRequest}/mark-returned', [App\Http\Controllers\Admin\ToolUsageRequestController::class, 'markReturned'])->name('mark-returned');
                 Route::post('/{toolRequest}/cancel', [App\Http\Controllers\User\ToolUsageRequestController::class, 'cancel'])->name('cancel');
                 Route::post('/{toolRequest}/returned', [App\Http\Controllers\User\ToolUsageRequestController::class, 'markReturned'])->name('returned');

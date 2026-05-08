@@ -67,18 +67,21 @@ class ToolUsageRequestController extends Controller
         }
 
         $toolRequest->update([
-            'status'       => 'approved',
+            'status'       => 'in_use',
             'reviewed_by'  => auth()->id(),
             'reviewed_at'  => now(),
             'review_notes' => $request->review_notes,
         ]);
 
+        $tool->decrement('quantity', $toolRequest->quantity_requested);
+
         $toolRequest->load('requester', 'reviewer');
         if ($toolRequest->requester?->email) {
             Mail::to($toolRequest->requester->email)->queue(new ToolRequestApproved($toolRequest));
+            Mail::to($toolRequest->requester->email)->queue(new ToolRequestInUse($toolRequest));
         }
 
-        return back()->with('success', 'Request approved. User can now pick up the tool.');
+        return back()->with('success', 'Request approved. Stock deducted — tool is now in use.');
     }
 
     public function reject(Request $request, ToolUsageRequest $toolRequest)
@@ -106,23 +109,6 @@ class ToolUsageRequestController extends Controller
         return back()->with('success', 'Request rejected.');
     }
 
-    public function markInUse(ToolUsageRequest $toolRequest)
-    {
-        if ($toolRequest->status !== 'approved') {
-            return back()->with('error', 'Only approved requests can be marked as in use.');
-        }
-
-        $toolRequest->load('tool');
-        $toolRequest->tool->decrement('quantity', $toolRequest->quantity_requested);
-        $toolRequest->update(['status' => 'in_use']);
-
-        $toolRequest->load('requester');
-        if ($toolRequest->requester?->email) {
-            Mail::to($toolRequest->requester->email)->queue(new ToolRequestInUse($toolRequest));
-        }
-
-        return back()->with('success', 'Tool marked as in use. Stock deducted.');
-    }
 
     // Admin/supervisor can also mark a borrowed tool as returned
     public function markReturned(Request $request, ToolUsageRequest $toolRequest)
