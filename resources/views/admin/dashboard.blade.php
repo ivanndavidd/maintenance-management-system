@@ -840,12 +840,19 @@
                         <div class="col-12">
                             <div class="card border-0 bg-light">
                                 <div class="card-body">
-                                    <h6 class="fw-bold mb-3">
-                                        Downtime Timeline
-                                        <small class="text-muted fw-normal ms-1">— time-of-day each downtime event occurred</small>
-                                    </h6>
-                                    <div id="downtimeTimelineWrap" style="position:relative; height:220px;">
-                                        <canvas id="downtimeTimelineChart"></canvas>
+                                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                        <div>
+                                            <h6 class="fw-bold mb-0">Downtime Timeline</h6>
+                                            <small class="text-muted">time-of-day each downtime event occurred</small>
+                                        </div>
+                                        <select class="form-select form-select-sm" id="downtimeGroupSelect" style="width:auto;min-width:200px;">
+                                            <option value="__all__">All Groups</option>
+                                        </select>
+                                    </div>
+                                    <div style="height:320px; overflow-y:auto; overflow-x:hidden;" id="downtimeScrollWrap">
+                                        <div id="downtimeTimelineWrap" style="position:relative; height:320px;">
+                                            <canvas id="downtimeTimelineChart"></canvas>
+                                        </div>
                                     </div>
                                     <div class="d-flex gap-3 justify-content-center mt-2">
                                         <div class="d-flex align-items-center gap-1">
@@ -1240,6 +1247,7 @@
     @if(auth()->user()->hasRole('admin'))
     // ========== Maintenance Performance Metrics ==========
     let chartTrend = null, chartMtbfGroup = null, chartMttrGroup = null, chartCategory = null, chartDowntime = null;
+    let allDowntimeData = [];
 
     document.getElementById('metricsTimeframeBtns').addEventListener('click', function(e) {
         const btn = e.target.closest('[data-period]');
@@ -1292,7 +1300,10 @@
                 renderTrendChart(data.trend, data.granularity);
                 renderMtbfGroupChart(data.mtbf.by_group);
                 renderMttrGroupChart(data.mttr.by_group);
-                renderDowntimeTimeline(data.downtime_timeline);
+                // Sort by failure count descending, most frequent first
+                allDowntimeData = [...data.downtime_timeline].sort((a, b) => b.events.length - a.events.length);
+                populateDowntimeDropdown(allDowntimeData);
+                renderDowntimeTimeline(getFilteredDowntime());
                 renderCategoryChart(data.by_category);
             })
             .catch(err => console.error('Metrics load error:', err));
@@ -1472,14 +1483,50 @@
         });
     }
 
+    function populateDowntimeDropdown(timeline) {
+        const sel = document.getElementById('downtimeGroupSelect');
+        const prev = sel.value;
+        sel.innerHTML = '<option value="__all__">All Groups</option>';
+        timeline.forEach(row => {
+            const opt = document.createElement('option');
+            opt.value = row.group;
+            opt.textContent = row.group + ' (' + row.events.length + ' events)';
+            sel.appendChild(opt);
+        });
+        // Default: select the group with most events (first after sort)
+        if (prev === '__all__' && timeline.length > 0) {
+            sel.value = timeline[0].group;
+        } else {
+            sel.value = prev;
+            if (!sel.value) sel.value = timeline.length > 0 ? timeline[0].group : '__all__';
+        }
+    }
+
+    function getFilteredDowntime() {
+        const val = document.getElementById('downtimeGroupSelect').value;
+        if (val === '__all__') return allDowntimeData;
+        return allDowntimeData.filter(r => r.group === val);
+    }
+
+    document.getElementById('downtimeGroupSelect').addEventListener('change', function() {
+        renderDowntimeTimeline(getFilteredDowntime());
+    });
+
     function renderDowntimeTimeline(timeline) {
         if (chartDowntime) chartDowntime.destroy();
         const wrap = document.getElementById('downtimeTimelineWrap');
         const canvas = document.getElementById('downtimeTimelineChart');
-        if (!canvas || !timeline || !timeline.length) return;
+        if (!canvas) return;
 
-        const rowHeight = 44;
-        const totalHeight = Math.max(160, timeline.length * rowHeight + 60);
+        if (!timeline || !timeline.length) {
+            wrap.style.height = '80px';
+            canvas.style.display = 'none';
+            return;
+        }
+        canvas.style.display = '';
+
+        const rowHeight = 40;
+        const totalHeight = Math.max(160, timeline.length * rowHeight + 50);
         wrap.style.height = totalHeight + 'px';
 
         const labels = timeline.map(d => d.group);
