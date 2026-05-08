@@ -588,9 +588,9 @@ class DashboardController extends Controller
         $useWeekly = in_array($period, ['3M', '6M', '1Y']);
 
         if ($useWeekly) {
-            // YEARWEEK mode 1 = ISO week (Monday start); STR_TO_DATE gives the Monday of that week
+            // Get Monday of the week: subtract (WEEKDAY = 0..6, Monday=0) days from the date
             $groupExpr = 'YEARWEEK(r.submitted_at, 1)';
-            $labelExpr = "STR_TO_DATE(CONCAT(YEARWEEK(r.submitted_at, 1), ' Monday'), '%X%V %W') as bucket_date";
+            $labelExpr = "DATE_ADD(DATE(r.submitted_at), INTERVAL(-(WEEKDAY(r.submitted_at))) DAY) as bucket_date";
         } else {
             $groupExpr = 'DATE(r.submitted_at)';
             $labelExpr = 'DATE(r.submitted_at) as bucket_date';
