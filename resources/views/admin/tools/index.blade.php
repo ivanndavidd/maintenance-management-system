@@ -239,14 +239,40 @@
             </div>
 
             <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div>
-                    Showing {{ $tools->firstItem() ?? 0 }} to {{ $tools->lastItem() ?? 0 }} of {{ $tools->total() }} tools
-                </div>
-                <div>
-                    {{ $tools->links() }}
-                </div>
+            @if($tools->hasPages())
+            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                <small class="text-muted">
+                    Showing {{ $tools->firstItem() }} to {{ $tools->lastItem() }} of {{ $tools->total() }} tools
+                </small>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item {{ $tools->onFirstPage() ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ $tools->previousPageUrl() }}">‹</a>
+                        </li>
+                        @php
+                            $start = max(1, $tools->currentPage() - 2);
+                            $end   = min($tools->lastPage(), $tools->currentPage() + 2);
+                        @endphp
+                        @if($start > 1)
+                            <li class="page-item"><a class="page-link" href="{{ $tools->url(1) }}">1</a></li>
+                            @if($start > 2)<li class="page-item disabled"><span class="page-link">…</span></li>@endif
+                        @endif
+                        @foreach($tools->getUrlRange($start, $end) as $page => $url)
+                            <li class="page-item {{ $page == $tools->currentPage() ? 'active' : '' }}">
+                                <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                            </li>
+                        @endforeach
+                        @if($end < $tools->lastPage())
+                            @if($end < $tools->lastPage() - 1)<li class="page-item disabled"><span class="page-link">…</span></li>@endif
+                            <li class="page-item"><a class="page-link" href="{{ $tools->url($tools->lastPage()) }}">{{ $tools->lastPage() }}</a></li>
+                        @endif
+                        <li class="page-item {{ !$tools->hasMorePages() ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ $tools->nextPageUrl() }}">›</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
+            @endif
         </div>
     </div>
 </div>
