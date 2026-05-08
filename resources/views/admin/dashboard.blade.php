@@ -586,7 +586,7 @@
                             <small class="text-muted" id="repairCostLabel">last 3 months</small>
                         </div>
                         <div class="text-warning opacity-25 ms-2">
-                            <i class="fas fa-wrench fa-3x"></i>
+                            <i class="fas fa-dollar-sign fa-3x"></i>
                         </div>
                     </div>
                     <div style="height:50px;">
