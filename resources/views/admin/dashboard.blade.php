@@ -577,13 +577,15 @@
                         <div style="flex:1;">
                             <div class="d-flex align-items-center justify-content-between mb-1">
                                 <h6 class="text-muted mb-0">Repair Cost</h6>
-                                <div class="btn-group btn-group-sm ms-2">
-                                    <button type="button" class="btn btn-outline-warning btn-xs py-0 px-1 active" id="costBtn3M" onclick="setCostScope('3M')" style="font-size:10px;">3M</button>
-                                    <button type="button" class="btn btn-outline-warning btn-xs py-0 px-1" id="costBtn6M" onclick="setCostScope('6M')" style="font-size:10px;">6M</button>
+                                <div class="btn-group btn-group-sm ms-2" id="costYearBtns">
+                                    @foreach(array_keys($costTrend) as $yr)
+                                    <button type="button" class="btn btn-outline-warning py-0 px-1 {{ $loop->last ? 'active' : '' }}"
+                                            data-year="{{ $yr }}" style="font-size:10px;">{{ $yr }}</button>
+                                    @endforeach
                                 </div>
                             </div>
                             <h5 class="mb-0 fw-bold" id="repairCostTotal">Rp -</h5>
-                            <small class="text-muted" id="repairCostLabel">last 3 months</small>
+                            <small class="text-muted" id="repairCostLabel">-</small>
                         </div>
                         <div class="text-warning opacity-25 ms-2">
                             <i class="fas fa-dollar-sign fa-3x"></i>
@@ -1275,21 +1277,20 @@
     let repairCostChart = null;
     const allCostData = @json($costTrend);
 
-    function setCostScope(scope) {
-        // Toggle buttons
-        document.getElementById('costBtn3M').classList.toggle('active', scope === '3M');
-        document.getElementById('costBtn6M').classList.toggle('active', scope === '6M');
+    function setCostYear(year) {
+        document.querySelectorAll('#costYearBtns .btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.year == year);
+        });
 
-        const months = scope === '3M' ? 3 : 6;
-        const filtered = allCostData.slice(-months);
-        const total = filtered.reduce((s, d) => s + d.cost, 0);
+        const months = allCostData[year] || [];
+        const total  = months.reduce((s, d) => s + d.cost, 0);
 
         document.getElementById('repairCostTotal').textContent = 'Rp ' + total.toLocaleString('id-ID', {maximumFractionDigits: 0});
-        document.getElementById('repairCostLabel').textContent = 'last ' + months + ' months';
+        document.getElementById('repairCostLabel').textContent = 'Jan – Dec ' + year;
 
         if (repairCostChart) {
-            repairCostChart.data.labels   = filtered.map(d => d.month);
-            repairCostChart.data.datasets[0].data = filtered.map(d => d.cost);
+            repairCostChart.data.labels = months.map(d => d.month);
+            repairCostChart.data.datasets[0].data = months.map(d => d.cost);
             repairCostChart.update();
         }
     }
@@ -1299,33 +1300,30 @@
         if (!ctx) return;
         repairCostChart = new Chart(ctx, {
             type: 'bar',
-            data: {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: 'rgba(255,193,7,0.6)',
-                    borderColor: 'rgba(255,193,7,1)',
-                    borderWidth: 1,
-                    borderRadius: 2,
-                }]
-            },
+            data: { labels: [], datasets: [{ data: [],
+                backgroundColor: 'rgba(255,193,7,0.6)',
+                borderColor: 'rgba(255,193,7,1)',
+                borderWidth: 1, borderRadius: 2,
+            }]},
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => ' Rp ' + Number(ctx.parsed.y).toLocaleString('id-ID')
-                        }
-                    }
+                    tooltip: { callbacks: { label: ctx => ' Rp ' + Number(ctx.parsed.y).toLocaleString('id-ID') } }
                 },
-                scales: {
-                    x: { display: false },
-                    y: { display: false, beginAtZero: true }
-                }
+                scales: { x: { display: false }, y: { display: false, beginAtZero: true } }
             }
         });
-        setCostScope('3M'); // default 3M
+
+        // Default: most recent year (last button)
+        const btns = document.querySelectorAll('#costYearBtns .btn');
+        const defaultYear = btns.length ? btns[btns.length - 1].dataset.year : null;
+        if (defaultYear) setCostYear(defaultYear);
+
+        document.getElementById('costYearBtns').addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-year]');
+            if (btn) setCostYear(btn.dataset.year);
+        });
     })();
     @endif
 

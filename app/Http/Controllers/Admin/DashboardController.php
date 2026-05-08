@@ -108,24 +108,41 @@ class DashboardController extends Controller
             SUM(quantity > 0 AND quantity <= minimum_stock) as low_stock
         ")->first();
 
-        // === Repair Cost (last 6 months, monthly) ===
-        $repairCostTrend = DB::connection('site')->table('sparepart_usages as u')
-            ->join('spareparts as s', 's.id', '=', 'u.sparepart_id')
-            ->where('u.used_at', '>=', Carbon::now()->subMonths(5)->startOfMonth()->toDateString())
-            ->selectRaw("DATE_FORMAT(u.used_at, '%Y-%m') as month, SUM(u.quantity_used * s.parts_price) as total_cost")
-            ->groupByRaw("DATE_FORMAT(u.used_at, '%Y-%m')")
-            ->orderBy('month')
-            ->pluck('total_cost', 'month');
+        // === Repair Cost per year (monthly breakdown, all available years) ===
+        $availableYears = DB::connection('site')->table('sparepart_usages')
+            ->selectRaw('YEAR(used_at) as year')
+            ->whereNotNull('used_at')
+            ->groupByRaw('YEAR(used_at)')
+            ->orderBy('year')
+            ->pluck('year')
+            ->toArray();
 
-        // Build both 3M and 6M datasets
+        // Always include current year even if no data yet
+        $currentYear = Carbon::now()->year;
+        if (!in_array($currentYear, $availableYears)) {
+            $availableYears[] = $currentYear;
+            sort($availableYears);
+        }
+
+        $costByYearRaw = DB::connection('site')->table('sparepart_usages as u')
+            ->join('spareparts as s', 's.id', '=', 'u.sparepart_id')
+            ->whereIn(DB::raw('YEAR(u.used_at)'), $availableYears)
+            ->selectRaw("YEAR(u.used_at) as year, MONTH(u.used_at) as month_num, SUM(u.quantity_used * s.parts_price) as total_cost")
+            ->groupByRaw("YEAR(u.used_at), MONTH(u.used_at)")
+            ->get();
+
+        // Build [year => [1..12 => cost]] structure
         $costTrend = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $key = Carbon::now()->subMonths($i)->format('Y-m');
-            $costTrend[] = [
-                'month' => Carbon::now()->subMonths($i)->format('M Y'),
-                'cost'  => (float) ($repairCostTrend[$key] ?? 0),
-                'scope' => $i < 3 ? '3M' : '6M', // last 3 months flagged as 3M
-            ];
+        foreach ($availableYears as $year) {
+            $months = [];
+            for ($m = 1; $m <= 12; $m++) {
+                $row = $costByYearRaw->first(fn($r) => $r->year == $year && $r->month_num == $m);
+                $months[] = [
+                    'month' => Carbon::create($year, $m, 1)->format('M'),
+                    'cost'  => $row ? (float) $row->total_cost : 0,
+                ];
+            }
+            $costTrend[$year] = $months;
         }
 
         // === Calendar Data for Supervisor ===
