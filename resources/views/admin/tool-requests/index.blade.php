@@ -127,15 +127,6 @@
                             <i class="fas fa-times"></i>
                         </button>
                         @endif
-                        @if($req->status === 'approved')
-                        <form action="{{ route($routePrefix.'.tool-requests.in-use', $req) }}" method="POST"
-                              onsubmit="return confirm('Mark {{ $req->request_number }} as in use? Stock will be deducted.')">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-primary w-100" title="Mark as In Use">
-                                <i class="fas fa-tools"></i>
-                            </button>
-                        </form>
-                        @endif
                         @if(in_array($req->status, ['approved', 'in_use']))
                         <button type="button" class="btn btn-sm btn-success"
                                 onclick="quickReturn({{ $req->id }}, '{{ $req->request_number }}', {{ $req->status === 'in_use' ? 'true' : 'false' }})"

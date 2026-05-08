@@ -79,7 +79,7 @@
 
             <div class="alert alert-primary py-2" style="font-size:13px;">
                 <i class="fas fa-tools me-1"></i>
-                <strong>Borrowing</strong> — stock deducted when marked In Use. Restored when returned.
+                <strong>Borrowing</strong> — stock deducted immediately upon approval. Restored when returned.
             </div>
 
             {{-- Overdue warning --}}
@@ -162,16 +162,6 @@
                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
                         <i class="fas fa-times"></i> Reject
                     </button>
-                    @endif
-
-                    @if($toolRequest->status === 'approved')
-                    <form action="{{ route($routePrefix.'.tool-requests.in-use', $toolRequest) }}" method="POST"
-                          onsubmit="return confirm('Mark this tool as in use? Stock will be deducted.')">
-                        @csrf
-                        <button type="submit" class="btn btn-primary btn-sm w-100">
-                            <i class="fas fa-tools"></i> Mark as In Use
-                        </button>
-                    </form>
                     @endif
 
                     @if(in_array($toolRequest->status, ['approved', 'in_use']))
