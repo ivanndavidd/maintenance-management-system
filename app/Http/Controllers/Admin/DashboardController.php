@@ -740,8 +740,8 @@ class DashboardController extends Controller
                 if ($bucketEnd->gt($dateTo)) {
                     $bucketEnd = $dateTo->copy();
                 }
-                $runningHours = max(1, $firstBucketDate->diffInMinutes($bucketEnd) / 60);
-                $mtbfRolling[$row->bucket_date] = round($runningHours / $cumulativeFailures, 1);
+                $runningMinutes = max(60, $firstBucketDate->diffInMinutes($bucketEnd));
+                $mtbfRolling[$row->bucket_date] = $runningMinutes / $cumulativeFailures;
             }
         }
 
@@ -751,13 +751,10 @@ class DashboardController extends Controller
 
         return $allDates->map(function ($date) use ($mttrRows, $mtbfRolling) {
             $mttrRow = $mttrRows->get($date);
-            $mttr = $mttrRow ? round($mttrRow->avg_minutes / 60, 2) : null;
-            $mtbf = $mtbfRolling[$date] ?? null;
-
             return [
                 'label' => $date,
-                'mttr'  => $mttr,
-                'mtbf'  => $mtbf,
+                'mttr'  => $mttrRow ? (float) $mttrRow->avg_minutes : null,  // minutes
+                'mtbf'  => $mtbfRolling[$date] ?? null,                       // minutes
             ];
         })->values()->toArray();
     }
@@ -791,11 +788,11 @@ class DashboardController extends Controller
             ->first();
 
         return [
-            'overall_hours'  => $overallRow->avg_minutes ? round($overallRow->avg_minutes / 60, 1) : 0,
-            'overall_count'  => (int) $overallRow->ticket_count,
-            'by_group'       => $rows->map(fn($r) => [
+            'overall_minutes' => $overallRow->avg_minutes ? (float) $overallRow->avg_minutes : 0,
+            'overall_count'   => (int) $overallRow->ticket_count,
+            'by_group'        => $rows->map(fn($r) => [
                 'group'        => $r->group_name,
-                'avg_hours'    => $r->avg_minutes ? round($r->avg_minutes / 60, 1) : 0,
+                'avg_minutes'  => $r->avg_minutes ? (float) $r->avg_minutes : 0,
                 'ticket_count' => (int) $r->ticket_count,
             ])->values()->toArray(),
         ];
@@ -822,21 +819,21 @@ class DashboardController extends Controller
             ->whereBetween('submitted_at', [$dateFrom, $dateTo])
             ->count();
 
-        $overallHours = $totalFailures > 0
-            ? round($periodHours / $totalFailures, 1)
+        $overallMinutes = $totalFailures > 0
+            ? ($periodHours * 60) / $totalFailures
             : 0;
 
         $byGroup = $rows->map(fn($r) => [
             'group'         => $r->group_name,
-            'avg_hours'     => $r->failure_count > 0 ? round($periodHours / $r->failure_count, 1) : 0,
+            'avg_minutes'   => $r->failure_count > 0 ? ($periodHours * 60) / $r->failure_count : 0,
             'failure_count' => (int) $r->failure_count,
         ])->values()->toArray();
 
-        usort($byGroup, fn($a, $b) => $a['avg_hours'] <=> $b['avg_hours']);
+        usort($byGroup, fn($a, $b) => $a['avg_minutes'] <=> $b['avg_minutes']);
 
         return [
-            'overall_hours' => $overallHours,
-            'by_group'      => $byGroup,
+            'overall_minutes' => $overallMinutes,
+            'by_group'        => $byGroup,
         ];
     }
 }

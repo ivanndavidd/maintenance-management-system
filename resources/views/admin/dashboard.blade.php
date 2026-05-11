@@ -1527,8 +1527,8 @@
                 document.getElementById('metricsDateRange').textContent = data.date_from + ' — ' + data.date_to;
 
                 // Summary cards
-                document.getElementById('mtbfOverall').textContent     = fmtDuration(data.mtbf.overall_hours);
-                document.getElementById('mttrOverall').textContent     = fmtDuration(data.mttr.overall_hours);
+                document.getElementById('mtbfOverall').textContent     = fmtDuration(data.mtbf.overall_minutes);
+                document.getElementById('mttrOverall').textContent     = fmtDuration(data.mttr.overall_minutes);
                 document.getElementById('mttrCount').textContent       = data.mttr.overall_count;
                 document.getElementById('metricsAvailability').textContent = data.availability + '%';
                 document.getElementById('metricsFailures').textContent = data.total_failures;
@@ -1541,9 +1541,10 @@
             .catch(err => console.error('Metrics load error:', err));
     }
 
-    function fmtDuration(hours) {
-        if (hours === null || hours === undefined) return 'N/A';
-        const totalMin = Math.round(hours * 60);
+    // All duration values from server are now in minutes (float)
+    function fmtDuration(minutes) {
+        if (minutes === null || minutes === undefined) return 'N/A';
+        const totalMin = Math.round(minutes);
         if (totalMin < 60) return totalMin + ' min';
         const h = Math.floor(totalMin / 60);
         const m = totalMin % 60;
@@ -1606,15 +1607,15 @@
                 scales: {
                     yMtbf: {
                         type: 'linear', position: 'left', beginAtZero: true,
-                        title: { display: true, text: 'Rolling MTBF (hours)', font: { size: 10 } },
-                        ticks: { font: { size: 10 } },
+                        title: { display: true, text: 'Rolling MTBF', font: { size: 10 } },
+                        ticks: { font: { size: 10 }, callback: v => fmtDuration(v) },
                         grid: { color: 'rgba(0,0,0,0.05)' }
                     },
                     yMttr: {
                         type: 'linear', position: 'right', beginAtZero: true,
-                        title: { display: true, text: 'MTTR (hours)', font: { size: 10 } },
+                        title: { display: true, text: 'MTTR', font: { size: 10 } },
                         grid: { drawOnChartArea: false },
-                        ticks: { font: { size: 10 } }
+                        ticks: { font: { size: 10 }, callback: v => fmtDuration(v) }
                     },
                     x: { ticks: { font: { size: 10 }, maxRotation: 45, minRotation: 0 } }
                 }
@@ -1633,7 +1634,7 @@
         }
 
         const labels  = byGroup.map(g => g.group);
-        const values  = byGroup.map(g => g.avg_hours);
+        const values  = byGroup.map(g => g.avg_minutes);
         const counts  = byGroup.map(g => g.failure_count);
 
         // Color by failure frequency: red ≥5 failures, yellow 2-4, green 1
@@ -1666,7 +1667,7 @@
                     }
                 },
                 scales: {
-                    x: { beginAtZero: true, title: { display: true, text: 'Hours', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+                    x: { beginAtZero: true, title: { display: true, text: 'MTBF', font: { size: 10 } }, ticks: { font: { size: 10 }, callback: v => fmtDuration(v) } },
                     y: { ticks: { font: { size: 10 } } }
                 }
             }
@@ -1680,9 +1681,9 @@
 
         if (!byGroup.length) return;
 
-        const sorted = [...byGroup].sort((a, b) => b.avg_hours - a.avg_hours);
+        const sorted = [...byGroup].sort((a, b) => b.avg_minutes - a.avg_minutes);
         const labels = sorted.map(g => g.group);
-        const values = sorted.map(g => g.avg_hours);
+        const values = sorted.map(g => g.avg_minutes);
         const counts = sorted.map(g => g.ticket_count);
 
         chartMttrGroup = new Chart(ctx, {
@@ -1690,11 +1691,11 @@
             data: {
                 labels,
                 datasets: [{
-                    label: 'Avg MTTR (hours)',
+                    label: 'Avg MTTR',
                     data: values,
                     backgroundColor: values.map(v =>
-                        v > 8 ? 'rgba(220,53,69,0.75)' :
-                        v > 4 ? 'rgba(255,193,7,0.75)' : 'rgba(25,135,84,0.75)'
+                        v > 480 ? 'rgba(220,53,69,0.75)' :
+                        v > 240 ? 'rgba(255,193,7,0.75)' : 'rgba(25,135,84,0.75)'
                     ),
                     borderRadius: 4,
                 }]
@@ -1705,13 +1706,13 @@
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: ctx => ` Avg MTTR (hours): ${fmtDuration(ctx.parsed.y)}`,
+                            label: ctx => ` Avg MTTR: ${fmtDuration(ctx.parsed.y)}`,
                             afterLabel: ctx => `Tickets: ${counts[ctx.dataIndex]}`,
                         }
                     }
                 },
                 scales: {
-                    y: { beginAtZero: true, title: { display: true, text: 'Hours', font: { size: 10 } }, ticks: { font: { size: 10 } } },
+                    y: { beginAtZero: true, title: { display: true, text: 'MTTR', font: { size: 10 } }, ticks: { font: { size: 10 }, callback: v => fmtDuration(v) } },
                     x: { ticks: { font: { size: 10 }, maxRotation: 30 } }
                 }
             }
