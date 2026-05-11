@@ -35,9 +35,9 @@
                     <h6 class="mb-0"><i class="fas fa-th-list me-2"></i>BOM Items</h6>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-sm mb-0">
-                            <thead class="table-light">
+                    <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                        <table class="table table-sm mb-0" style="font-size: 13px;">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
                                 <tr>
                                     <th width="5%">No</th>
                                     <th width="18%">No. Material</th>
@@ -48,16 +48,16 @@
                                     <th width="15%" class="text-end">Price</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody style="font-size:13px;">
                                 @forelse($bom->items as $item)
                                 <tr>
-                                    <td>{{ $item->no }}</td>
-                                    <td><code class="small">{{ $item->material_code ?? '-' }}</code></td>
-                                    <td>{{ $item->material_description }}</td>
-                                    <td class="text-center">{{ rtrim(rtrim(number_format($item->qty, 2), '0'), '.') }}</td>
-                                    <td class="text-center">{{ $item->unit }}</td>
-                                    <td class="text-end">{{ $item->formatted_price_unit }}</td>
-                                    <td class="text-end">{{ $item->formatted_price }}</td>
+                                    <td class="py-1">{{ $item->no }}</td>
+                                    <td class="py-1"><code style="font-size:11px;">{{ $item->material_code ?? '-' }}</code></td>
+                                    <td class="py-1">{{ $item->material_description }}</td>
+                                    <td class="py-1 text-center">{{ rtrim(rtrim(number_format($item->qty, 2), '0'), '.') }}</td>
+                                    <td class="py-1 text-center">{{ $item->unit }}</td>
+                                    <td class="py-1 text-end">{{ $item->formatted_price_unit }}</td>
+                                    <td class="py-1 text-end">{{ $item->formatted_price }}</td>
                                 </tr>
                                 @empty
                                 <tr>
@@ -121,18 +121,18 @@
             <!-- Linked Assets -->
             @if($bom->assets->count() > 0)
             <div class="card shadow-sm border-success">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-success text-white py-2">
                     <i class="fas fa-microchip me-1"></i> Linked Assets ({{ $bom->assets->count() }})
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
                     <ul class="list-group list-group-flush">
                         @foreach($bom->assets as $asset)
-                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-3">
                             <div>
-                                <span class="fw-semibold small">{{ $asset->equipment_id }}</span>
-                                <div class="text-muted" style="font-size:12px;">{{ $asset->asset_name }}</div>
+                                <span class="fw-semibold" style="font-size:13px;">{{ $asset->equipment_id }}</span>
+                                <div class="text-muted" style="font-size:11px;">{{ $asset->asset_name }}</div>
                             </div>
-                            <span class="badge {{ $asset->status === 'active' ? 'bg-success' : 'bg-secondary' }}">
+                            <span class="badge {{ $asset->status === 'active' ? 'bg-success' : 'bg-secondary' }}" style="font-size:10px;">
                                 {{ ucfirst($asset->status) }}
                             </span>
                         </li>
