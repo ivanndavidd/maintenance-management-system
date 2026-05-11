@@ -135,6 +135,32 @@ class DashboardController extends Controller
             SUM(quantity > 0 AND quantity <= minimum_stock) as low_stock
         ")->first();
 
+        // Top out-of-stock spareparts
+        $outOfStockItems = DB::connection('site')->table('spareparts')
+            ->where('quantity', 0)
+            ->orderBy('sparepart_name')
+            ->select('sparepart_id', 'sparepart_name', 'minimum_stock', 'unit')
+            ->limit(5)
+            ->get();
+
+        // Top low-stock spareparts
+        $lowStockItems = DB::connection('site')->table('spareparts')
+            ->where('quantity', '>', 0)
+            ->whereRaw('quantity <= minimum_stock')
+            ->orderByRaw('quantity / NULLIF(minimum_stock, 0) ASC')
+            ->select('sparepart_id', 'sparepart_name', 'quantity', 'minimum_stock', 'unit')
+            ->limit(5)
+            ->get();
+
+        // Recent sparepart usages (for Repair Cost card)
+        $recentUsages = DB::connection('site')->table('sparepart_usages as u')
+            ->join('spareparts as s', 's.id', '=', 'u.sparepart_id')
+            ->orderByDesc('u.used_at')
+            ->select('s.sparepart_name', 's.unit', 'u.quantity_used', 'u.used_at', 'u.ticket_number',
+                     DB::raw('u.quantity_used * s.parts_price as line_cost'))
+            ->limit(6)
+            ->get();
+
         // === Repair Cost per year (monthly breakdown, all available years) ===
         $availableYears = DB::connection('site')->table('sparepart_usages')
             ->selectRaw('YEAR(used_at) as year')
@@ -200,6 +226,9 @@ class DashboardController extends Controller
             'todayTasks',
             'calendarData',
             'sparepartStats',
+            'outOfStockItems',
+            'lowStockItems',
+            'recentUsages',
             'costTrend',
             'todaySummary'
         ));
