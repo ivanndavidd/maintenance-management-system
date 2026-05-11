@@ -344,7 +344,7 @@
      display: none;
      position: fixed;
      bottom: 20px;
-     right: 20px;
+     left: 20px;
      width: 44px;
      height: 44px;
      border-radius: 50%;
