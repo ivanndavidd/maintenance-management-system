@@ -980,7 +980,23 @@ class PreventiveMaintenanceController extends Controller
             }
         }
 
-        $tasks = $query->orderBy('task_date', 'asc')->get();
+        // Sort: pending first (needs approval), then other submitted statuses, then no report.
+        // Within each group, sort by task_date ascending.
+        $tasks = $query->orderByRaw("
+            CASE
+                WHEN EXISTS (
+                    SELECT 1 FROM pm_task_reports r
+                    WHERE r.pm_task_id = pm_tasks.id
+                      AND r.status IN ('pending', 'pending_sparepart_approval')
+                ) THEN 0
+                WHEN EXISTS (
+                    SELECT 1 FROM pm_task_reports r
+                    WHERE r.pm_task_id = pm_tasks.id
+                      AND r.status IN ('approved', 'sparepart_rejected')
+                ) THEN 1
+                ELSE 2
+            END
+        ")->orderBy('task_date', 'asc')->get();
 
         // Build shift-user lookup: {shiftId}_{YYYY-MM-DD} => "User A, User B"
         // Group by (shift_id, task_date) to avoid N+1 queries
