@@ -175,7 +175,7 @@
                                 @foreach($recentCmr as $cmr)
                                 <tr>
                                     <td><strong style="font-size:12px;">{{ $cmr->ticket_number }}</strong></td>
-                                    <td style="font-size:12px;">{{ $cmr->cmReport?->asset?->asset_name ?? $cmr->equipment_name ?? '-' }}</td>
+                                    <td style="font-size:12px;">{{ $cmr->report?->asset?->asset_name ?? $cmr->equipment_name ?? '-' }}</td>
                                     <td><span class="badge {{ $cmr->getPriorityBadgeClass() }}">{{ ucfirst($cmr->priority) }}</span></td>
                                     <td><span class="badge {{ $cmr->getStatusBadgeClass() }}">{{ ucfirst(str_replace('_', ' ', $cmr->status)) }}</span></td>
                                     <td><small>{{ $cmr->created_at->format('d M Y') }}</small></td>
