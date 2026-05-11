@@ -59,7 +59,8 @@ echo "Optimizing Laravel..."
 php artisan config:clear
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
+# Do NOT cache views — resources/ is bind-mounted so views update live
+php artisan view:clear
 
 # Skip auto-migration on startup to avoid conflicts
 # Run migrations manually after container is up: docker compose exec app php artisan migrate --force
