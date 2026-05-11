@@ -357,13 +357,6 @@
      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
      z-index: 1200;
      cursor: pointer;
-     opacity: 0.35;
-     transition: opacity 0.2s ease;
- }
- .mobile-toggle-admin:hover,
- .mobile-toggle-admin:focus,
- .mobile-toggle-admin.active {
-     opacity: 1;
  }
 
  .sidebar-backdrop {
