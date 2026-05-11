@@ -407,16 +407,27 @@
     (function() {
         const inner = document.getElementById('tickerInner');
         if (!inner) return;
-        // Duplicate content so scroll is seamless
-        inner.innerHTML += inner.innerHTML;
-        // After render, measure the width of one copy (half total) and animate exactly that
-        requestAnimationFrame(function() {
+        // Clone original items into a wrapper so we can measure one copy's width
+        const original = inner.innerHTML;
+        function startTicker() {
+            // Reset and duplicate
+            inner.innerHTML = original + original;
             const halfW = inner.scrollWidth / 2;
+            if (halfW < 10) {
+                // Font not ready yet, retry
+                setTimeout(startTicker, 100);
+                return;
+            }
             inner.style.setProperty('--ticker-shift', '-' + halfW + 'px');
-            // Speed: ~80px per second
-            const duration = Math.round(halfW / 80);
+            const duration = Math.max(10, Math.round(halfW / 80));
             inner.style.animation = 'tickerScroll ' + duration + 's linear infinite';
-        });
+        }
+        // Wait for fonts (FontAwesome icons affect width)
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(startTicker);
+        } else {
+            setTimeout(startTicker, 300);
+        }
     })();
     </script>
 
