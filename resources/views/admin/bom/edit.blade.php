@@ -107,7 +107,8 @@
 <script>
 let rowIndex = 0;
 
-const existingItems = @json($bom->items->map(function($i) {
+@php
+$itemsJson = json_encode($bom->items->map(function($i) {
     return [
         'material_code'        => $i->material_code,
         'material_description' => $i->material_description,
@@ -116,7 +117,9 @@ const existingItems = @json($bom->items->map(function($i) {
         'price_unit'           => $i->price_unit,
         'price'                => $i->price,
     ];
-}));
+})->values()->all());
+@endphp
+const existingItems = {!! $itemsJson !!};
 
 @verbatim
 function addRow(data) {
