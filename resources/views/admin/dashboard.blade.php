@@ -318,11 +318,6 @@
         white-space: nowrap;
         will-change: transform;
     }
-    .ticker-inner:hover { animation-play-state: paused; }
-    @keyframes tickerScroll {
-        0%   { transform: translateX(0); }
-        100% { transform: translateX(var(--ticker-shift)); }
-    }
     .ticker-item {
         display: inline-flex;
         align-items: center;
@@ -407,26 +402,34 @@
     (function() {
         const inner = document.getElementById('tickerInner');
         if (!inner) return;
-        // Clone original items into a wrapper so we can measure one copy's width
         const original = inner.innerHTML;
-        function startTicker() {
-            // Reset and duplicate
+        let pos = 0, halfW = 0, paused = false, rafId = null;
+        const speed = 0.8; // px per frame (~48px/s at 60fps)
+
+        function init() {
             inner.innerHTML = original + original;
-            const halfW = inner.scrollWidth / 2;
-            if (halfW < 10) {
-                // Font not ready yet, retry
-                setTimeout(startTicker, 100);
-                return;
-            }
-            inner.style.setProperty('--ticker-shift', '-' + halfW + 'px');
-            const duration = Math.max(10, Math.round(halfW / 80));
-            inner.style.animation = 'tickerScroll ' + duration + 's linear infinite';
+            halfW = inner.scrollWidth / 2;
+            if (halfW < 20) { setTimeout(init, 100); return; }
+            inner.style.transform = 'translateX(0)';
+            tick();
         }
-        // Wait for fonts (FontAwesome icons affect width)
+
+        function tick() {
+            if (!paused) {
+                pos -= speed;
+                if (pos <= -halfW) pos += halfW; // seamless reset exactly one copy
+                inner.style.transform = 'translateX(' + pos + 'px)';
+            }
+            rafId = requestAnimationFrame(tick);
+        }
+
+        inner.addEventListener('mouseenter', function() { paused = true; });
+        inner.addEventListener('mouseleave', function() { paused = false; });
+
         if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(startTicker);
+            document.fonts.ready.then(init);
         } else {
-            setTimeout(startTicker, 300);
+            setTimeout(init, 300);
         }
     })();
     </script>
