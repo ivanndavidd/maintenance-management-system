@@ -2,6 +2,14 @@
 
 @section('page-title', 'New Tool Request')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+<style>
+    .choices__inner { min-height: 38px; padding: 5px 12px; font-size: 14px; }
+    .choices__list--dropdown .choices__item--selectable { padding: 9px 12px; font-size: 13px; }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -180,66 +188,87 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script>
-document.getElementById('tool_id').addEventListener('change', function() {
-    const opt = this.options[this.selectedIndex];
-    const qty = opt.dataset.qty ?? 0;
-    const unit = opt.dataset.unit ?? 'unit';
+// Tool data from server (for stock/unit lookup after Choices.js replaces the DOM select)
+const toolsData = @json($tools->map(fn($t) => [
+    'id'   => $t->id,
+    'qty'  => $t->quantity,
+    'unit' => $t->unit,
+])->keyBy('id'));
 
-    const info          = document.getElementById('stockInfo');
-    const qtyEl         = document.getElementById('stockQty');
-    const unitLabel     = document.getElementById('unitLabel');
-    const borrowNotice  = document.getElementById('borrowNotice');
+document.addEventListener('DOMContentLoaded', function() {
+    const selectEl = document.getElementById('tool_id');
 
-    if (this.value) {
-        qtyEl.textContent = qty + ' ' + unit;
-        info.classList.remove('d-none');
-        unitLabel.textContent = unit;
-        document.getElementById('quantity_requested').max = qty;
-        borrowNotice.classList.remove('d-none');
-    } else {
-        info.classList.add('d-none');
-        unitLabel.textContent = 'unit';
-        document.getElementById('quantity_requested').removeAttribute('max');
-        borrowNotice.classList.add('d-none');
+    new Choices(selectEl, {
+        searchEnabled:        true,
+        searchPlaceholderValue: 'Ketik untuk cari tool...',
+        itemSelectText:       '',
+        shouldSort:           false,
+        placeholder:          true,
+        placeholderValue:     '-- Select Tool --',
+        removeItemButton:     false,
+    });
+
+    const info         = document.getElementById('stockInfo');
+    const qtyEl        = document.getElementById('stockQty');
+    const unitLabel    = document.getElementById('unitLabel');
+    const borrowNotice = document.getElementById('borrowNotice');
+    const qtyInput     = document.getElementById('quantity_requested');
+
+    // Qty error element
+    const qtyError = document.createElement('div');
+    qtyError.className = 'invalid-feedback d-none';
+    qtyError.id = 'qtyExceedError';
+    qtyInput.parentElement.classList.add('has-validation');
+    qtyInput.parentElement.appendChild(qtyError);
+
+    function onToolChange() {
+        const val  = selectEl.value;
+        const tool = val ? toolsData[val] : null;
+
+        if (tool) {
+            qtyEl.textContent = tool.qty + ' ' + tool.unit;
+            info.classList.remove('d-none');
+            unitLabel.textContent = tool.unit;
+            qtyInput.max = tool.qty;
+            borrowNotice.classList.remove('d-none');
+        } else {
+            info.classList.add('d-none');
+            unitLabel.textContent = 'unit';
+            qtyInput.removeAttribute('max');
+            borrowNotice.classList.add('d-none');
+        }
+        validateQty();
     }
-});
 
-document.getElementById('tool_id').dispatchEvent(new Event('change'));
+    function validateQty() {
+        const val  = selectEl.value;
+        const tool = val ? toolsData[val] : null;
+        const max  = tool ? parseInt(tool.qty) : NaN;
+        const entered = parseInt(qtyInput.value);
+        const unit = tool ? tool.unit : 'unit';
 
-const qtyInput = document.getElementById('quantity_requested');
-const qtyError = document.createElement('div');
-qtyError.className = 'invalid-feedback d-none';
-qtyError.id = 'qtyExceedError';
-qtyInput.parentElement.classList.add('has-validation');
-qtyInput.parentElement.appendChild(qtyError);
-
-qtyInput.addEventListener('input', function() {
-    validateQty();
-});
-
-document.querySelector('form').addEventListener('submit', function(e) {
-    if (!validateQty()) {
-        e.preventDefault();
+        if (val && !isNaN(max) && !isNaN(entered) && entered > max) {
+            qtyInput.classList.add('is-invalid');
+            qtyError.textContent = 'Cannot exceed available stock: ' + max + ' ' + unit;
+            qtyError.classList.remove('d-none');
+            return false;
+        }
+        qtyInput.classList.remove('is-invalid');
+        qtyError.classList.add('d-none');
+        return true;
     }
+
+    selectEl.addEventListener('change', onToolChange);
+    qtyInput.addEventListener('input', validateQty);
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!validateQty()) e.preventDefault();
+    });
+
+    // Trigger for old() value restore
+    if (selectEl.value) onToolChange();
 });
-
-function validateQty() {
-    const max = parseInt(qtyInput.max);
-    const val = parseInt(qtyInput.value);
-    const toolSel = document.getElementById('tool_id');
-    const opt = toolSel.options[toolSel.selectedIndex];
-    const unit = opt?.dataset?.unit ?? 'unit';
-
-    if (toolSel.value && !isNaN(max) && !isNaN(val) && val > max) {
-        qtyInput.classList.add('is-invalid');
-        qtyError.textContent = 'Cannot exceed available stock: ' + max + ' ' + unit;
-        qtyError.classList.remove('d-none');
-        return false;
-    }
-    qtyInput.classList.remove('is-invalid');
-    qtyError.classList.add('d-none');
-    return true;
-}
 </script>
 @endpush
