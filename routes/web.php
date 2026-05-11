@@ -1262,5 +1262,10 @@ Route::middleware(['auth'])->group(function () {
             App\Http\Controllers\ProfileController::class,
             'changePassword',
         ])->name('profile.change-password');
+
+        Route::post('/profile/photo', [
+            App\Http\Controllers\ProfileController::class,
+            'updatePhoto',
+        ])->name('profile.update-photo');
     });
 });

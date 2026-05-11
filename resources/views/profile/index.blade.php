@@ -174,12 +174,31 @@
             <!-- User Avatar Card -->
             <div class="card shadow-sm mb-4">
                 <div class="card-body text-center">
-                    <div class="avatar-large mx-auto mb-3" 
-                         style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
-                        <span style="font-size: 48px; font-weight: bold; color: white;">
-                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                        </span>
+                    <!-- Avatar with camera button -->
+                    <div class="position-relative d-inline-block mb-3">
+                        @if($user->profile_photo)
+                            <img id="avatarPreview"
+                                 src="{{ asset('storage/' . $user->profile_photo) }}"
+                                 alt="{{ $user->name }}"
+                                 style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #667eea;">
+                        @else
+                            <div id="avatarInitials"
+                                 style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);display:flex;align-items:center;justify-content:center;">
+                                <span style="font-size:48px;font-weight:bold;color:white;">
+                                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                                </span>
+                            </div>
+                            <img id="avatarPreview" src="" alt="" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #667eea;display:none;">
+                        @endif
+
+                        <!-- Camera button -->
+                        <button type="button" onclick="document.getElementById('photoInput').click()"
+                                class="btn btn-sm btn-primary position-absolute"
+                                style="bottom:0;right:0;width:34px;height:34px;border-radius:50%;padding:0;line-height:34px;">
+                            <i class="fas fa-camera" style="font-size:13px;"></i>
+                        </button>
                     </div>
+
                     <h4 class="mb-1">{{ $user->name }}</h4>
                     <p class="text-muted mb-2">{{ $user->email }}</p>
                     @if($user->employee_id)
@@ -188,6 +207,12 @@
                     <span class="badge bg-success">
                         <i class="fas fa-check-circle"></i> Active
                     </span>
+
+                    <!-- Hidden upload form -->
+                    <form id="photoForm" action="{{ route('profile.update-photo') }}" method="POST" enctype="multipart/form-data" class="d-none">
+                        @csrf
+                        <input type="file" id="photoInput" name="profile_photo" accept="image/jpeg,image/png,image/webp">
+                    </form>
                 </div>
             </div>
             
@@ -279,3 +304,26 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.getElementById('photoInput').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const preview = document.getElementById('avatarPreview');
+        const initials = document.getElementById('avatarInitials');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        if (initials) initials.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+
+    // Submit form
+    document.getElementById('photoForm').submit();
+});
+</script>
+@endpush
