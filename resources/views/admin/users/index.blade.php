@@ -130,9 +130,16 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar-circle bg-primary text-white me-2 flex-shrink-0">
-                                        {{ strtoupper(substr($user->name, 0, 2)) }}
-                                    </div>
+                                    @if($user->profile_photo)
+                                        <img src="{{ asset('storage/' . $user->profile_photo) }}"
+                                             alt="{{ $user->name }}"
+                                             class="me-2 flex-shrink-0"
+                                             style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+                                    @else
+                                        <div class="avatar-circle bg-primary text-white me-2 flex-shrink-0">
+                                            {{ strtoupper(substr($user->name, 0, 2)) }}
+                                        </div>
+                                    @endif
                                     <div>
                                         <strong>{{ $user->name }}</strong>
                                         @if($user->id === auth()->id())
