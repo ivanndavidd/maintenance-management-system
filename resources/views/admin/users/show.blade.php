@@ -120,39 +120,43 @@
                     <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Performance Statistics</h5>
                 </div>
                 <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-3 mb-3">
+                    <div class="row text-center g-3">
+                        <div class="col-6 col-md-3">
                             <div class="p-3 bg-light rounded">
-                                <h5 class="text-primary mb-0">{{ $stats['total_assigned'] }}</h5>
-                                <small class="text-muted">Total CMR Assigned</small>
+                                <h5 class="text-warning mb-0">{{ $stats['cm_total'] }}</h5>
+                                <small class="text-muted">CM Assigned</small>
+                                <div style="font-size:11px;" class="text-success">{{ $stats['cm_completed'] }} done</div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-md-3">
                             <div class="p-3 bg-light rounded">
-                                <h5 class="text-success mb-0">{{ $stats['completed'] }}</h5>
-                                <small class="text-muted">Completed</small>
+                                <h5 class="text-success mb-0">{{ $stats['pm_total'] }}</h5>
+                                <small class="text-muted">PM Assigned</small>
+                                <div style="font-size:11px;" class="text-success">{{ $stats['pm_completed'] }} done</div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-md-3">
                             <div class="p-3 bg-light rounded">
-                                <h5 class="text-warning mb-0">{{ $stats['in_progress'] }}</h5>
-                                <small class="text-muted">In Progress</small>
+                                <h5 class="text-info mb-0">{{ $stats['so_total'] }}</h5>
+                                <small class="text-muted">Stock Opname</small>
+                                <div style="font-size:11px;" class="text-success">{{ $stats['so_completed'] }} done</div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-md-3">
                             <div class="p-3 bg-light rounded">
-                                <h5 class="text-info mb-0">{{ $stats['completion_rate'] }}%</h5>
+                                <h5 class="text-primary mb-0">{{ $stats['completion_rate'] }}%</h5>
                                 <small class="text-muted">Completion Rate</small>
+                                <div style="font-size:11px;" class="text-muted">{{ $stats['total_all'] }} total</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Recent CMR Tickets -->
+            <!-- Recent CM Tickets -->
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-wrench"></i> Recent CMR Tickets</h5>
+                    <h5 class="mb-0"><i class="fas fa-wrench"></i> Recent CM Tickets</h5>
                 </div>
                 <div class="card-body p-0">
                     @if($recentCmr->count() > 0)
@@ -183,7 +187,7 @@
                     @else
                     <div class="text-center py-4">
                         <i class="fas fa-wrench fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-0">No CMR tickets assigned yet</p>
+                        <p class="text-muted mb-0">No CM tickets assigned yet</p>
                     </div>
                     @endif
                 </div>
