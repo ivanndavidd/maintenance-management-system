@@ -166,7 +166,8 @@ class UserController extends Controller
         ];
 
         // Recent CM tickets
-        $recentCmr = CorrectiveMaintenanceRequest::whereHas('technicians', fn($q) => $q->where('user_id', $user->id))
+        $recentCmr = CorrectiveMaintenanceRequest::with(['cmReport.asset'])
+            ->whereHas('technicians', fn($q) => $q->where('user_id', $user->id))
             ->latest()->limit(10)->get();
 
         return view('admin.users.show', compact('user', 'stats', 'recentCmr'));
