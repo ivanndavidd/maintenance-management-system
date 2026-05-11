@@ -26,9 +26,17 @@
                         @csrf
                         @method('PUT')
 
-                        <div class="alert alert-secondary">
-                            <strong>Material Code:</strong> {{ $sparepart->material_code ?? '-' }}
-                            <span class="text-muted">(From import data)</span>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="material_code" class="form-label">Material Code</label>
+                                <input type="text" name="material_code" id="material_code"
+                                    class="form-control @error('material_code') is-invalid @enderror"
+                                    value="{{ old('material_code', $sparepart->material_code) }}"
+                                    placeholder="e.g., 130419100038">
+                                @error('material_code')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="row mb-3">

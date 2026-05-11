@@ -25,8 +25,18 @@
                         @csrf
                         <input type="hidden" name="from_po_item" id="from_po_item_id" value="{{ request('from_po_item') }}">
 
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> Material Code will be auto-generated (Format: SPR + YYYYMMDD + 001)
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="material_code" class="form-label">Material Code</label>
+                                <input type="text" name="material_code" id="material_code"
+                                    class="form-control @error('material_code') is-invalid @enderror"
+                                    value="{{ old('material_code') }}"
+                                    placeholder="e.g., 130419100038">
+                                <small class="text-muted">Leave blank to auto-generate (Format: SPR + YYYYMMDD + 001)</small>
+                                @error('material_code')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="row mb-3">
