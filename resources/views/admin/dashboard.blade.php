@@ -788,9 +788,9 @@
                     </div>
                     @endif
                 </div>
-                <div class="card-footer p-0 border-top-0">
-                    <a href="{{ route($routePrefix . '.spareparts.index') }}" class="btn btn-sm btn-outline-danger w-100 rounded-0 rounded-bottom" style="font-size:12px;">
-                        View All Spareparts <i class="fas fa-arrow-right ms-1"></i>
+                <div class="card-footer bg-danger text-white">
+                    <a href="{{ route($routePrefix . '.spareparts.index') }}" class="text-white text-decoration-none">
+                        View All <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
             </div>
@@ -836,9 +836,9 @@
                     </div>
                     @endif
                 </div>
-                <div class="card-footer p-0 border-top-0">
-                    <a href="{{ route($routePrefix . '.sparepart-usage.index') }}" class="btn btn-sm btn-outline-warning w-100 rounded-0 rounded-bottom" style="font-size:12px;">
-                        View All Usage <i class="fas fa-arrow-right ms-1"></i>
+                <div class="card-footer bg-warning text-dark">
+                    <a href="{{ route($routePrefix . '.sparepart-usage.index') }}" class="text-dark text-decoration-none">
+                        View All <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
             </div>
