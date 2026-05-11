@@ -134,7 +134,7 @@
                                         <img src="{{ asset('storage/' . $user->profile_photo) }}"
                                              alt="{{ $user->name }}"
                                              class="me-2 flex-shrink-0"
-                                             style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+                                             style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #667eea;">
                                     @else
                                         <div class="avatar-circle bg-primary text-white me-2 flex-shrink-0">
                                             {{ strtoupper(substr($user->name, 0, 2)) }}
