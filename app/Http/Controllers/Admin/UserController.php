@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CorrectiveMaintenanceRequest;
+use App\Models\PmTask;
+use App\Models\StockOpnameUserAssignment;
 use App\Models\User;
 use App\Models\Department;
 use App\Models\SiteAccessRequest;
@@ -134,20 +137,37 @@ class UserController extends Controller
     {
         $user->load(['roles', 'department']);
 
-        // Calculate user statistics from CMR
-        $totalCmr = $user->assignedCmr()->count();
-        $completedCmr = $user->assignedCmr()->where('status', 'completed')->count();
+        // CM stats
+        $totalCmr      = CorrectiveMaintenanceRequest::whereHas('technicians', fn($q) => $q->where('user_id', $user->id))->count();
+        $completedCmr  = CorrectiveMaintenanceRequest::whereHas('technicians', fn($q) => $q->where('user_id', $user->id))
+                            ->whereIn('status', ['completed', 'done'])->count();
+
+        // PM stats
+        $totalPm       = PmTask::where('assigned_user_id', $user->id)->count();
+        $completedPm   = PmTask::where('assigned_user_id', $user->id)->where('status', 'completed')->count();
+
+        // Stock Opname stats
+        $totalSo       = StockOpnameUserAssignment::where('user_id', $user->id)->count();
+        $completedSo   = StockOpnameUserAssignment::where('user_id', $user->id)
+                            ->whereHas('schedule', fn($q) => $q->where('status', 'completed'))->count();
+
+        $totalAll      = $totalCmr + $totalPm + $totalSo;
+        $completedAll  = $completedCmr + $completedPm + $completedSo;
 
         $stats = [
-            'total_assigned' => $totalCmr,
-            'completed' => $completedCmr,
-            'pending' => $user->assignedCmr()->where('status', 'pending')->count(),
-            'in_progress' => $user->assignedCmr()->where('status', 'in_progress')->count(),
-            'completion_rate' => $totalCmr > 0 ? round(($completedCmr / $totalCmr) * 100, 1) : 0,
+            'cm_total'        => $totalCmr,
+            'cm_completed'    => $completedCmr,
+            'pm_total'        => $totalPm,
+            'pm_completed'    => $completedPm,
+            'so_total'        => $totalSo,
+            'so_completed'    => $completedSo,
+            'total_all'       => $totalAll,
+            'completion_rate' => $totalAll > 0 ? round(($completedAll / $totalAll) * 100, 1) : 0,
         ];
 
-        // Recent CMR tickets
-        $recentCmr = $user->assignedCmr()->latest()->limit(10)->get();
+        // Recent CM tickets
+        $recentCmr = CorrectiveMaintenanceRequest::whereHas('technicians', fn($q) => $q->where('user_id', $user->id))
+            ->latest()->limit(10)->get();
 
         return view('admin.users.show', compact('user', 'stats', 'recentCmr'));
     }
