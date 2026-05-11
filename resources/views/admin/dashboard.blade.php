@@ -1560,9 +1560,16 @@
         const granLabel = granularity === 'weekly' ? 'Weekly' : granularity === 'monthly' ? 'Monthly' : 'Daily';
         document.getElementById('trendChartGranularityLabel').textContent = granLabel;
 
-        const labels   = trend.map(d => d.label);
-        const mtbfVals = trend.map(d => d.mtbf);
-        const mttrVals = trend.map(d => d.mttr);
+        const labels      = trend.map(d => d.label);
+        const mtbfVals    = trend.map(d => d.mtbf);
+        const mttrVals    = trend.map(d => d.mttr);
+        const todayIdx    = trend.findIndex(d => d.is_today);
+
+        // Per-point styles: today = open circle (hollow), others = filled
+        const mtbfRadii      = trend.map((d, i) => d.is_today ? 6 : (d.mtbf  !== null ? 4 : 0));
+        const mttrRadii      = trend.map((d, i) => d.is_today ? 0 : (d.mttr  !== null ? 4 : 0));
+        const mtbfBgColors   = trend.map(d => d.is_today ? 'rgba(255,255,255,1)' : 'rgba(40,167,69,0.8)');
+        const mtbfBorderW    = trend.map(d => d.is_today ? 2 : 1);
 
         chartTrend = new Chart(ctx, {
             type: 'line',
@@ -1577,8 +1584,18 @@
                         tension: 0.4, fill: false,
                         yAxisID: 'yMtbf',
                         spanGaps: true,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
+                        pointRadius: mtbfRadii,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: mtbfBgColors,
+                        pointBorderColor: '#28a745',
+                        pointBorderWidth: mtbfBorderW,
+                        segment: {
+                            borderDash: ctx => {
+                                // Dashed line segment leading into today point
+                                const next = ctx.p1DataIndex;
+                                return todayIdx >= 0 && next === todayIdx ? [5, 4] : [];
+                            }
+                        },
                     },
                     {
                         label: 'MTTR (hours)',
@@ -1588,7 +1605,7 @@
                         tension: 0.4, fill: false,
                         yAxisID: 'yMttr',
                         spanGaps: true,
-                        pointRadius: 4,
+                        pointRadius: mttrRadii,
                         pointHoverRadius: 6,
                     }
                 ]
@@ -1601,7 +1618,11 @@
                         usePointStyle: true, pointStyle: 'circle' } },
                     tooltip: {
                         callbacks: {
-                            label: ctx => ` ${ctx.dataset.label}: ${fmtDuration(ctx.parsed.y)}`
+                            label: ctx => {
+                                const d = trend[ctx.dataIndex];
+                                const suffix = d && d.is_today ? ' (Today — live)' : '';
+                                return ` ${ctx.dataset.label}: ${fmtDuration(ctx.parsed.y)}${suffix}`;
+                            }
                         }
                     }
                 },
