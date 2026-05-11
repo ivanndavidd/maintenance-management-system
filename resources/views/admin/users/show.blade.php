@@ -32,9 +32,16 @@
         <div class="col-lg-4 mb-4">
             <div class="card shadow-sm">
                 <div class="card-body text-center">
-                    <div class="avatar-circle-large bg-primary text-white mx-auto mb-3">
-                        {{ strtoupper(substr($user->name, 0, 2)) }}
-                    </div>
+                    @if($user->profile_photo)
+                        <img src="{{ asset('storage/' . $user->profile_photo) }}"
+                             alt="{{ $user->name }}"
+                             class="mx-auto mb-3 d-block"
+                             style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #667eea;">
+                    @else
+                        <div class="avatar-circle-large bg-primary text-white mx-auto mb-3">
+                            {{ strtoupper(substr($user->name, 0, 2)) }}
+                        </div>
+                    @endif
                     <h4 class="mb-1">{{ $user->name }}</h4>
                     <p class="text-muted mb-3">{{ $user->employee_id }}</p>
                     
