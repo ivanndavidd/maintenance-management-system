@@ -68,7 +68,7 @@ class DashboardController extends Controller
         $stats['pm_pending_approval'] = (int) $pmPendingApproval;
 
         // === Recent CM tickets ===
-        $recentCmrItems = CorrectiveMaintenanceRequest::with(['asset'])
+        $recentCmrItems = CorrectiveMaintenanceRequest::with(['technicians'])
             ->orderByRaw("FIELD(status,'in_progress','pending','received','further_repair','completed','done','cancelled')")
             ->limit(5)->get();
 
