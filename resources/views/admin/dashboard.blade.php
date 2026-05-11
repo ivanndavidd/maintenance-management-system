@@ -472,11 +472,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="kpi-custom-range align-items-center gap-2 mt-2" id="kpiCustomRange">
-                        <input type="date" class="form-control form-control-sm" id="kpiDateFrom" style="max-width: 160px;">
+                    <div class="kpi-custom-range align-items-center gap-2 mt-2 flex-wrap" id="kpiCustomRange">
+                        <input type="date" class="form-control form-control-sm" id="kpiDateFrom" style="max-width:160px;min-width:130px;">
                         <span class="text-muted mx-1">to</span>
-                        <input type="date" class="form-control form-control-sm" id="kpiDateTo" style="max-width: 160px;">
-                        <button class="btn btn-sm btn-primary ms-1" onclick="loadKpiData('custom')">
+                        <input type="date" class="form-control form-control-sm" id="kpiDateTo" style="max-width:160px;min-width:130px;">
+                        <button class="btn btn-sm btn-primary ms-1 flex-shrink-0" onclick="loadKpiData('custom')">
                             <i class="fas fa-search"></i> Apply
                         </button>
                     </div>
@@ -999,11 +999,11 @@
                             </div>
                         </div>
                     </div>
-                    <div id="metricsCustomRange" style="display:none;" class="d-flex align-items-center gap-2 mt-2">
-                        <input type="date" class="form-control form-control-sm" id="metricsDateFrom" style="max-width:160px;">
+                    <div id="metricsCustomRange" style="display:none;" class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+                        <input type="date" class="form-control form-control-sm" id="metricsDateFrom" style="max-width:160px;min-width:130px;">
                         <span class="text-muted mx-1">to</span>
-                        <input type="date" class="form-control form-control-sm" id="metricsDateTo" style="max-width:160px;">
-                        <button class="btn btn-sm btn-primary ms-1" onclick="loadMetrics()">
+                        <input type="date" class="form-control form-control-sm" id="metricsDateTo" style="max-width:160px;min-width:130px;">
+                        <button class="btn btn-sm btn-primary ms-1 flex-shrink-0" onclick="loadMetrics()">
                             <i class="fas fa-search"></i> Apply
                         </button>
                     </div>
@@ -1106,14 +1106,14 @@
                                             <h6 class="fw-bold mb-0">Downtime Timeline</h6>
                                             <small class="text-muted">time-of-day each downtime event occurred</small>
                                         </div>
-                                        <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-center gap-2 flex-wrap w-100 justify-content-end">
                                         {{-- Date picker --}}
-                                        <input type="date" id="downtimeDate" class="form-control form-control-sm" style="width:145px;"
+                                        <input type="date" id="downtimeDate" class="form-control form-control-sm" style="width:145px;min-width:120px;"
                                                value="{{ date('Y-m-d') }}">
                                         {{-- Custom multi-select dropdown --}}
-                                        <div class="position-relative" id="downtimeDropdownWrap">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
-                                                    id="downtimeDropdownBtn" style="min-width:200px; justify-content:space-between;">
+                                        <div class="position-relative flex-grow-1" id="downtimeDropdownWrap" style="max-width:260px;min-width:160px;">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 w-100"
+                                                    id="downtimeDropdownBtn" style="justify-content:space-between;">
                                                 <span id="downtimeDropdownLabel">Select Groups</span>
                                                 <i class="fas fa-chevron-down fa-xs"></i>
                                             </button>
