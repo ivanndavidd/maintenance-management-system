@@ -52,8 +52,8 @@ class DashboardController extends Controller
         // === PM Statistics (based on PmTask, consistent with KPI Monitor) ===
         $pmTaskStats = PmTask::selectRaw("
             COUNT(*) as total,
-            SUM(task_status IN ('pending','not_started') OR task_status IS NULL) as not_done,
-            SUM(task_status = 'completed') as completed
+            SUM(status IN ('pending','in_progress') OR status IS NULL) as not_done,
+            SUM(status = 'completed') as completed
         ")->first();
 
         // PM reports pending approval
