@@ -311,12 +311,13 @@
         flex: 1;
         overflow: hidden;
         position: relative;
+        cursor: default;
     }
     .ticker-inner {
-        display: inline-flex;
+        display: flex;
         gap: 0;
         white-space: nowrap;
-        will-change: transform;
+        width: max-content;
     }
     .ticker-item {
         display: inline-flex;
@@ -400,40 +401,47 @@
     </div>
     <script>
     (function() {
+        const track = document.querySelector('.ticker-track');
         const inner = document.getElementById('tickerInner');
-        if (!inner) return;
-        const original = inner.innerHTML;
-        let pos = 0, halfW = 0, paused = false;
-        const speed = 0.8;
+        if (!track || !inner) return;
 
-        function measureWidth() {
-            // Measure in a hidden off-screen clone so overflow:hidden on parent doesn't affect result
-            const probe = document.createElement('div');
-            probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;display:inline-flex;top:-9999px;left:-9999px;';
-            probe.innerHTML = original;
-            document.body.appendChild(probe);
-            const w = probe.scrollWidth;
-            document.body.removeChild(probe);
-            return w;
-        }
+        // Use scrollLeft on the track — pixel-perfect, no transform math needed
+        track.style.overflowX = 'scroll';
+        track.style.scrollbarWidth = 'none'; // Firefox
+        track.style.msOverflowStyle = 'none'; // IE
+        track.style.setProperty('--scrollbar-display', 'none');
+
+        // Hide scrollbar (webkit)
+        const style = document.createElement('style');
+        style.textContent = '.ticker-track::-webkit-scrollbar { display: none; }';
+        document.head.appendChild(style);
+
+        let paused = false;
+        let oneW = 0;
 
         function init() {
-            halfW = measureWidth();
-            if (halfW < 20) { setTimeout(init, 100); return; }
-            // Fill inner with enough copies to always cover viewport + one extra for seamless reset
-            inner.innerHTML = original + original;
-            pos = 0;
-            inner.style.transform = 'translateX(0)';
-            requestAnimationFrame(tick);
+            // Duplicate until content is wider than 3x viewport to ensure seamless loop
+            const trackW = track.offsetWidth;
+            const singleW = inner.scrollWidth;
+            if (singleW < 20) { setTimeout(init, 100); return; }
+
+            // We need at least 2 full copies
+            inner.innerHTML += inner.innerHTML;
+            oneW = inner.scrollWidth / 2;
+
+            track.scrollLeft = 0;
+            requestAnimationFrame(step);
         }
 
-        function tick() {
+        function step() {
             if (!paused) {
-                pos -= speed;
-                if (pos <= -halfW) pos += halfW;
-                inner.style.transform = 'translateX(' + pos + 'px)';
+                track.scrollLeft += 0.8;
+                // When we've scrolled exactly one copy width, jump back silently
+                if (track.scrollLeft >= oneW) {
+                    track.scrollLeft -= oneW;
+                }
             }
-            requestAnimationFrame(tick);
+            requestAnimationFrame(step);
         }
 
         inner.addEventListener('mouseenter', function() { paused = true; });
