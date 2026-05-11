@@ -49,18 +49,45 @@ class DashboardController extends Controller
             'active_operators' => $userStats['active_operators'],
         ];
 
-        // === PM Statistics ===
-        $pmStats = PmSchedule::selectRaw("
+        // === PM Statistics (based on PmTask, consistent with KPI Monitor) ===
+        $pmTaskStats = PmTask::selectRaw("
             COUNT(*) as total,
-            SUM(status = 'draft') as draft,
-            SUM(status = 'active') as active,
-            SUM(status = 'completed') as completed
+            SUM(task_status IN ('pending','not_started') OR task_status IS NULL) as not_done,
+            SUM(task_status = 'completed') as completed
         ")->first();
 
-        $stats['total_pm'] = (int) $pmStats->total;
-        $stats['draft_pm'] = (int) $pmStats->draft;
-        $stats['active_pm'] = (int) $pmStats->active;
-        $stats['completed_pm'] = (int) $pmStats->completed;
+        // PM reports pending approval
+        $pmPendingApproval = PmTask::whereHas('latestReport', function ($q) {
+            $q->whereIn('status', ['pending', 'pending_sparepart_approval']);
+        })->count();
+
+        $stats['total_pm']           = (int) $pmTaskStats->total;
+        $stats['draft_pm']           = (int) $pmTaskStats->not_done;
+        $stats['active_pm']          = (int) $pmPendingApproval;
+        $stats['completed_pm']       = (int) $pmTaskStats->completed;
+        $stats['pm_pending_approval'] = (int) $pmPendingApproval;
+
+        // === Recent CM tickets ===
+        $recentCmrItems = CorrectiveMaintenanceRequest::with(['asset'])
+            ->orderByRaw("FIELD(status,'in_progress','pending','received','further_repair','completed','done','cancelled')")
+            ->limit(5)->get();
+
+        // === PM tasks pending approval or recently submitted ===
+        $recentPmTasks = PmTask::with(['latestReport.submitter', 'pmSchedule'])
+            ->whereHas('latestReport')
+            ->orderByRaw("
+                CASE
+                    WHEN EXISTS (SELECT 1 FROM pm_task_reports r WHERE r.pm_task_id = pm_tasks.id AND r.status IN ('pending','pending_sparepart_approval')) THEN 0
+                    ELSE 1
+                END
+            ")
+            ->orderByDesc(
+                \App\Models\PmTaskReport::select('created_at')
+                    ->whereColumn('pm_task_id', 'pm_tasks.id')
+                    ->orderByDesc('created_at')
+                    ->limit(1)
+            )
+            ->limit(5)->get();
 
         // === CMR by Status (for chart) ===
         $cmrByStatus = CorrectiveMaintenanceRequest::selectRaw('status, COUNT(*) as count')
@@ -168,6 +195,8 @@ class DashboardController extends Controller
             'cmrByStatus',
             'last7DaysTrend',
             'recentCmr',
+            'recentCmrItems',
+            'recentPmTasks',
             'todayTasks',
             'calendarData',
             'sparepartStats',
