@@ -316,12 +316,12 @@
         display: inline-flex;
         gap: 0;
         white-space: nowrap;
-        animation: tickerScroll 40s linear infinite;
+        will-change: transform;
     }
     .ticker-inner:hover { animation-play-state: paused; }
     @keyframes tickerScroll {
         0%   { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
+        100% { transform: translateX(var(--ticker-shift)); }
     }
     .ticker-item {
         display: inline-flex;
@@ -362,46 +362,7 @@
     <div class="ticker-wrap">
         <div class="ticker-label"><i class="fas fa-broadcast-tower me-1"></i> LIVE &nbsp;{{ now()->format('H:i') }}</div>
         <div class="ticker-track">
-            <div class="ticker-inner">
-                {{-- First copy --}}
-                <span class="ticker-item">
-                    <i class="fas fa-calendar-day ti-ok"></i>
-                    <span class="ti-label">Today:</span>
-                    <span class="ti-val">{{ $s['date'] }}</span>
-                </span>
-                <span class="ticker-item">
-                    <i class="fas fa-user-clock ti-ok"></i>
-                    <span class="ti-label">Shift Duty:</span>
-                    <span class="ti-val {{ $s['active_shifts'] > 0 ? 'ti-ok' : 'ti-warn' }}">{{ $s['active_shifts'] }} staff on duty</span>
-                </span>
-                <span class="ticker-item">
-                    <i class="fas fa-tools {{ $pmColor }}"></i>
-                    <span class="ti-label">PM Tasks:</span>
-                    <span class="ti-val">{{ $s['pm_total'] }} total</span>
-                    <span class="ti-ok">✓ {{ $s['pm_completed'] }} done</span>
-                    @if($s['pm_pending'] > 0)
-                    <span class="ti-warn">· {{ $s['pm_pending'] }} pending</span>
-                    @endif
-                </span>
-                <span class="ticker-item">
-                    <i class="fas fa-wrench {{ $cmColor }}"></i>
-                    <span class="ti-label">CM Tickets:</span>
-                    <span class="ti-val">{{ $s['cm_total'] }} today</span>
-                    @if($s['cm_open'] > 0)
-                    <span class="ti-warn">· {{ $s['cm_open'] }} open</span>
-                    @endif
-                    @if($s['cm_closed'] > 0)
-                    <span class="ti-ok">· {{ $s['cm_closed'] }} closed</span>
-                    @endif
-                </span>
-                <span class="ticker-item">
-                    <i class="fas fa-clipboard-list {{ $opColor }}"></i>
-                    <span class="ti-label">Stock Opname:</span>
-                    <span class="ti-val {{ $opColor }}">
-                        {{ $s['opname_today'] > 0 ? $s['opname_today'].' schedule(s) active today' : 'No schedule today' }}
-                    </span>
-                </span>
-                {{-- Duplicate for seamless loop --}}
+            <div class="ticker-inner" id="tickerInner">
                 <span class="ticker-item">
                     <i class="fas fa-calendar-day ti-ok"></i>
                     <span class="ti-label">Today:</span>
@@ -442,6 +403,22 @@
             </div>
         </div>
     </div>
+    <script>
+    (function() {
+        const inner = document.getElementById('tickerInner');
+        if (!inner) return;
+        // Duplicate content so scroll is seamless
+        inner.innerHTML += inner.innerHTML;
+        // After render, measure the width of one copy (half total) and animate exactly that
+        requestAnimationFrame(function() {
+            const halfW = inner.scrollWidth / 2;
+            inner.style.setProperty('--ticker-shift', '-' + halfW + 'px');
+            // Speed: ~80px per second
+            const duration = Math.round(halfW / 80);
+            inner.style.animation = 'tickerScroll ' + duration + 's linear infinite';
+        });
+    })();
+    </script>
 
     @if(!auth()->user()->hasRole('supervisor_maintenance'))
     <!-- KPI Monitor Section (Admin Only) -->
