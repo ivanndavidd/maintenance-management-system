@@ -746,29 +746,60 @@
 
         <!-- Sparepart Stock Card -->
         <div class="col-md-3 mb-3">
-            <div class="card border-info h-100 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
+            <div class="card border-danger h-100 shadow-sm d-flex flex-column">
+                <div class="card-body pb-1 flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                            <h6 class="text-muted mb-2">Sparepart Stock</h6>
+                            <h6 class="text-muted mb-1">Sparepart Stock</h6>
                             <h5 class="mb-1 fw-bold">{{ number_format($sparepartStats->total) }} <small class="text-muted fw-normal fs-6">items</small></h5>
-                            <div class="d-flex flex-column gap-1">
+                            <div class="d-flex gap-2">
                                 <small><span class="badge bg-warning text-dark">{{ $sparepartStats->low_stock }}</span> Low Stock</small>
                                 <small><span class="badge bg-danger">{{ $sparepartStats->out_of_stock }}</span> Out of Stock</small>
                             </div>
                         </div>
-                        <div class="text-info opacity-25">
+                        <div class="text-danger opacity-25">
                             <i class="fas fa-boxes fa-3x"></i>
                         </div>
                     </div>
+                    @if($outOfStockItems->count() > 0)
+                    <div class="mb-1">
+                        <div class="text-danger fw-semibold" style="font-size:11px;">OUT OF STOCK</div>
+                        <div style="max-height:80px;overflow-y:auto;">
+                            @foreach($outOfStockItems as $item)
+                            <div class="d-flex justify-content-between align-items-center py-0" style="font-size:11px;border-bottom:1px solid #f0f0f0;">
+                                <span class="text-truncate me-1" style="max-width:140px;" title="{{ $item->sparepart_name }}">{{ $item->sparepart_name }}</span>
+                                <span class="text-muted">min {{ $item->minimum_stock }} {{ $item->unit }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                    @if($lowStockItems->count() > 0)
+                    <div>
+                        <div class="text-warning fw-semibold" style="font-size:11px;">LOW STOCK</div>
+                        <div style="max-height:80px;overflow-y:auto;">
+                            @foreach($lowStockItems as $item)
+                            <div class="d-flex justify-content-between align-items-center py-0" style="font-size:11px;border-bottom:1px solid #f0f0f0;">
+                                <span class="text-truncate me-1" style="max-width:120px;" title="{{ $item->sparepart_name }}">{{ $item->sparepart_name }}</span>
+                                <span class="text-muted">{{ $item->quantity }}/{{ $item->minimum_stock }} {{ $item->unit }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                </div>
+                <div class="card-footer p-0 border-top-0">
+                    <a href="{{ route($routePrefix . '.spareparts.index') }}" class="btn btn-sm btn-outline-danger w-100 rounded-0 rounded-bottom" style="font-size:12px;">
+                        View All Spareparts <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
         </div>
 
         <!-- Repair Cost Card -->
         <div class="col-md-3 mb-3">
-            <div class="card border-warning h-100 shadow-sm">
-                <div class="card-body pb-1">
+            <div class="card border-warning h-100 shadow-sm d-flex flex-column">
+                <div class="card-body pb-1 flex-grow-1">
                     <div class="d-flex justify-content-between align-items-start mb-1">
                         <div style="flex:1;">
                             <div class="d-flex align-items-center justify-content-between mb-1">
@@ -790,6 +821,25 @@
                     <div style="height:50px;">
                         <canvas id="repairCostMiniChart"></canvas>
                     </div>
+                    @if($recentUsages->count() > 0)
+                    <div class="mt-2">
+                        <div class="text-muted fw-semibold mb-1" style="font-size:11px;">RECENT USAGE</div>
+                        <div style="max-height:90px;overflow-y:auto;">
+                            @foreach($recentUsages as $usage)
+                            <div class="d-flex justify-content-between align-items-center py-0" style="font-size:11px;border-bottom:1px solid #f0f0f0;">
+                                <span class="text-truncate me-1" style="max-width:120px;" title="{{ $usage->sparepart_name }}">{{ $usage->sparepart_name }}</span>
+                                <span class="text-muted me-1">×{{ $usage->quantity_used }}</span>
+                                <span class="text-warning fw-semibold">{{ $usage->line_cost > 0 ? 'Rp '.number_format($usage->line_cost,0,',','.') : '-' }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                </div>
+                <div class="card-footer p-0 border-top-0">
+                    <a href="{{ route($routePrefix . '.sparepart-usage.index') }}" class="btn btn-sm btn-outline-warning w-100 rounded-0 rounded-bottom" style="font-size:12px;">
+                        View All Usage <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
         </div>
