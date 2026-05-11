@@ -73,7 +73,7 @@ class DashboardController extends Controller
             ->limit(5)->get();
 
         // === PM tasks pending approval or recently submitted ===
-        $recentPmTasks = PmTask::with(['latestReport.submitter', 'pmSchedule'])
+        $recentPmTasks = PmTask::with(['latestReport.submitter', 'scheduleDate'])
             ->whereHas('latestReport')
             ->orderByRaw("
                 CASE
