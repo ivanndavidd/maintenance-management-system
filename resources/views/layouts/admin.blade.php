@@ -345,18 +345,25 @@
      position: fixed;
      bottom: 20px;
      right: 20px;
-     width: 52px;
-     height: 52px;
+     width: 44px;
+     height: 44px;
      border-radius: 50%;
      background: #0095DA;
      border: none;
      color: white;
-     font-size: 20px;
+     font-size: 18px;
      align-items: center;
      justify-content: center;
      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
      z-index: 1200;
      cursor: pointer;
+     opacity: 0.35;
+     transition: opacity 0.2s ease;
+ }
+ .mobile-toggle-admin:hover,
+ .mobile-toggle-admin:focus,
+ .mobile-toggle-admin.active {
+     opacity: 1;
  }
 
  .sidebar-backdrop {
@@ -922,8 +929,10 @@
  function toggleAdminSidebar() {
      const sidebar = document.getElementById('sidebar');
      const backdrop = document.getElementById('sidebarBackdrop');
+     const btn = document.getElementById('mobileToggleAdmin');
      const isOpen = sidebar.classList.toggle('show');
      if (backdrop) backdrop.style.display = isOpen ? 'block' : 'none';
+     if (btn) btn.classList.toggle('active', isOpen);
 
      // When closing sidebar on mobile, collapse all submenus
      if (!isOpen) {
