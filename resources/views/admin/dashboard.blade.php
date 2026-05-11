@@ -639,10 +639,10 @@
         <!-- CMR Card -->
         <div class="col-md-3 mb-3">
             <div class="card border-primary h-100 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+                <div class="card-body pb-1">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                            <h6 class="text-muted mb-2">Corrective Maintenance</h6>
+                            <h6 class="text-muted mb-1">Corrective Maintenance</h6>
                             <h5 class="mb-0 fw-bold">{{ $stats['total_cmr'] }}</h5>
                             <small>
                                 <span class="text-warning">{{ $stats['pending_cmr'] }} pending</span> |
@@ -653,10 +653,33 @@
                                 @endif
                             </small>
                         </div>
-                        <div class="text-primary opacity-25">
-                            <i class="fas fa-wrench fa-3x"></i>
+                        <div class="text-primary opacity-25 flex-shrink-0">
+                            <i class="fas fa-wrench fa-2x"></i>
                         </div>
                     </div>
+                    @if($recentCmrItems->count())
+                    <hr class="my-2">
+                    <p class="text-muted mb-1" style="font-size:11px;">RECENT TICKETS</p>
+                    <ul class="list-unstyled mb-0" style="font-size:12px;">
+                        @foreach($recentCmrItems as $cm)
+                        <li class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                            <span class="text-truncate me-1" style="max-width:140px;" title="{{ $cm->ticket_number }}">
+                                {{ $cm->ticket_number }}
+                            </span>
+                            @php
+                                $cmBadge = match($cm->status) {
+                                    'in_progress' => ['bg-primary','In Progress'],
+                                    'pending','received' => ['bg-warning text-dark','Pending'],
+                                    'further_repair' => ['bg-danger','Further Repair'],
+                                    'completed','done' => ['bg-success','Completed'],
+                                    default => ['bg-secondary', ucfirst($cm->status)],
+                                };
+                            @endphp
+                            <span class="badge {{ $cmBadge[0] }}" style="font-size:10px;">{{ $cmBadge[1] }}</span>
+                        </li>
+                        @endforeach
+                    </ul>
+                    @endif
                 </div>
                 <div class="card-footer bg-primary text-white">
                     <a href="{{ route($routePrefix . '.corrective-maintenance.index') }}" class="text-white text-decoration-none">
@@ -669,24 +692,52 @@
         <!-- PM Card -->
         <div class="col-md-3 mb-3">
             <div class="card border-success h-100 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+                <div class="card-body pb-1">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                            <h6 class="text-muted mb-2">Preventive Maintenance</h6>
+                            <h6 class="text-muted mb-1">Preventive Maintenance</h6>
                             <h5 class="mb-0 fw-bold">{{ $stats['total_pm'] }}</h5>
                             <small>
-                                <span class="text-secondary">{{ $stats['draft_pm'] }} draft</span> |
-                                <span class="text-primary">{{ $stats['active_pm'] }} active</span> |
+                                <span class="text-warning">{{ $stats['draft_pm'] }} not done</span> |
                                 <span class="text-success">{{ $stats['completed_pm'] }} completed</span>
+                                @if($stats['pm_pending_approval'] > 0)
+                                | <span class="text-danger fw-semibold">{{ $stats['pm_pending_approval'] }} need approval</span>
+                                @endif
                             </small>
                         </div>
-                        <div class="text-success opacity-25">
-                            <i class="fas fa-calendar-check fa-3x"></i>
+                        <div class="text-success opacity-25 flex-shrink-0">
+                            <i class="fas fa-calendar-check fa-2x"></i>
                         </div>
                     </div>
+                    @if($recentPmTasks->count())
+                    <hr class="my-2">
+                    <p class="text-muted mb-1" style="font-size:11px;">
+                        {{ $stats['pm_pending_approval'] > 0 ? 'PENDING APPROVAL' : 'RECENTLY SUBMITTED' }}
+                    </p>
+                    <ul class="list-unstyled mb-0" style="font-size:12px;">
+                        @foreach($recentPmTasks as $pm)
+                        @php
+                            $rpt = $pm->latestReport;
+                            $pmBadge = match($rpt?->status) {
+                                'pending' => ['bg-warning text-dark','Pending'],
+                                'pending_sparepart_approval' => ['bg-warning text-dark','Sparepart Approval'],
+                                'approved' => ['bg-success','Approved'],
+                                'sparepart_rejected' => ['bg-danger','Rejected'],
+                                default => ['bg-secondary','Submitted'],
+                            };
+                        @endphp
+                        <li class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                            <span class="text-truncate me-1" style="max-width:140px;" title="{{ $pm->task_name ?? $pm->pmSchedule?->schedule_name }}">
+                                {{ Str::limit($pm->task_name ?? $pm->pmSchedule?->schedule_name, 22) }}
+                            </span>
+                            <span class="badge {{ $pmBadge[0] }}" style="font-size:10px;">{{ $pmBadge[1] }}</span>
+                        </li>
+                        @endforeach
+                    </ul>
+                    @endif
                 </div>
                 <div class="card-footer bg-success text-white">
-                    <a href="{{ route($routePrefix . '.preventive-maintenance.index') }}" class="text-white text-decoration-none">
+                    <a href="{{ route($routePrefix . '.preventive-maintenance.reports') }}" class="text-white text-decoration-none">
                         View All <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
