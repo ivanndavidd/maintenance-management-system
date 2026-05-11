@@ -403,24 +403,37 @@
         const inner = document.getElementById('tickerInner');
         if (!inner) return;
         const original = inner.innerHTML;
-        let pos = 0, halfW = 0, paused = false, rafId = null;
-        const speed = 0.8; // px per frame (~48px/s at 60fps)
+        let pos = 0, halfW = 0, paused = false;
+        const speed = 0.8;
+
+        function measureWidth() {
+            // Measure in a hidden off-screen clone so overflow:hidden on parent doesn't affect result
+            const probe = document.createElement('div');
+            probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;display:inline-flex;top:-9999px;left:-9999px;';
+            probe.innerHTML = original;
+            document.body.appendChild(probe);
+            const w = probe.scrollWidth;
+            document.body.removeChild(probe);
+            return w;
+        }
 
         function init() {
-            inner.innerHTML = original + original;
-            halfW = inner.scrollWidth / 2;
+            halfW = measureWidth();
             if (halfW < 20) { setTimeout(init, 100); return; }
+            // Fill inner with enough copies to always cover viewport + one extra for seamless reset
+            inner.innerHTML = original + original;
+            pos = 0;
             inner.style.transform = 'translateX(0)';
-            tick();
+            requestAnimationFrame(tick);
         }
 
         function tick() {
             if (!paused) {
                 pos -= speed;
-                if (pos <= -halfW) pos += halfW; // seamless reset exactly one copy
+                if (pos <= -halfW) pos += halfW;
                 inner.style.transform = 'translateX(' + pos + 'px)';
             }
-            rafId = requestAnimationFrame(tick);
+            requestAnimationFrame(tick);
         }
 
         inner.addEventListener('mouseenter', function() { paused = true; });
