@@ -1,5 +1,7 @@
 @extends(auth()->user()->hasRole(['admin', 'supervisor_maintenance']) ? 'layouts.admin' :  'layouts.user')
 
+@section('page-title', 'My Profile')
+
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
