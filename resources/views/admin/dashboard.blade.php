@@ -727,8 +727,8 @@
                             };
                         @endphp
                         <li class="d-flex justify-content-between align-items-center py-1 border-bottom">
-                            <span class="text-truncate me-1" style="max-width:140px;" title="{{ $pm->task_name ?? $pm->pmSchedule?->schedule_name }}">
-                                {{ Str::limit($pm->task_name ?? $pm->pmSchedule?->schedule_name, 22) }}
+                            <span class="text-truncate me-1" style="max-width:140px;" title="{{ $pm->task_name }}">
+                                {{ Str::limit($pm->task_name, 22) }}
                             </span>
                             <span class="badge {{ $pmBadge[0] }}" style="font-size:10px;">{{ $pmBadge[1] }}</span>
                         </li>
