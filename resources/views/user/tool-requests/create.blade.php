@@ -191,11 +191,11 @@
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script>
 // Tool data from server (for stock/unit lookup after Choices.js replaces the DOM select)
-const toolsData = @json($tools->map(fn($t) => [
-    'id'   => $t->id,
-    'qty'  => $t->quantity,
-    'unit' => $t->unit,
-])->keyBy('id'));
+const toolsData = @json(
+    $tools->mapWithKeys(function($t) {
+        return [$t->id => ['id' => $t->id, 'qty' => $t->quantity, 'unit' => $t->unit]];
+    })
+);
 
 document.addEventListener('DOMContentLoaded', function() {
     const selectEl = document.getElementById('tool_id');
