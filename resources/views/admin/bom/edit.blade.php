@@ -107,14 +107,16 @@
 <script>
 let rowIndex = 0;
 
-const existingItems = @json($bom->items->map(fn($i) => [
-    'material_code' => $i->material_code,
-    'material_description' => $i->material_description,
-    'qty' => $i->qty,
-    'unit' => $i->unit,
-    'price_unit' => $i->price_unit,
-    'price' => $i->price,
-]));
+const existingItems = @json($bom->items->map(function($i) {
+    return [
+        'material_code'        => $i->material_code,
+        'material_description' => $i->material_description,
+        'qty'                  => $i->qty,
+        'unit'                 => $i->unit,
+        'price_unit'           => $i->price_unit,
+        'price'                => $i->price,
+    ];
+}));
 
 function addRow(data) {
     const tbody = document.getElementById('itemsBody');
