@@ -710,63 +710,38 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('bucket_date');
 
-        // Failures per bucket (sparse — only buckets that have failures)
-        $failureBuckets = DB::connection('site')->table('cm_reports')
+        // Rolling MTBF: cumulative failures per bucket only — plot only on days with failures.
+        // Running hours anchored to first failure date to avoid inflated values.
+        $mtbfBuckets = DB::connection('site')->table('cm_reports')
             ->whereBetween('submitted_at', [$dateFrom, $dateTo])
             ->selectRaw("{$bucketExprAll} as bucket_date, COUNT(*) as failure_count")
             ->groupByRaw($bucketExprAll)
             ->orderByRaw($bucketExprAll)
-            ->get()
-            ->keyBy('bucket_date');
+            ->get();
 
-        if ($failureBuckets->isEmpty()) {
-            // No failures at all — no MTBF to plot
-            return $mttrRows->map(fn($r, $date) => [
-                'label' => $date, 'mttr' => (float) $r->avg_minutes, 'mtbf' => null,
-            ])->values()->toArray();
-        }
+        if ($mtbfBuckets->isEmpty()) {
+            $mtbfRolling = [];
+        } else {
+            $firstBucketDate = Carbon::parse($mtbfBuckets->first()->bucket_date)->startOfDay();
 
-        // Generate every bucket in the range (daily/weekly/monthly)
-        $allBuckets = [];
-        $cursor = Carbon::parse($dateFrom)->startOfDay();
-        while ($cursor->lte($dateTo)) {
-            $allBuckets[] = $cursor->toDateString();
-            match ($granularity) {
-                'weekly'  => $cursor->addDays(7),
-                'monthly' => $cursor->addMonth()->startOfMonth(),
-                default   => $cursor->addDay(),
-            };
-        }
-
-        // Anchor to the first failure bucket date
-        $firstFailureDate = Carbon::parse($failureBuckets->keys()->first())->startOfDay();
-
-        // Walk every bucket, carry forward cumulative failures and compute rolling MTBF
-        $cumulativeFailures = 0;
-        $mtbfRolling = [];
-        foreach ($allBuckets as $bucket) {
-            if ($failureBuckets->has($bucket)) {
-                $cumulativeFailures += $failureBuckets[$bucket]->failure_count;
+            $cumulativeFailures = 0;
+            $mtbfRolling = [];
+            foreach ($mtbfBuckets as $row) {
+                $cumulativeFailures += $row->failure_count;
+                $bucketEnd = Carbon::parse($row->bucket_date);
+                switch ($granularity) {
+                    case 'weekly':  $bucketEnd->addDays(7);  break;
+                    case 'monthly': $bucketEnd->addMonth();  break;
+                    default:        $bucketEnd->addDay();    break;
+                }
+                if ($bucketEnd->gt($dateTo)) $bucketEnd = $dateTo->copy();
+                $runningMinutes = max(60, $firstBucketDate->diffInMinutes($bucketEnd));
+                $mtbfRolling[$row->bucket_date] = $runningMinutes / $cumulativeFailures;
             }
-
-            // Only plot from the first failure onward
-            if ($cumulativeFailures === 0) continue;
-
-            $bucketEnd = Carbon::parse($bucket);
-            match ($granularity) {
-                'weekly'  => $bucketEnd->addDays(7),
-                'monthly' => $bucketEnd->addMonth(),
-                default   => $bucketEnd->addDay(),
-            };
-            if ($bucketEnd->gt($dateTo)) $bucketEnd = $dateTo->copy();
-
-            $runningMinutes = max(60, $firstFailureDate->diffInMinutes($bucketEnd));
-            $mtbfRolling[$bucket] = $runningMinutes / $cumulativeFailures;
         }
 
-        // Merge all bucket dates (MTBF + MTTR) for the final output
-        $allDates = collect(array_keys($mtbfRolling))
-            ->merge($mttrRows->keys())
+        $allDates = collect($mttrRows->keys())
+            ->merge(array_keys($mtbfRolling))
             ->unique()->sort()->values();
 
         return $allDates->map(function ($date) use ($mttrRows, $mtbfRolling) {
