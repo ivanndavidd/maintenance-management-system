@@ -314,10 +314,14 @@
         cursor: default;
     }
     .ticker-inner {
-        display: flex;
+        display: inline-flex;
         gap: 0;
         white-space: nowrap;
-        width: max-content;
+        will-change: transform;
+    }
+    @keyframes ticker-scroll {
+        from { transform: translateX(0); }
+        to   { transform: translateX(var(--ticker-shift)); }
     }
     .ticker-item {
         display: inline-flex;
@@ -405,47 +409,32 @@
         const inner = document.getElementById('tickerInner');
         if (!track || !inner) return;
 
-        // Use scrollLeft on the track — pixel-perfect, no transform math needed
-        track.style.overflowX = 'scroll';
-        track.style.scrollbarWidth = 'none'; // Firefox
-        track.style.msOverflowStyle = 'none'; // IE
-        track.style.setProperty('--scrollbar-display', 'none');
-
-        // Hide scrollbar (webkit)
-        const style = document.createElement('style');
-        style.textContent = '.ticker-track::-webkit-scrollbar { display: none; }';
-        document.head.appendChild(style);
-
-        let paused = false;
-        let oneW = 0;
-
         function init() {
-            // Duplicate until content is wider than 3x viewport to ensure seamless loop
-            const trackW = track.offsetWidth;
+            // Measure single-copy width while NOT clipped
             const singleW = inner.scrollWidth;
             if (singleW < 20) { setTimeout(init, 100); return; }
 
-            // We need at least 2 full copies
-            inner.innerHTML += inner.innerHTML;
-            oneW = inner.scrollWidth / 2;
+            // Fill with enough copies so total >> any viewport (at least 4 copies)
+            const copies = Math.max(4, Math.ceil((window.innerWidth * 4) / singleW));
+            const orig = inner.innerHTML;
+            inner.innerHTML = orig.repeat(copies);
 
-            track.scrollLeft = 0;
-            requestAnimationFrame(step);
+            // Duration: pixels-per-second = 80px/s → total one-copy scroll = singleW px
+            const speed   = 80; // px per second
+            const durSec  = singleW / speed;
+
+            inner.style.setProperty('--ticker-shift', '-' + singleW + 'px');
+            inner.style.animation =
+                'ticker-scroll ' + durSec.toFixed(3) + 's linear infinite';
         }
 
-        function step() {
-            if (!paused) {
-                track.scrollLeft += 0.8;
-                // When we've scrolled exactly one copy width, jump back silently
-                if (track.scrollLeft >= oneW) {
-                    track.scrollLeft -= oneW;
-                }
-            }
-            requestAnimationFrame(step);
-        }
-
-        inner.addEventListener('mouseenter', function() { paused = true; });
-        inner.addEventListener('mouseleave', function() { paused = false; });
+        // Pause on hover
+        inner.addEventListener('mouseenter', function() {
+            inner.style.animationPlayState = 'paused';
+        });
+        inner.addEventListener('mouseleave', function() {
+            inner.style.animationPlayState = 'running';
+        });
 
         if (document.fonts && document.fonts.ready) {
             document.fonts.ready.then(init);
