@@ -740,6 +740,23 @@ class DashboardController extends Controller
             }
         }
 
+        // Always add a "today" data point if today is within the period and has no recorded failure.
+        // This gives a live rolling MTBF for the current day that disappears tomorrow.
+        $today = Carbon::now()->startOfDay();
+        $todayKey = match($granularity) {
+            'weekly'  => $today->copy()->startOfWeek(Carbon::MONDAY)->toDateString(),
+            'monthly' => $today->copy()->startOfMonth()->toDateString(),
+            default   => $today->toDateString(),
+        };
+
+        if ($today->between($dateFrom, $dateTo) && !isset($mtbfRolling[$todayKey]) && !empty($mtbfRolling)) {
+            // Use cumulative failures so far and running time from first failure to now
+            $firstBucketDate = Carbon::parse($mtbfBuckets->first()->bucket_date)->startOfDay();
+            $totalFailures   = array_sum(array_column($mtbfBuckets->toArray(), 'failure_count'));
+            $runningMinutes  = max(60, $firstBucketDate->diffInMinutes(Carbon::now()));
+            $mtbfRolling[$todayKey] = $runningMinutes / $totalFailures;
+        }
+
         $allDates = collect($mttrRows->keys())
             ->merge(array_keys($mtbfRolling))
             ->unique()->sort()->values();
@@ -747,9 +764,10 @@ class DashboardController extends Controller
         return $allDates->map(function ($date) use ($mttrRows, $mtbfRolling) {
             $mttrRow = $mttrRows->get($date);
             return [
-                'label' => $date,
-                'mttr'  => $mttrRow ? (float) $mttrRow->avg_minutes : null,
-                'mtbf'  => $mtbfRolling[$date] ?? null,
+                'label'   => $date,
+                'mttr'    => $mttrRow ? (float) $mttrRow->avg_minutes : null,
+                'mtbf'    => $mtbfRolling[$date] ?? null,
+                'is_today' => $date === Carbon::today()->toDateString(),
             ];
         })->values()->toArray();
     }
