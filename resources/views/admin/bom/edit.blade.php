@@ -118,6 +118,7 @@ const existingItems = @json($bom->items->map(function($i) {
     ];
 }));
 
+@verbatim
 function addRow(data) {
     const tbody = document.getElementById('itemsBody');
     const no = tbody.rows.length + 1;
@@ -179,5 +180,6 @@ document.getElementById('bomForm').addEventListener('submit', function(e) {
         alert('Please add at least one item.');
     }
 });
+@endverbatim
 </script>
 @endpush
