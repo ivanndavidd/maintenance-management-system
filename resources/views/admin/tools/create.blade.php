@@ -42,6 +42,20 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
+                                <label for="material_code" class="form-label">Material Code</label>
+                                <input type="text" name="material_code" id="material_code"
+                                    class="form-control @error('material_code') is-invalid @enderror"
+                                    value="{{ old('material_code') }}"
+                                    placeholder="e.g., T-00001">
+                                <small class="text-muted">Leave blank to auto-generate (Format: TLS + YYYYMMDD + 001)</small>
+                                @error('material_code')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
                                 <label for="equipment_type" class="form-label">Equipment Type</label>
                                 <input type="text" name="equipment_type" id="equipment_type"
                                     class="form-control @error('equipment_type') is-invalid @enderror"
@@ -158,17 +172,6 @@
                                 class="form-control @error('location') is-invalid @enderror"
                                 value="{{ old('location') }}" placeholder="e.g., Warehouse A, Shelf 1">
                             @error('location')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="material_code" class="form-label">Material Code (Optional)</label>
-                            <input type="text" name="material_code" id="material_code"
-                                class="form-control @error('material_code') is-invalid @enderror"
-                                value="{{ old('material_code') }}" placeholder="External material code from import">
-                            <small class="text-muted">Leave empty if not applicable</small>
-                            @error('material_code')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

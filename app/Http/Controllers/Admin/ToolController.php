@@ -96,6 +96,7 @@ class ToolController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'material_code'  => 'nullable|string|max:100',
             'equipment_type' => 'nullable|string|max:255',
             'sparepart_name' => 'required|string|max:255',
             'brand' => 'nullable|string|max:255',
@@ -110,8 +111,11 @@ class ToolController extends Controller
             'path' => 'nullable|string|max:255',
         ]);
 
-        // Generate tool ID
+        // Generate tool ID; use provided material_code if given, else auto-generate
         $validated['tool_id'] = Tool::generateToolId();
+        if (empty($validated['material_code'])) {
+            $validated['material_code'] = $validated['tool_id'];
+        }
         $validated['item_type'] = 'tool';
         $validated['add_part_by'] = auth()->id();
 
