@@ -978,30 +978,34 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <div>
-                        <h6 class="mb-0"><i class="fas fa-tachometer-alt text-primary"></i> Maintenance Performance Metrics</h6>
-                        <small class="text-muted" id="metricsDateRange"></small>
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h6 class="mb-0"><i class="fas fa-tachometer-alt text-primary"></i> Maintenance Performance Metrics</h6>
+                            <small class="text-muted" id="metricsDateRange"></small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                            <select class="form-select form-select-sm" id="metricsGranularity" style="width:auto;">
+                                <option value="daily" selected>Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                            <div class="btn-group btn-group-sm" id="metricsTimeframeBtns">
+                                <button type="button" class="btn btn-outline-primary active" data-period="1M">1M</button>
+                                <button type="button" class="btn btn-outline-primary" data-period="3M">3M</button>
+                                <button type="button" class="btn btn-outline-primary" data-period="6M">6M</button>
+                                <button type="button" class="btn btn-outline-primary" data-period="1Y">1Y</button>
+                                <button type="button" class="btn btn-outline-primary" data-period="custom"><i class="fas fa-calendar-alt"></i> Custom</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
-                        <select class="form-select form-select-sm" id="metricsGranularity" style="width:auto;">
-                            <option value="daily" selected>Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                        <div class="btn-group btn-group-sm" id="metricsTimeframeBtns">
-                            <button type="button" class="btn btn-outline-primary active" data-period="1M">1M</button>
-                            <button type="button" class="btn btn-outline-primary" data-period="3M">3M</button>
-                            <button type="button" class="btn btn-outline-primary" data-period="6M">6M</button>
-                            <button type="button" class="btn btn-outline-primary" data-period="1Y">1Y</button>
-                            <button type="button" class="btn btn-outline-primary" data-period="custom"><i class="fas fa-calendar-alt"></i></button>
-                        </div>
-                        <div id="metricsCustomRange" style="display:none;" class="d-flex align-items-center gap-1 flex-wrap">
-                            <input type="date" class="form-control form-control-sm" id="metricsDateFrom" style="max-width:140px;min-width:110px;">
-                            <span>-</span>
-                            <input type="date" class="form-control form-control-sm" id="metricsDateTo" style="max-width:140px;min-width:110px;">
-                            <button class="btn btn-primary btn-sm" onclick="loadMetrics()">Go</button>
-                        </div>
+                    <div id="metricsCustomRange" style="display:none;" class="d-flex align-items-center gap-2 mt-2">
+                        <input type="date" class="form-control form-control-sm" id="metricsDateFrom" style="max-width:160px;">
+                        <span class="text-muted mx-1">to</span>
+                        <input type="date" class="form-control form-control-sm" id="metricsDateTo" style="max-width:160px;">
+                        <button class="btn btn-sm btn-primary ms-1" onclick="loadMetrics()">
+                            <i class="fas fa-search"></i> Apply
+                        </button>
                     </div>
                 </div>
                 <div class="card-body" id="metricsBody">
