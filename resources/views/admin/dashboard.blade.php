@@ -1527,8 +1527,8 @@
                 document.getElementById('metricsDateRange').textContent = data.date_from + ' — ' + data.date_to;
 
                 // Summary cards
-                document.getElementById('mtbfOverall').textContent     = data.mtbf.overall_hours + 'h';
-                document.getElementById('mttrOverall').textContent     = data.mttr.overall_hours + 'h';
+                document.getElementById('mtbfOverall').textContent     = fmtDuration(data.mtbf.overall_hours);
+                document.getElementById('mttrOverall').textContent     = fmtDuration(data.mttr.overall_hours);
                 document.getElementById('mttrCount').textContent       = data.mttr.overall_count;
                 document.getElementById('metricsAvailability').textContent = data.availability + '%';
                 document.getElementById('metricsFailures').textContent = data.total_failures;
@@ -1543,8 +1543,11 @@
 
     function fmtDuration(hours) {
         if (hours === null || hours === undefined) return 'N/A';
-        if (hours < 1) return Math.round(hours * 60) + ' min';
-        return hours + 'h';
+        const totalMin = Math.round(hours * 60);
+        if (totalMin < 60) return totalMin + ' min';
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        return m > 0 ? h + 'h ' + m + 'min' : h + 'h';
     }
 
     function renderTrendChart(trend, granularity) {
