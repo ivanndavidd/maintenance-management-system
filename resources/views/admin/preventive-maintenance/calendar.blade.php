@@ -27,11 +27,14 @@
     <div id="moveModeBanner" style="display:none;" class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 rounded-3">
         <div class="d-flex align-items-center gap-2">
             <i class="fas fa-cut"></i>
-            <span><strong>Move Mode:</strong> Check tasks to move, then click the destination date on the calendar.</span>
+            <div>
+                <strong>Move Mode:</strong> Click tasks to select, then click an empty date cell to move them.
+                <div style="font-size:12px;opacity:0.8;">Tip: Click a <strong>date number</strong> to select all tasks on that day.</div>
+            </div>
             <span class="badge bg-warning text-dark ms-1" id="moveSelectedCount">0 selected</span>
         </div>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-sm btn-outline-dark" id="btnSelectAllDay">Select All (Day)</button>
+            <button type="button" class="btn btn-sm btn-outline-dark" id="btnSelectAllDay">Select All</button>
             <button type="button" class="btn btn-sm btn-secondary" id="btnCancelMove">Cancel</button>
         </div>
     </div>
@@ -809,6 +812,13 @@ body.move-mode .fc-event.move-has-report {
 body.move-mode .fc-daygrid-day:hover {
     background-color: rgba(245, 158, 11, 0.08) !important;
     cursor: crosshair !important;
+}
+
+body.move-mode .fc-daygrid-day-number {
+    cursor: pointer !important;
+    font-weight: 700 !important;
+    color: #d97706 !important;
+    text-decoration: underline dotted;
 }
 
 body.move-mode .fc-daygrid-day.move-target-hover {
@@ -2077,15 +2087,29 @@ document.addEventListener('DOMContentLoaded', function() {
         updateMoveCount();
     });
 
-    // Click on a calendar day cell → set target date and show confirm
+    // Click on calendar: date number → select all tasks that day; empty cell → set move target
     calendarEl.addEventListener('click', function(e) {
-        if (!moveMode || selectedTaskIds.size === 0) return;
+        if (!moveMode) return;
         if (e.target.closest('.fc-event')) return;
+
         const dayCell = e.target.closest('.fc-daygrid-day');
         if (!dayCell) return;
         const dateAttr = dayCell.getAttribute('data-date');
         if (!dateAttr) return;
 
+        // Click on date number → select all moveable tasks on that day
+        if (e.target.closest('.fc-daygrid-day-number')) {
+            dayCell.querySelectorAll('.fc-event[data-task-id].move-no-report').forEach(el => {
+                const taskId = parseInt(el.getAttribute('data-task-id'));
+                selectedTaskIds.add(taskId);
+                el.classList.add('move-selected');
+            });
+            updateMoveCount();
+            return;
+        }
+
+        // Click on empty area → set as move target (only if tasks are selected)
+        if (selectedTaskIds.size === 0) return;
         pendingTargetDate = dateAttr;
         document.getElementById('moveConfirmCount').textContent = selectedTaskIds.size;
         const d = new Date(dateAttr + 'T00:00:00');
