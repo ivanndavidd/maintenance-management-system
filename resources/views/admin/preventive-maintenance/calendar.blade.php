@@ -2097,12 +2097,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const dateAttr = dayCell.getAttribute('data-date');
         if (!dateAttr) return;
 
-        // Click on date number → select all moveable tasks on that day
+        // Click on date number → toggle select all moveable tasks on that day
         if (e.target.closest('.fc-daygrid-day-number')) {
-            dayCell.querySelectorAll('.fc-event[data-task-id].move-no-report').forEach(el => {
+            const dayEvents = dayCell.querySelectorAll('.fc-event[data-task-id].move-no-report');
+            // Check if ALL tasks on this day are already selected
+            const allSelected = Array.from(dayEvents).every(el =>
+                selectedTaskIds.has(parseInt(el.getAttribute('data-task-id')))
+            );
+            dayEvents.forEach(el => {
                 const taskId = parseInt(el.getAttribute('data-task-id'));
-                selectedTaskIds.add(taskId);
-                el.classList.add('move-selected');
+                if (allSelected) {
+                    selectedTaskIds.delete(taskId);
+                    el.classList.remove('move-selected');
+                } else {
+                    selectedTaskIds.add(taskId);
+                    el.classList.add('move-selected');
+                }
             });
             updateMoveCount();
             return;
