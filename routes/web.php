@@ -883,6 +883,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/calendar', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'calendar'])->name('calendar');
                 Route::get('/calendar/events', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'getCalendarEvents'])->name('calendar.events');
                 Route::post('/calendar/tasks', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'storeCalendarTask'])->name('calendar.store-task');
+                Route::post('/calendar/tasks/bulk-move', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'bulkMoveTasks'])->name('supervisor.calendar.tasks.bulk-move');
                 Route::put('/calendar/tasks/{task}', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'updateCalendarTask'])->name('calendar.update-task');
                 Route::patch('/calendar/tasks/{task}/move', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'moveCalendarTask'])->name('calendar.move-task');
                 Route::delete('/calendar/tasks/{task}', [App\Http\Controllers\Admin\PreventiveMaintenanceController::class, 'deleteTask'])->name('delete-task');
