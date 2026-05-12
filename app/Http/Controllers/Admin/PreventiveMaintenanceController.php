@@ -509,7 +509,7 @@ class PreventiveMaintenanceController extends Controller
             $tasks = PmTask::query()
                 ->whereNotNull('task_date')
                 ->whereBetween('task_date', [$start, $end])
-                ->with(['assignedUser', 'completedByUser'])
+                ->with(['assignedUser', 'completedByUser', 'latestReport'])
                 ->orderBy('task_date')
                 ->orderByRaw('COALESCE(assigned_shift_id, 9)')
                 ->get();
@@ -542,6 +542,7 @@ class PreventiveMaintenanceController extends Controller
                     'assigned_user_id' => $task->assigned_user_id,
                     'equipment_type' => $task->equipment_type,
                     'status' => $task->status,
+                    'has_report' => $task->latestReport ? true : false,
                     'is_recurring' => $task->is_recurring,
                     'parent_task_id' => $task->parent_task_id,
                     'recurrence_pattern' => $task->recurrence_pattern,
@@ -701,6 +702,29 @@ class PreventiveMaintenanceController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task moved successfully.',
+        ]);
+    }
+
+    /**
+     * Bulk move selected tasks to a new date (cut-paste, no recurring change)
+     */
+    public function bulkMoveTasks(Request $request)
+    {
+        $validated = $request->validate([
+            'task_ids'    => 'required|array|min:1',
+            'task_ids.*'  => 'integer|exists:pm_tasks,id',
+            'target_date' => 'required|date',
+        ]);
+
+        // Only move tasks that have no report yet (not submitted/in-progress)
+        $moved = PmTask::whereIn('id', $validated['task_ids'])
+            ->whereDoesntHave('latestReport')
+            ->update(['task_date' => $validated['target_date']]);
+
+        return response()->json([
+            'success' => true,
+            'moved'   => $moved,
+            'message' => "{$moved} task(s) moved to {$validated['target_date']}.",
         ]);
     }
 

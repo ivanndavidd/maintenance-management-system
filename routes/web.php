@@ -480,6 +480,11 @@ Route::middleware(['auth'])->group(function () {
                         'deleteCalendarTask',
                     ])->name('calendar.tasks.delete');
 
+                    Route::post('/calendar/tasks/bulk-move', [
+                        App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
+                        'bulkMoveTasks',
+                    ])->name('calendar.tasks.bulk-move');
+
                     // PM Reports routes (must be before wildcard routes)
                     Route::get('/reports', [
                         App\Http\Controllers\Admin\PreventiveMaintenanceController::class,
