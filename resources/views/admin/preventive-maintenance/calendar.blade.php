@@ -1148,6 +1148,7 @@ document.addEventListener('DOMContentLoaded', function() {
             info.jsEvent.stopPropagation();
             // In move mode, toggle selection instead of opening popover
             if (moveMode) {
+                console.log('[MoveMode] eventClick el:', info.el, 'task-id:', info.el.getAttribute('data-task-id'), 'has-report:', info.el.getAttribute('data-has-report'));
                 toggleMoveSelect(info.el);
                 return;
             }
@@ -1990,16 +1991,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toggle selection on an event element
     function toggleMoveSelect(el) {
-        const hasReport = el.getAttribute('data-has-report') === '1';
+        // Walk up to find the element with data-task-id (stamped in eventDidMount)
+        const target = el.closest('[data-task-id]') || el;
+        const hasReport = target.getAttribute('data-has-report') === '1';
         if (hasReport) return;
-        const taskId = parseInt(el.getAttribute('data-task-id'));
+        const taskId = parseInt(target.getAttribute('data-task-id'));
         if (!taskId) return;
         if (selectedTaskIds.has(taskId)) {
             selectedTaskIds.delete(taskId);
-            el.classList.remove('move-selected');
+            target.classList.remove('move-selected');
         } else {
             selectedTaskIds.add(taskId);
-            el.classList.add('move-selected');
+            target.classList.add('move-selected');
         }
         updateMoveCount();
     }
@@ -2031,7 +2034,7 @@ document.addEventListener('DOMContentLoaded', function() {
         calendar.setOption('editable', false);
         updateMoveCount();
         // Mark all currently rendered events
-        document.querySelectorAll('#calendar [data-task-id]').forEach(el => {
+        document.querySelectorAll('#calendar .fc-event[data-task-id]').forEach(el => {
             attachMoveCheckbox(el);
         });
     }
@@ -2046,7 +2049,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('btnNewEvent').disabled = false;
         calendar.setOption('editable', true);
         // Remove all move mode classes
-        document.querySelectorAll('#calendar [data-task-id]').forEach(el => {
+        document.querySelectorAll('#calendar .fc-event').forEach(el => {
             el.classList.remove('move-no-report', 'move-has-report', 'move-selected');
         });
         updateMoveCount();
@@ -2066,7 +2069,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Select All — selects every visible moveable task on the calendar
     document.getElementById('btnSelectAllDay').addEventListener('click', function() {
-        document.querySelectorAll('#calendar [data-task-id].move-no-report').forEach(el => {
+        document.querySelectorAll('#calendar .fc-event[data-task-id].move-no-report').forEach(el => {
             const taskId = parseInt(el.getAttribute('data-task-id'));
             selectedTaskIds.add(taskId);
             el.classList.add('move-selected');
