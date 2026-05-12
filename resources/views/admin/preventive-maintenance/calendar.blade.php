@@ -23,6 +23,19 @@
     <!-- Alert Container -->
     <div id="alertContainer"></div>
 
+    <!-- Move Mode Banner -->
+    <div id="moveModeBanner" style="display:none;" class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 rounded-3">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-cut"></i>
+            <span><strong>Move Mode:</strong> Check tasks to move, then click the destination date on the calendar.</span>
+            <span class="badge bg-warning text-dark ms-1" id="moveSelectedCount">0 selected</span>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-dark" id="btnSelectAllDay">Select All (Day)</button>
+            <button type="button" class="btn btn-sm btn-secondary" id="btnCancelMove">Cancel</button>
+        </div>
+    </div>
+
     <!-- Calendar -->
     <div class="card">
         <div class="card-body">
@@ -50,19 +63,6 @@
                 <div id="listViewContent"></div>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Move Mode Banner -->
-<div id="moveModeBanner" style="display:none;" class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2 mb-0 mt-3 rounded-3">
-    <div class="d-flex align-items-center gap-2">
-        <i class="fas fa-cut text-warning"></i>
-        <span><strong>Move Mode:</strong> Check tasks to move, then click the destination date on the calendar.</span>
-        <span class="badge bg-warning text-dark ms-1" id="moveSelectedCount">0 selected</span>
-    </div>
-    <div class="d-flex gap-2">
-        <button type="button" class="btn btn-sm btn-outline-warning" id="btnSelectAllDay">Select All (Day)</button>
-        <button type="button" class="btn btn-sm btn-secondary" id="btnCancelMove">Cancel</button>
     </div>
 </div>
 
@@ -923,6 +923,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const calendarEl = document.getElementById('calendar');
+
+    // ── Move Mode state (declared here so eventDidMount can reference them) ──
+    let moveMode = false;
+    let selectedTaskIds = new Set();
+    let pendingTargetDate = null;
+
     const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
     const eventActionPopover = document.getElementById('eventActionPopover');
     const eventForm = document.getElementById('eventForm');
@@ -1108,7 +1114,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     shiftBadge.textContent = 'S' + shiftId;
                     titleEl.appendChild(shiftBadge);
                 }
+            }
 
+            // Stamp data attributes for move mode
+            info.el.setAttribute('data-task-id', info.event.id);
+            info.el.setAttribute('data-has-report', info.event.extendedProps.has_report ? '1' : '0');
+
+            // If move mode is already active, attach checkbox immediately
+            if (moveMode) {
+                attachMoveCheckbox(info.el, info.event);
             }
 
             // Use native title attribute for tooltip — no Bootstrap Tooltip objects
@@ -1975,23 +1989,59 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ── Move Mode ─────────────────────────────────────────────────────────────
-    let moveMode = false;
-    let selectedTaskIds = new Set();
-    let pendingTargetDate = null;
     const moveConfirmModal = new bootstrap.Modal(document.getElementById('moveConfirmModal'));
+
+    // Attach checkbox to one event element (called from eventDidMount & enterMoveMode)
+    function attachMoveCheckbox(el, event) {
+        if (el.querySelector('.move-mode-checkbox')) return; // already has one
+        const hasReport = el.getAttribute('data-has-report') === '1';
+        if (hasReport) return; // not moveable
+
+        const taskId = el.getAttribute('data-task-id');
+        if (!taskId) return;
+
+        el.classList.add('move-no-report');
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'move-mode-checkbox';
+        cb.setAttribute('data-task-id', taskId);
+        // Restore checked state if already selected
+        if (selectedTaskIds.has(parseInt(taskId))) {
+            cb.checked = true;
+            el.classList.add('move-selected');
+        }
+        cb.addEventListener('click', function(e) { e.stopPropagation(); });
+        cb.addEventListener('change', function(e) {
+            e.stopPropagation();
+            const id = parseInt(this.getAttribute('data-task-id'));
+            if (this.checked) {
+                selectedTaskIds.add(id);
+                el.classList.add('move-selected');
+            } else {
+                selectedTaskIds.delete(id);
+                el.classList.remove('move-selected');
+            }
+            updateMoveCount();
+        });
+        el.style.paddingLeft = '20px';
+        el.insertBefore(cb, el.firstChild);
+    }
 
     function enterMoveMode() {
         moveMode = true;
+        selectedTaskIds.clear();
         document.body.classList.add('move-mode');
         document.getElementById('moveModeBanner').style.display = 'flex';
         document.getElementById('btnMoveMode').classList.replace('btn-warning', 'btn-danger');
         document.getElementById('btnMoveMode').innerHTML = '<i class="fas fa-times me-1"></i><span class="btn-text"> Exit Move</span>';
         document.getElementById('btnNewEvent').disabled = true;
-        selectedTaskIds.clear();
-        updateMoveCount();
-        addMoveCheckboxes();
-        // Disable drag-drop while in move mode
         calendar.setOption('editable', false);
+        updateMoveCount();
+        // Add checkboxes to all currently rendered events
+        document.querySelectorAll('#calendar .fc-event[data-task-id]').forEach(el => {
+            attachMoveCheckbox(el);
+        });
     }
 
     function exitMoveMode() {
@@ -2002,111 +2052,58 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('btnMoveMode').classList.replace('btn-danger', 'btn-warning');
         document.getElementById('btnMoveMode').innerHTML = '<i class="fas fa-arrows-alt me-1"></i><span class="btn-text"> Move Tasks</span>';
         document.getElementById('btnNewEvent').disabled = false;
-        removeMoveCheckboxes();
         calendar.setOption('editable', true);
-        // Remove selection highlights
-        document.querySelectorAll('.fc-event.move-selected').forEach(el => el.classList.remove('move-selected'));
+        // Remove all checkboxes and highlights
+        document.querySelectorAll('.move-mode-checkbox').forEach(cb => cb.remove());
+        document.querySelectorAll('.fc-event.move-no-report').forEach(el => {
+            el.classList.remove('move-no-report', 'move-selected');
+            el.style.paddingLeft = '';
+        });
+        updateMoveCount();
     }
 
     function updateMoveCount() {
         document.getElementById('moveSelectedCount').textContent = selectedTaskIds.size + ' selected';
     }
 
-    function addMoveCheckboxes() {
-        // Add checkbox to every event that has no report (moveable)
-        document.querySelectorAll('.fc-event[data-task-id]').forEach(el => {
-            addCheckboxToEvent(el);
-        });
-    }
-
-    function addCheckboxToEvent(el) {
-        if (el.querySelector('.move-mode-checkbox')) return;
-        const taskId = el.getAttribute('data-task-id');
-        const hasReport = el.getAttribute('data-has-report') === '1';
-        if (hasReport) return; // skip tasks with reports
-
-        el.classList.add('move-no-report');
-        el.style.position = 'relative';
-
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.className = 'move-mode-checkbox';
-        cb.setAttribute('data-task-id', taskId);
-        cb.addEventListener('change', function(e) {
-            e.stopPropagation();
-            if (this.checked) {
-                selectedTaskIds.add(parseInt(taskId));
-                el.classList.add('move-selected');
-            } else {
-                selectedTaskIds.delete(parseInt(taskId));
-                el.classList.remove('move-selected');
-            }
-            updateMoveCount();
-        });
-        el.insertBefore(cb, el.firstChild);
-    }
-
-    function removeMoveCheckboxes() {
-        document.querySelectorAll('.move-mode-checkbox').forEach(cb => cb.remove());
-        document.querySelectorAll('.fc-event.move-no-report').forEach(el => el.classList.remove('move-no-report'));
-    }
-
-    // After events render, add checkboxes if in move mode
-    calendar.on('eventDidMount', function(info) {
-        // Stamp data-task-id and data-has-report on every event element
-        info.el.setAttribute('data-task-id', info.event.id);
-        info.el.setAttribute('data-has-report', info.event.extendedProps.has_report ? '1' : '0');
-        if (moveMode) addCheckboxToEvent(info.el);
-    });
-
-    // Enter move mode button
+    // Toggle move mode button
     document.getElementById('btnMoveMode').addEventListener('click', function() {
         if (moveMode) exitMoveMode(); else enterMoveMode();
     });
 
-    // Cancel button
+    // Cancel banner button
     document.getElementById('btnCancelMove').addEventListener('click', exitMoveMode);
 
-    // Select All (for the currently visible day — picks first source date of selected)
+    // Select All — selects every visible moveable task on the calendar
     document.getElementById('btnSelectAllDay').addEventListener('click', function() {
-        // Select all moveable tasks visible on calendar
-        document.querySelectorAll('.move-mode-checkbox').forEach(cb => {
+        document.querySelectorAll('#calendar .move-mode-checkbox').forEach(cb => {
             cb.checked = true;
-            const taskId = parseInt(cb.getAttribute('data-task-id'));
-            selectedTaskIds.add(taskId);
+            selectedTaskIds.add(parseInt(cb.getAttribute('data-task-id')));
             cb.closest('.fc-event')?.classList.add('move-selected');
         });
         updateMoveCount();
     });
 
-    // Click on a calendar day cell → target date for paste
+    // Click on a calendar day cell → set target date and show confirm
     calendarEl.addEventListener('click', function(e) {
-        if (!moveMode) return;
-        if (selectedTaskIds.size === 0) return;
-
-        // Find the day cell clicked (not on an event)
+        if (!moveMode || selectedTaskIds.size === 0) return;
+        if (e.target.closest('.fc-event') || e.target.closest('.move-mode-checkbox')) return;
         const dayCell = e.target.closest('.fc-daygrid-day');
         if (!dayCell) return;
-
-        // Make sure user didn't click on an event or checkbox
-        if (e.target.closest('.fc-event') || e.target.closest('.move-mode-checkbox')) return;
-
         const dateAttr = dayCell.getAttribute('data-date');
         if (!dateAttr) return;
 
         pendingTargetDate = dateAttr;
-
-        // Show confirm modal
         document.getElementById('moveConfirmCount').textContent = selectedTaskIds.size;
         const d = new Date(dateAttr + 'T00:00:00');
-        document.getElementById('moveConfirmDate').textContent = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('moveConfirmDate').textContent =
+            d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         moveConfirmModal.show();
     });
 
-    // Confirm move
+    // Confirm move — call API
     document.getElementById('btnConfirmMove').addEventListener('click', function() {
         if (!pendingTargetDate || selectedTaskIds.size === 0) return;
-
         const btn = this;
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Moving...';
@@ -2128,10 +2125,8 @@ document.addEventListener('DOMContentLoaded', function() {
             moveConfirmModal.hide();
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-check me-1"></i> Move Tasks';
-
             if (data.success) {
                 showAlert(data.message, 'success');
-                // Refresh calendar
                 Object.keys(eventCache).forEach(k => delete eventCache[k]);
                 Object.keys(listCache).forEach(k => delete listCache[k]);
                 exitMoveMode();
