@@ -784,24 +784,26 @@ body.fc-loading::after {
 }
 
 /* ── Move Mode ── */
-body.move-mode .fc-event { cursor: default !important; }
-body.move-mode .fc-event:hover { transform: none !important; }
+body.move-mode .fc-event { transform: none !important; }
 
-.move-mode-checkbox {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 15px;
-    height: 15px;
-    cursor: pointer;
-    z-index: 10;
-    accent-color: #f59e0b;
+/* Moveable events: pointer cursor, slight dim when not selected */
+body.move-mode .fc-event.move-no-report {
+    cursor: pointer !important;
+    opacity: 0.7;
 }
 
+/* Events with report: not selectable */
+body.move-mode .fc-event.move-has-report {
+    cursor: not-allowed !important;
+    opacity: 0.3;
+}
+
+/* Selected event: bright outline */
 .fc-event.move-selected {
-    outline: 2px solid #f59e0b !important;
+    outline: 3px solid #f59e0b !important;
     outline-offset: 1px;
     opacity: 1 !important;
+    box-shadow: 0 0 6px rgba(245,158,11,0.5) !important;
 }
 
 body.move-mode .fc-daygrid-day:hover {
@@ -812,10 +814,6 @@ body.move-mode .fc-daygrid-day:hover {
 body.move-mode .fc-daygrid-day.move-target-hover {
     background-color: rgba(245, 158, 11, 0.15) !important;
 }
-
-/* dim unselected events in move mode */
-body.move-mode .fc-event:not(.move-selected) { opacity: 0.5; }
-body.move-mode .fc-event.move-no-report { opacity: 1; }
 
 /* Custom Dropdown Menu (non-Bootstrap) */
 .custom-dropdown-menu {
@@ -1120,9 +1118,9 @@ document.addEventListener('DOMContentLoaded', function() {
             info.el.setAttribute('data-task-id', info.event.id);
             info.el.setAttribute('data-has-report', info.event.extendedProps.has_report ? '1' : '0');
 
-            // If move mode is already active, attach checkbox immediately
+            // If move mode is already active, mark this event immediately
             if (moveMode) {
-                attachMoveCheckbox(info.el, info.event);
+                attachMoveCheckbox(info.el);
             }
 
             // Use native title attribute for tooltip — no Bootstrap Tooltip objects
@@ -1148,10 +1146,9 @@ document.addEventListener('DOMContentLoaded', function() {
         eventClick: function(info) {
             info.jsEvent.preventDefault();
             info.jsEvent.stopPropagation();
-            // In move mode, toggle checkbox instead
+            // In move mode, toggle selection instead of opening popover
             if (moveMode) {
-                const cb = info.el.querySelector('.move-mode-checkbox');
-                if (cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }
+                toggleMoveSelect(info.el);
                 return;
             }
             currentEvent = info.event;
@@ -1991,41 +1988,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── Move Mode ─────────────────────────────────────────────────────────────
     const moveConfirmModal = new bootstrap.Modal(document.getElementById('moveConfirmModal'));
 
-    // Attach checkbox to one event element (called from eventDidMount & enterMoveMode)
-    function attachMoveCheckbox(el, event) {
-        if (el.querySelector('.move-mode-checkbox')) return; // already has one
+    // Toggle selection on an event element
+    function toggleMoveSelect(el) {
         const hasReport = el.getAttribute('data-has-report') === '1';
-        if (hasReport) return; // not moveable
-
-        const taskId = el.getAttribute('data-task-id');
+        if (hasReport) return;
+        const taskId = parseInt(el.getAttribute('data-task-id'));
         if (!taskId) return;
-
-        el.classList.add('move-no-report');
-
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.className = 'move-mode-checkbox';
-        cb.setAttribute('data-task-id', taskId);
-        // Restore checked state if already selected
-        if (selectedTaskIds.has(parseInt(taskId))) {
-            cb.checked = true;
+        if (selectedTaskIds.has(taskId)) {
+            selectedTaskIds.delete(taskId);
+            el.classList.remove('move-selected');
+        } else {
+            selectedTaskIds.add(taskId);
             el.classList.add('move-selected');
         }
-        cb.addEventListener('click', function(e) { e.stopPropagation(); });
-        cb.addEventListener('change', function(e) {
-            e.stopPropagation();
-            const id = parseInt(this.getAttribute('data-task-id'));
-            if (this.checked) {
-                selectedTaskIds.add(id);
+        updateMoveCount();
+    }
+
+    // Mark moveable events visually when entering move mode
+    function attachMoveCheckbox(el) {
+        const hasReport = el.getAttribute('data-has-report') === '1';
+        const taskId = el.getAttribute('data-task-id');
+        if (!taskId) return;
+        if (hasReport) {
+            el.classList.add('move-has-report');
+        } else {
+            el.classList.add('move-no-report');
+            // Restore selected state if re-rendering
+            if (selectedTaskIds.has(parseInt(taskId))) {
                 el.classList.add('move-selected');
-            } else {
-                selectedTaskIds.delete(id);
-                el.classList.remove('move-selected');
             }
-            updateMoveCount();
-        });
-        el.style.paddingLeft = '20px';
-        el.insertBefore(cb, el.firstChild);
+        }
     }
 
     function enterMoveMode() {
@@ -2038,8 +2030,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('btnNewEvent').disabled = true;
         calendar.setOption('editable', false);
         updateMoveCount();
-        // Add checkboxes to all currently rendered events
-        document.querySelectorAll('#calendar .fc-event[data-task-id]').forEach(el => {
+        // Mark all currently rendered events
+        document.querySelectorAll('#calendar [data-task-id]').forEach(el => {
             attachMoveCheckbox(el);
         });
     }
@@ -2053,11 +2045,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('btnMoveMode').innerHTML = '<i class="fas fa-arrows-alt me-1"></i><span class="btn-text"> Move Tasks</span>';
         document.getElementById('btnNewEvent').disabled = false;
         calendar.setOption('editable', true);
-        // Remove all checkboxes and highlights
-        document.querySelectorAll('.move-mode-checkbox').forEach(cb => cb.remove());
-        document.querySelectorAll('.fc-event.move-no-report').forEach(el => {
-            el.classList.remove('move-no-report', 'move-selected');
-            el.style.paddingLeft = '';
+        // Remove all move mode classes
+        document.querySelectorAll('#calendar [data-task-id]').forEach(el => {
+            el.classList.remove('move-no-report', 'move-has-report', 'move-selected');
         });
         updateMoveCount();
     }
@@ -2076,10 +2066,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Select All — selects every visible moveable task on the calendar
     document.getElementById('btnSelectAllDay').addEventListener('click', function() {
-        document.querySelectorAll('#calendar .move-mode-checkbox').forEach(cb => {
-            cb.checked = true;
-            selectedTaskIds.add(parseInt(cb.getAttribute('data-task-id')));
-            cb.closest('.fc-event')?.classList.add('move-selected');
+        document.querySelectorAll('#calendar [data-task-id].move-no-report').forEach(el => {
+            const taskId = parseInt(el.getAttribute('data-task-id'));
+            selectedTaskIds.add(taskId);
+            el.classList.add('move-selected');
         });
         updateMoveCount();
     });
@@ -2087,7 +2077,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Click on a calendar day cell → set target date and show confirm
     calendarEl.addEventListener('click', function(e) {
         if (!moveMode || selectedTaskIds.size === 0) return;
-        if (e.target.closest('.fc-event') || e.target.closest('.move-mode-checkbox')) return;
+        if (e.target.closest('.fc-event')) return;
         const dayCell = e.target.closest('.fc-daygrid-day');
         if (!dayCell) return;
         const dateAttr = dayCell.getAttribute('data-date');
