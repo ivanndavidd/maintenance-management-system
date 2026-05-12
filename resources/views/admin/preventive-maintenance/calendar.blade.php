@@ -1158,7 +1158,6 @@ document.addEventListener('DOMContentLoaded', function() {
             info.jsEvent.stopPropagation();
             // In move mode, toggle selection instead of opening popover
             if (moveMode) {
-                console.log('[MoveMode] eventClick el:', info.el, 'task-id:', info.el.getAttribute('data-task-id'), 'has-report:', info.el.getAttribute('data-has-report'));
                 toggleMoveSelect(info.el);
                 return;
             }
