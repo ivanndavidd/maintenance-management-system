@@ -121,7 +121,7 @@
 
                     @if($ticket->report->sparepartUsages && $ticket->report->sparepartUsages->count() > 0)
                     <div class="mb-3">
-                        <strong><i class="fas fa-boxes me-1"></i> Sparepart Digunakan:</strong>
+                        <strong>Sparepart Digunakan:</strong>
                         <div class="table-responsive mt-2">
                             <table class="table table-sm table-bordered mb-0">
                                 <thead class="table-light">
