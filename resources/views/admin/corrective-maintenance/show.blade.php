@@ -118,6 +118,35 @@
                         <div class="bg-light p-2 rounded mt-1">{!! nl2br(e($ticket->report->notes)) !!}</div>
                     </div>
                     @endif
+
+                    @if($ticket->report->sparepartUsages && $ticket->report->sparepartUsages->count() > 0)
+                    <div class="mb-3">
+                        <strong><i class="fas fa-boxes me-1"></i> Sparepart Digunakan:</strong>
+                        <div class="table-responsive mt-2">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nama Sparepart</th>
+                                        <th>Material Code</th>
+                                        <th>Qty</th>
+                                        <th>Unit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($ticket->report->sparepartUsages as $usage)
+                                    <tr>
+                                        <td>{{ $usage->sparepart->sparepart_name ?? '-' }}</td>
+                                        <td><code>{{ $usage->sparepart->material_code ?? '-' }}</code></td>
+                                        <td>{{ $usage->quantity_used }}</td>
+                                        <td>{{ $usage->sparepart->unit ?? '-' }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+
                     <div class="row">
                         <div class="col-md-6">
                             <small class="text-muted">Submitted by: <strong>{{ $ticket->report->submitter->name ?? '-' }}</strong></small>

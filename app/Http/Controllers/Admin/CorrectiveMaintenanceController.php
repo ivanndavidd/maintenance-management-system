@@ -85,7 +85,7 @@ class CorrectiveMaintenanceController extends Controller
      */
     public function show(CorrectiveMaintenanceRequest $ticket)
     {
-        $ticket->load(['assignedUser', 'handler', 'technicians', 'report.asset', 'report.submitter', 'parentTicket.report', 'childTickets']);
+        $ticket->load(['assignedUser', 'handler', 'technicians', 'report.asset', 'report.submitter', 'report.sparepartUsages.sparepart', 'parentTicket.report', 'childTickets']);
 
         // Get maintenance staff and supervisors for manual assignment
         $maintenanceStaff = User::role(['staff_maintenance', 'supervisor_maintenance'])
