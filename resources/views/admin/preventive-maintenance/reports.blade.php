@@ -141,7 +141,6 @@
                                     <th class="d-none d-lg-table-cell">Shift</th>
                                     <th class="d-none d-md-table-cell">Task Status</th>
                                     <th>Report Status</th>
-                                    <th class="d-none d-lg-table-cell">Further Repair</th>
                                     <th style="width:50px">Action</th>
                                 </tr>
                             </thead>
@@ -184,13 +183,6 @@
                                             @endif
                                         @else
                                             <span class="badge bg-secondary">No Report</span>
-                                        @endif
-                                    </td>
-                                    <td class="d-none d-lg-table-cell">
-                                        @if($latestReport && $latestReport->furtherRepairAssets && $latestReport->furtherRepairAssets->count() > 0)
-                                            <span class="badge bg-warning text-dark"><i class="fas fa-tools"></i> {{ $latestReport->furtherRepairAssets->count() }} asset(s)</span>
-                                        @else
-                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
@@ -341,31 +333,6 @@ function viewReport(reportId) {
                 html += `</div></div>`;
             }
 
-            // Further repair assets
-            if (r.further_repair_assets && r.further_repair_assets.length > 0) {
-                html += `<div class="mb-3">
-                    <label class="fw-semibold"><i class="fas fa-tools me-1"></i> Further Repair Assets</label>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered">
-                            <thead class="table-light">
-                                <tr><th>Equipment ID</th><th>Name</th><th>Location</th><th>Notes</th><th>Action</th></tr>
-                            </thead>
-                            <tbody>`;
-                r.further_repair_assets.forEach(a => {
-                    html += `<tr>
-                        <td><code>${a.equipment_id}</code></td>
-                        <td>${a.asset_name}</td>
-                        <td>${a.location || '-'}</td>
-                        <td>${a.notes || '-'}</td>
-                        <td>
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="openCreateCmModal(${r.id}, ${a.id}, '${a.equipment_id} - ${a.asset_name.replace(/'/g, "\\'")}')">
-                                <i class="fas fa-wrench me-1"></i> Create CM
-                            </button>
-                        </td>
-                    </tr>`;
-                });
-                html += `</tbody></table></div></div>`;
-            }
 
             // Sparepart usages — pending approval
             if (r.status === 'pending_sparepart_approval' && r.sparepart_usages && r.sparepart_usages.length > 0) {
