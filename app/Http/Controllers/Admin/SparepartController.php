@@ -127,7 +127,7 @@ class SparepartController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'material_code'  => 'nullable|string|max:100',
+            'material_code'  => 'required|string|max:100|unique:spareparts,material_code',
             'equipment_type' => 'nullable|string|max:255',
             'sparepart_name' => 'required|string|max:255',
             'brand' => 'nullable|string|max:255',
@@ -142,11 +142,7 @@ class SparepartController extends Controller
             'path' => 'nullable|string|max:255',
         ]);
 
-        // Generate sparepart ID; use provided material_code if given, else auto-generate
         $validated['sparepart_id'] = Sparepart::generateSparepartId();
-        if (empty($validated['material_code'])) {
-            $validated['material_code'] = $validated['sparepart_id'];
-        }
         $validated['add_part_by'] = auth()->id();
 
         Sparepart::create($validated);
