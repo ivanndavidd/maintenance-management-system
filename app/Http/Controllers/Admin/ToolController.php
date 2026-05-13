@@ -167,6 +167,7 @@ class ToolController extends Controller
     public function update(Request $request, Tool $tool)
     {
         $validated = $request->validate([
+            'material_code'  => 'required|string|max:100|unique:tools,material_code,' . $tool->id,
             'equipment_type' => 'nullable|string|max:255',
             'sparepart_name' => 'required|string|max:255',
             'brand' => 'nullable|string|max:255',
