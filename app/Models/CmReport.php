@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CmReport extends TenantModels
 {
@@ -39,6 +40,11 @@ class CmReport extends TenantModels
     public function submitter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'submitted_by');
+    }
+
+    public function sparepartUsages(): HasMany
+    {
+        return $this->hasMany(SparepartUsage::class, 'cm_report_id');
     }
 
     public function getStatusBadgeClass(): string

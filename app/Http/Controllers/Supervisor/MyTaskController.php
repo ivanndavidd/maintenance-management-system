@@ -371,6 +371,7 @@ class MyTaskController extends Controller
                 'technicians',
                 'report.asset',
                 'report.submitter',
+                'report.sparepartUsages.sparepart',
                 'childTickets.technicians',
                 'childTickets.report',
                 'parentTicket.report.asset'
