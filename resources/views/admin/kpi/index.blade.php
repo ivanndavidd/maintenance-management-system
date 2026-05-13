@@ -144,16 +144,16 @@
                                         </td>
                                         <td class="d-none d-md-table-cell">{{ $item['user']->department->name ?? '-' }}</td>
                                         <td class="text-center">
-                                            <span class="badge bg-primary">{{ $item['pm_count'] }}</span>
+                                            <span class="badge bg-primary">{{ $item['pm_count'] }}/{{ $item['pm_assigned'] }}</span>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-warning text-dark">{{ $item['cm_count'] }}</span>
+                                            <span class="badge bg-warning text-dark">{{ $item['cm_count'] }}/{{ $item['cm_assigned'] }}</span>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-info">{{ $item['so_count'] }}</span>
+                                            <span class="badge bg-info">{{ $item['so_count'] }}/{{ $item['so_assigned'] }}</span>
                                         </td>
                                         <td class="text-center d-none d-md-table-cell">
-                                            <span class="badge bg-success">{{ $item['total_completed'] }}</span>
+                                            <span class="badge bg-success">{{ $item['total_completed'] }}/{{ $item['total_assigned'] }}</span>
                                         </td>
                                         <td class="d-none d-lg-table-cell">
                                             <div class="d-flex align-items-center">
