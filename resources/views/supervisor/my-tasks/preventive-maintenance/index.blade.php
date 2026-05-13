@@ -431,11 +431,6 @@ function viewReport(taskId, reportId) {
                 r.photos.forEach(p => { html += `<a href="${p.url}" target="_blank"><img src="${p.url}" style="width:100px;height:100px;object-fit:cover;" class="rounded border"></a>`; });
                 html += '</div></div>';
             }
-            if (r.further_repair_assets && r.further_repair_assets.length > 0) {
-                html += '<div class="mb-3"><label class="fw-semibold">Sparepart</label><div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Equipment ID</th><th>Name</th><th>Location</th><th>Notes</th></tr></thead><tbody>';
-                r.further_repair_assets.forEach(a => { html += `<tr><td>${a.equipment_id}</td><td>${a.asset_name}</td><td>${a.location || '-'}</td><td>${a.notes || '-'}</td></tr>`; });
-                html += '</tbody></table></div></div>';
-            }
             body.innerHTML = html;
         }
     })
