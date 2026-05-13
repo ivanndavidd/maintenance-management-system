@@ -123,7 +123,17 @@
             @endif
 
             <!-- Submit / Update Report -->
-            @if(!$latestReport || in_array($latestReport->status, ['revision_needed', 'sparepart_rejected']))
+            @php
+                $canSubmit = !$latestReport && $task->status !== 'in_progress'
+                    || ($latestReport && in_array($latestReport->status, ['revision_needed', 'sparepart_rejected']) && $latestReport->submitted_by === auth()->id());
+            @endphp
+            @if($task->status === 'in_progress' && !$latestReport)
+            <div class="alert alert-warning">
+                <i class="fas fa-lock me-1"></i>
+                <strong>Task sedang dikerjakan oleh orang lain.</strong> Laporan tidak bisa disubmit saat task dalam status <em>In Progress</em>.
+            </div>
+            @endif
+            @if($canSubmit)
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
