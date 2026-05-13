@@ -199,14 +199,10 @@ class MyTaskController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        // Block submit if task is in_progress and has no existing report (being worked by someone else)
+        // Block submit if task is in_progress with no report yet (someone else is working on it)
         $task->load('latestReport');
         if ($task->status === 'in_progress' && !$task->latestReport) {
             return response()->json(['success' => false, 'message' => 'Task sedang dikerjakan oleh orang lain.'], 403);
-        }
-        // Block resubmit if existing report was submitted by a different user
-        if ($task->latestReport && $task->latestReport->submitted_by !== auth()->id()) {
-            return response()->json(['success' => false, 'message' => 'Anda tidak bisa mengedit laporan orang lain.'], 403);
         }
 
         $request->validate([
