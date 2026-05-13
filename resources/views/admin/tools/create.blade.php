@@ -140,13 +140,10 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="parts_price" class="form-label">Price <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="number" name="parts_price" id="parts_price"
-                                        class="form-control @error('parts_price') is-invalid @enderror"
-                                        value="{{ old('parts_price', '') }}" min="0" step="1" placeholder="0" required>
-                                </div>
+                                <label for="parts_price" class="form-label">Unit Price (Rp) <span class="text-danger">*</span></label>
+                                <input type="number" name="parts_price" id="parts_price"
+                                    class="form-control @error('parts_price') is-invalid @enderror"
+                                    value="{{ old('parts_price', '') }}" min="0" step="1" placeholder="0" required>
                                 @error('parts_price')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
