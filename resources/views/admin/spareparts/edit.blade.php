@@ -86,7 +86,13 @@
                         </div>
 
                         <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> To change quantity, please use <a href="{{ route($routePrefix.'.spareparts.adjustments.create') }}">Stock Adjustment</a> feature for proper tracking.
+                            <i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> To change quantity, please use
+                            @if($routePrefix === 'admin')
+                                <a href="{{ route($routePrefix.'.spareparts.adjustments.create') }}">Stock Adjustment</a>
+                            @else
+                                Stock Adjustment
+                            @endif
+                            feature for proper tracking.
                         </div>
 
                         <div class="row mb-3">
@@ -225,6 +231,7 @@
                 </div>
             </div>
 
+            @if($routePrefix === 'admin')
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">Quick Actions</h5>
@@ -241,6 +248,7 @@
                     </a>
                 </div>
             </div>
+            @endif
         </div>
     </div>
 </div>
