@@ -42,12 +42,13 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="material_code" class="form-label">Material Code</label>
+                                <label for="material_code" class="form-label">Material Code <span class="text-danger">*</span></label>
                                 <input type="text" name="material_code" id="material_code"
                                     class="form-control @error('material_code') is-invalid @enderror"
                                     value="{{ old('material_code') }}"
-                                    placeholder="e.g., T-00001">
-                                <small class="text-muted">Leave blank to auto-generate (Format: TLS + YYYYMMDD + 001)</small>
+                                    placeholder="e.g., T-00001"
+                                    required>
+                                <small class="text-muted">Kode material dari ERP/SAP (wajib diisi, harus unik)</small>
                                 @error('material_code')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
