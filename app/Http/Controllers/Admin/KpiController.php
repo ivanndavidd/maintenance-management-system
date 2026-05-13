@@ -73,8 +73,11 @@ class KpiController extends Controller
             return [
                 'user' => $user,
                 'pm_count' => $pmCount,
+                'pm_assigned' => $pmAssigned,
                 'cm_count' => $cmCount,
+                'cm_assigned' => $cmAssigned,
                 'so_count' => $soCount,
+                'so_assigned' => $soAssigned,
                 'total_completed' => $totalCompleted,
                 'total_assigned' => $totalAssigned,
                 'completion_rate' => $completionRate,
