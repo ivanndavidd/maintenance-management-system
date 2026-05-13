@@ -87,14 +87,18 @@
     </div>
     @endif
 
-    <!-- Tasks grouped by month -->
+    <!-- Tasks grouped by month → date -->
+    @php $today = \Carbon\Carbon::today()->toDateString(); @endphp
     @foreach($tasksByMonth as $month => $tasks)
     @php
         $monthDate = \Carbon\Carbon::parse($month . '-01');
         $stats = $monthlyStats[$month];
+        $tasksByDate = $tasks->sortBy('task_date')->groupBy(fn($t) => \Carbon\Carbon::parse($t->task_date)->toDateString());
+        $shiftColors = [1 => 'primary', 2 => 'info', 3 => 'success'];
     @endphp
     <div class="card mb-4">
-        <div class="card-header bg-white" role="button" data-bs-toggle="collapse" data-bs-target="#month-{{ $month }}">
+        {{-- Month header --}}
+        <div class="card-header bg-white" role="button" data-bs-toggle="collapse" data-bs-target="#month-{{ $month }}" style="cursor:pointer;">
             <div class="d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">
                     <i class="fas fa-calendar me-1"></i>{{ $monthDate->format('M Y') }}
@@ -122,38 +126,78 @@
                 </div>
             </div>
         </div>
+
         <div class="collapse show" id="month-{{ $month }}">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover table-compact mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Date</th>
-                                <th>Task Name</th>
-                                <th class="d-none d-md-table-cell">Description</th>
-                                <th class="d-none d-md-table-cell">Equipment</th>
-                                <th class="d-none d-lg-table-cell">Shift</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($tasks->sortBy('task_date') as $task)
+            @foreach($tasksByDate as $date => $dateTasks)
+            @php
+                $dateCarbon = \Carbon\Carbon::parse($date);
+                $isToday = $date === $today;
+                $isPast = $date < $today;
+                $allApproved = $dateTasks->every(fn($t) => optional($t->latestReport)->status === 'approved');
+                // Expand: today, or has non-approved active tasks on past dates
+                $expand = $isToday || (!$isPast) || !$allApproved;
+                $dayCollapseId = 'day-' . str_replace('-', '', $date);
+                $pendingCount = $dateTasks->filter(fn($t) => in_array($t->status, ['pending','in_progress']))->count();
+                $doneCount = $dateTasks->filter(fn($t) => $t->status === 'completed')->count();
+            @endphp
+            <div class="border-bottom">
+                {{-- Day header --}}
+                <div class="px-3 py-2 d-flex justify-content-between align-items-center"
+                     role="button"
+                     data-bs-toggle="collapse"
+                     data-bs-target="#{{ $dayCollapseId }}"
+                     style="cursor:pointer; background: {{ $isToday ? '#fffbeb' : ($allApproved ? '#f8fffe' : 'transparent') }};">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="text-center" style="min-width:36px;">
+                            <div class="fw-bold {{ $isToday ? 'text-primary' : '' }}" style="font-size:15px;line-height:1;">
+                                {{ $dateCarbon->format('d') }}
+                            </div>
+                            <div class="text-muted" style="font-size:10px;">{{ $dateCarbon->format('D') }}</div>
+                        </div>
+                        @if($isToday)
+                            <span class="badge bg-primary" style="font-size:10px;">Today</span>
+                        @endif
+                        @if($allApproved)
+                            <span class="badge bg-success" style="font-size:10px;"><i class="fas fa-check-double me-1"></i>All Done</span>
+                        @else
+                            @if($pendingCount > 0)
+                                <span class="badge bg-warning text-dark" style="font-size:10px;">{{ $pendingCount }} pending</span>
+                            @endif
+                            @if($doneCount > 0)
+                                <span class="badge bg-success" style="font-size:10px;">{{ $doneCount }} done</span>
+                            @endif
+                        @endif
+                    </div>
+                    <i class="fas fa-chevron-{{ $expand ? 'up' : 'down' }} text-muted" style="font-size:11px;"></i>
+                </div>
+
+                {{-- Day tasks table --}}
+                <div class="collapse {{ $expand ? 'show' : '' }}" id="{{ $dayCollapseId }}">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-compact mb-0" style="font-size:13px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Task Name</th>
+                                    <th class="d-none d-md-table-cell">Description</th>
+                                    <th class="d-none d-md-table-cell">Equipment</th>
+                                    <th class="d-none d-lg-table-cell">Shift</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($dateTasks as $task)
                                 @php
                                     $latestReport = $task->latestReport;
                                     $reportStatus = $latestReport ? $latestReport->status : null;
                                 @endphp
-                                <tr class="{{ $task->status === 'completed' ? 'table-success' : '' }}">
-                                    <td>
-                                        <span class="fw-semibold">{{ \Carbon\Carbon::parse($task->task_date)->format('d') }}</span>
-                                        <small class="text-muted d-block">{{ \Carbon\Carbon::parse($task->task_date)->format('D') }}</small>
-                                    </td>
+                                <tr class="{{ $reportStatus === 'approved' ? 'table-success' : '' }}">
                                     <td>
                                         <a href="{{ route('supervisor.my-tasks.preventive-maintenance.task.show', $task->id) }}" class="text-decoration-none text-dark fw-semibold">
                                             {{ $task->task_name }}
                                         </a>
                                         @if($task->is_recurring || $task->parent_task_id)
-                                            <i class="fas fa-sync-alt text-muted ms-1" style="font-size: 10px;" title="Recurring"></i>
+                                            <i class="fas fa-sync-alt text-muted ms-1" style="font-size:10px;" title="Recurring"></i>
                                         @endif
                                     </td>
                                     <td class="d-none d-md-table-cell">
@@ -162,14 +206,10 @@
                                     <td class="d-none d-md-table-cell">{{ $task->equipment_type ?? '-' }}</td>
                                     <td class="d-none d-lg-table-cell">
                                         @if($task->assigned_shift_id)
-                                            @php
-                                                $shiftColors = [1 => 'primary', 2 => 'info', 3 => 'success'];
-                                            @endphp
                                             <span class="badge bg-{{ $shiftColors[$task->assigned_shift_id] ?? 'secondary' }}">
                                                 Shift {{ $task->assigned_shift_id }}
                                             </span>
-                                        @else
-                                            -
+                                        @else -
                                         @endif
                                     </td>
                                     <td>
@@ -178,17 +218,17 @@
                                         </span>
                                         @if($reportStatus)
                                             <br>
-                                            <span class="badge {{ $latestReport->getStatusBadgeClass() }} mt-1" style="font-size: 10px;">
+                                            <span class="badge {{ $latestReport->getStatusBadgeClass() }} mt-1" style="font-size:10px;">
                                                 <i class="fas fa-file-alt"></i> {{ $latestReport->getStatusLabel() }}
                                             </span>
                                             @if($reportStatus === 'sparepart_rejected' && $latestReport->sparepart_approval_notes)
-                                                <br><small class="text-danger" style="font-size:10px;" title="{{ $latestReport->sparepart_approval_notes }}">
+                                                <br><small class="text-danger" style="font-size:10px;">
                                                     <i class="fas fa-exclamation-circle"></i> {{ Str::limit($latestReport->sparepart_approval_notes, 40) }}
                                                 </small>
                                             @endif
                                             @if($latestReport->timing_label)
                                                 <br>
-                                                <span class="badge {{ $latestReport->timing_badge_class }} mt-1" style="font-size: 10px;" title="Submitted on {{ $latestReport->submitted_at?->format('d M Y') }}">
+                                                <span class="badge {{ $latestReport->timing_badge_class }} mt-1" style="font-size:10px;">
                                                     <i class="fas fa-clock"></i> {{ $latestReport->timing_label }}
                                                 </span>
                                             @endif
@@ -209,7 +249,7 @@
                                         @elseif($task->status !== 'completed')
                                             <div class="d-flex flex-wrap gap-1">
                                                 @if($task->status !== 'in_progress')
-                                                <select class="form-select form-select-sm" style="min-width: 90px; max-width: 110px;" onchange="updateTaskStatus({{ $task->id }}, this.value, this)">
+                                                <select class="form-select form-select-sm" style="min-width:90px;max-width:110px;" onchange="updateTaskStatus({{ $task->id }}, this.value, this)">
                                                     <option value="" disabled selected>Status</option>
                                                     <option value="pending" {{ $task->status === 'pending' ? 'disabled' : '' }}>Pending</option>
                                                     <option value="in_progress">In Progress</option>
@@ -228,11 +268,13 @@
                                         @endif
                                     </td>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+            @endforeach
         </div>
     </div>
     @endforeach
