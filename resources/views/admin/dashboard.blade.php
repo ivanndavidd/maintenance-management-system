@@ -277,6 +277,8 @@
     }
     .kpi-custom-range { display: none; margin-top: 10px; }
     .kpi-custom-range.show { display: flex; }
+    #metricsCustomRange { display: none; }
+    #metricsCustomRange.show { display: flex; }
     .kpi-loading-overlay {
         position: absolute; top: 0; left: 0; right: 0; bottom: 0;
         background: rgba(255,255,255,0.8); display: flex;
@@ -999,7 +1001,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="metricsCustomRange" style="display:none;" class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+                    <div id="metricsCustomRange" style="display:none;" class="align-items-center gap-2 mt-2 flex-wrap">
                         <input type="date" class="form-control form-control-sm" id="metricsDateFrom" style="max-width:160px;min-width:130px;">
                         <span class="text-muted mx-1">to</span>
                         <input type="date" class="form-control form-control-sm" id="metricsDateTo" style="max-width:160px;min-width:130px;">
@@ -1606,8 +1608,7 @@
         else if (period === '3M') gran.value = 'daily';
         else if (period === '6M' || period === '1Y') gran.value = 'weekly';
 
-        document.getElementById('metricsCustomRange').style.display =
-            period === 'custom' ? 'flex' : 'none';
+        document.getElementById('metricsCustomRange').classList.toggle('show', period === 'custom');
         if (period !== 'custom') loadMetrics();
     });
 
