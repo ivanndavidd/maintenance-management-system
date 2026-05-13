@@ -128,7 +128,7 @@
                                     <span class="input-group-text">Rp</span>
                                     <input type="number" name="parts_price" id="parts_price"
                                         class="form-control @error('parts_price') is-invalid @enderror"
-                                        value="{{ old('parts_price', $tool->parts_price) }}" min="0" step="0.01" required>
+                                        value="{{ old('parts_price', (int) $tool->parts_price) }}" min="0" step="1" required>
                                 </div>
                                 @error('parts_price')
                                     <div class="invalid-feedback">{{ $message }}</div>
