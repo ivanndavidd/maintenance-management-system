@@ -131,7 +131,7 @@
                                 <label for="parts_price" class="form-label">Unit Price (Rp) <span class="text-danger">*</span></label>
                                 <input type="number" name="parts_price" id="parts_price"
                                     class="form-control @error('parts_price') is-invalid @enderror"
-                                    value="{{ old('parts_price', 0) }}" min="0" step="0.01" required>
+                                    value="{{ old('parts_price', '') }}" min="0" step="1" placeholder="0" required>
                                 @error('parts_price')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
