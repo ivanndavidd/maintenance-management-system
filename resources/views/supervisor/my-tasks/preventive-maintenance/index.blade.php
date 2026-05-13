@@ -208,14 +208,18 @@
                                             </button>
                                         @elseif($task->status !== 'completed')
                                             <div class="d-flex flex-wrap gap-1">
+                                                @if($task->status !== 'in_progress')
                                                 <select class="form-select form-select-sm" style="min-width: 90px; max-width: 110px;" onchange="updateTaskStatus({{ $task->id }}, this.value, this)">
                                                     <option value="" disabled selected>Status</option>
                                                     <option value="pending" {{ $task->status === 'pending' ? 'disabled' : '' }}>Pending</option>
-                                                    <option value="in_progress" {{ $task->status === 'in_progress' ? 'disabled' : '' }}>In Progress</option>
+                                                    <option value="in_progress">In Progress</option>
                                                 </select>
                                                 <button type="button" class="btn btn-sm btn-primary" onclick="openReportModal({{ $task->id }}, '{{ addslashes($task->task_name) }}', '{{ $task->task_date?->format('d M Y') }}', {{ $task->assigned_shift_id ?? 'null' }})" title="Submit Report">
                                                     <i class="fas fa-file-alt"></i>
                                                 </button>
+                                                @else
+                                                <span class="text-warning" style="font-size:12px;"><i class="fas fa-lock me-1"></i>Sedang dikerjakan</span>
+                                                @endif
                                             </div>
                                         @else
                                             <button type="button" class="btn btn-sm btn-outline-primary" onclick="openReportModal({{ $task->id }}, '{{ addslashes($task->task_name) }}', '{{ $task->task_date?->format('d M Y') }}', {{ $task->assigned_shift_id ?? 'null' }})">
