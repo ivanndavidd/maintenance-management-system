@@ -135,7 +135,7 @@
                 $isPast = $date < $today;
                 $allApproved = $dateTasks->every(fn($t) => optional($t->latestReport)->status === 'approved');
                 // Expand: today, or has non-approved active tasks on past dates
-                $expand = $isToday || (!$isPast) || !$allApproved;
+                $expand = $isToday || ($isPast && !$allApproved);
                 $dayCollapseId = 'day-' . str_replace('-', '', $date);
                 $pendingCount = $dateTasks->filter(fn($t) => in_array($t->status, ['pending','in_progress']))->count();
                 $doneCount = $dateTasks->filter(fn($t) => $t->status === 'completed')->count();
