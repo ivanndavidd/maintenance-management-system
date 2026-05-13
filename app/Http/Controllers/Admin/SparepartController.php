@@ -200,7 +200,7 @@ class SparepartController extends Controller
     public function update(Request $request, Sparepart $sparepart)
     {
         $validated = $request->validate([
-            'material_code'  => 'nullable|string|max:100',
+            'material_code'  => 'required|string|max:100|unique:spareparts,material_code,' . $sparepart->id,
             'equipment_type' => 'nullable|string|max:255',
             'sparepart_name' => 'required|string|max:255',
             'brand' => 'nullable|string|max:255',
