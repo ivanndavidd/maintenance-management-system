@@ -1001,7 +1001,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="metricsCustomRange" style="display:none;" class="align-items-center gap-2 mt-2 flex-wrap">
+                    <div id="metricsCustomRange" class="align-items-center gap-2 mt-2 flex-wrap">
                         <input type="date" class="form-control form-control-sm" id="metricsDateFrom" style="max-width:160px;min-width:130px;">
                         <span class="text-muted mx-1">to</span>
                         <input type="date" class="form-control form-control-sm" id="metricsDateTo" style="max-width:160px;min-width:130px;">
