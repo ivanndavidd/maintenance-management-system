@@ -48,6 +48,9 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
+# Discover packages (needed when autoloader was built with --no-scripts)
+php artisan package:discover --ansi 2>/dev/null || true
+
 # Generate application key if not set
 if ! grep -q "^APP_KEY=base64:" .env; then
     echo "Generating application key..."
