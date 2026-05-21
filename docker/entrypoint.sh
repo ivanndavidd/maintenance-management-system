@@ -42,9 +42,6 @@ echo "Database connection successful!"
 # Run Laravel setup commands
 cd /var/www/html
 
-# Discover packages (needed when autoloader was built with --no-scripts)
-php artisan package:discover --ansi 2>/dev/null || true
-
 # Clear and cache configuration
 echo "Optimizing Laravel..."
 php artisan config:clear

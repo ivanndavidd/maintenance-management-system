@@ -8,13 +8,14 @@ COPY composer.json ./
 COPY composer.lock* ./
 
 # Install dependencies without dev packages
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --ignore-platform-reqs
+RUN composer install --no-dev --no-autoloader --prefer-dist --ignore-platform-reqs
 
 # Copy the rest of the application
 COPY . .
 
-# Generate optimized autoloader
-RUN composer dump-autoload --optimize --no-dev --ignore-platform-reqs --no-scripts
+# Generate optimized autoloader and discover packages
+RUN APP_KEY=base64:dummykeyfordockerbuildonly12345678901234= \
+    composer dump-autoload --optimize --no-dev --ignore-platform-reqs
 
 # Stage 2: Build frontend assets (SKIPPED - using CDN for production)
 # Frontend assets are loaded via CDN (Bootstrap, Font Awesome, etc.)
