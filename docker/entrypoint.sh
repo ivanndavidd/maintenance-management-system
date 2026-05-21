@@ -42,20 +42,8 @@ echo "Database connection successful!"
 # Run Laravel setup commands
 cd /var/www/html
 
-# Check if .env exists
-if [ ! -f .env ]; then
-    echo "Creating .env file from .env.example..."
-    cp .env.example .env
-fi
-
 # Discover packages (needed when autoloader was built with --no-scripts)
 php artisan package:discover --ansi 2>/dev/null || true
-
-# Generate application key if not set
-if ! grep -q "^APP_KEY=base64:" .env; then
-    echo "Generating application key..."
-    php artisan key:generate --force
-fi
 
 # Clear and cache configuration
 echo "Optimizing Laravel..."
