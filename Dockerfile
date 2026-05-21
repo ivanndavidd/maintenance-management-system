@@ -14,7 +14,7 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --ignor
 COPY . .
 
 # Generate optimized autoloader
-RUN composer dump-autoload --optimize --no-dev --ignore-platform-reqs
+RUN composer dump-autoload --optimize --no-dev --ignore-platform-reqs --no-scripts
 
 # Stage 2: Build frontend assets (SKIPPED - using CDN for production)
 # Frontend assets are loaded via CDN (Bootstrap, Font Awesome, etc.)
