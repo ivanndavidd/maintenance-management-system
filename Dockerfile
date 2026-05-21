@@ -90,6 +90,7 @@ RUN mkdir -p /var/log/supervisor \
 
 # Copy application from builder stages
 COPY --from=composer-builder /app/vendor ./vendor
+COPY --from=composer-builder /app/bootstrap/cache/packages.php ./bootstrap/cache/packages.php
 COPY --from=node-builder /app/public/build ./public/build
 COPY . .
 
