@@ -19,7 +19,7 @@ RUN composer dump-autoload --optimize --no-dev --ignore-platform-reqs
 # Stage 2: Build frontend assets (SKIPPED - using CDN for production)
 # Frontend assets are loaded via CDN (Bootstrap, Font Awesome, etc.)
 # No build step needed for production deployment
-FROM alpine:latest AS node-builder
+FROM alpine:3.21 AS node-builder
 WORKDIR /app
 RUN mkdir -p public/build && \
     echo '{"resources/sass/app.scss":{"file":"","src":"resources/sass/app.scss"},"resources/css/app.css":{"file":"","src":"resources/css/app.css"},"resources/js/app.js":{"file":"","src":"resources/js/app.js"}}' > public/build/manifest.json && \
@@ -106,6 +106,9 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
+
+# Run as non-root user
+USER www-data
 
 # Expose port 80
 EXPOSE 80
