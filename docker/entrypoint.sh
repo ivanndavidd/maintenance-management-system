@@ -42,6 +42,11 @@ echo "Database connection successful!"
 # Run Laravel setup commands
 cd /var/www/html
 
+# Generate packages.php if missing
+if [ ! -f /var/www/html/bootstrap/cache/packages.php ]; then
+    php /var/www/html/docker/generate-packages.php
+fi
+
 # Clear and cache configuration
 echo "Optimizing Laravel..."
 php artisan config:clear
