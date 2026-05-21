@@ -40,6 +40,19 @@ Schedule::command('pm:alert-missing-shift-schedule')
     ->at('18:00')
     ->description('Alert supervisors about missing shift schedules for tomorrow');
 
+// Weekly shift reminder — every Sunday at 11:00 and 15:00
+Schedule::command('shift:send-weekly-reminder')
+    ->weekly()
+    ->sundays()
+    ->at('11:00')
+    ->description('Remind supervisors to create next week shift schedule (11:00)');
+
+Schedule::command('shift:send-weekly-reminder --reminder')
+    ->weekly()
+    ->sundays()
+    ->at('15:00')
+    ->description('Remind supervisors to create next week shift schedule (15:00 reminder)');
+
 // Shift summary emails (5 minutes before each shift starts)
 Schedule::command('shift:send-summary --shift=1')
     ->daily()
