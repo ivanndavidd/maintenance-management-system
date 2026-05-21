@@ -47,13 +47,10 @@ if [ ! -f /var/www/html/bootstrap/cache/packages.php ]; then
     php /var/www/html/docker/generate-packages.php
 fi
 
-# Clear and cache configuration
-echo "Optimizing Laravel..."
-php artisan config:clear
-php artisan config:cache
-php artisan route:cache
-# Do NOT cache views — resources/ is bind-mounted so views update live
-php artisan view:clear
+# Clear caches only (skip config:cache and route:cache — causes boot issues without full env)
+echo "Clearing caches..."
+php artisan config:clear || true
+php artisan view:clear || true
 
 # Skip auto-migration on startup to avoid conflicts
 # Run migrations manually after container is up: docker compose exec app php artisan migrate --force
