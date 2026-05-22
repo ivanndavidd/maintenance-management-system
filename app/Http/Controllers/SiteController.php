@@ -40,7 +40,9 @@ class SiteController extends Controller
             return redirect()->route('login');
         }
 
-        return view('sites.select', compact('sites'));
+        return response(view('sites.select', compact('sites')))
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache');
     }
 
     /**
