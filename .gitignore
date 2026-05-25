@@ -186,6 +186,17 @@ docker-compose.override.yml
 .claude/
 
 # ============================================
+# Security scan results (internal only)
+# ============================================
+trivy-report.txt
+ARCHITECTURE.md
+
+# ============================================
+# Docker image exports
+# ============================================
+*.tar
+
+# ============================================
 # Documentation Files (Internal/Development)
 # These are development notes, not needed in repo
 # ============================================
