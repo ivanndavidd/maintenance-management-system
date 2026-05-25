@@ -1,0 +1,8 @@
+# SSL certificates directory
+# Place your SSL certificates here:
+# - warehouse-maintenance.gdn-app.com.crt
+# - warehouse-maintenance.gdn-app.com.key
+# 
+# Make sure to set proper permissions:
+# chmod 644 *.crt
+# chmod 600 *.key

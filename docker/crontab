@@ -1,0 +1,12 @@
+# Warehouse Maintenance Crontab
+# Log cleanup every 6 hours to prevent disk space issues
+0 */6 * * * /opt/ops-warehouse-maintenance/scripts/cleanup-logs.sh >> /var/log/cleanup.log 2>&1
+
+# Docker system prune weekly (Sundays at 2 AM)
+0 2 * * 0 docker system prune -af --volumes >> /var/log/docker-prune.log 2>&1
+
+# Rotate cleanup log monthly
+0 0 1 * * truncate -s 0 /var/log/cleanup.log
+
+# Check disk usage daily and alert if > 80%
+0 8 * * * df -h / | awk 'NR==2 {if(substr($5,1,length($5)-1) > 80) print "WARNING: Disk usage is " $5}' >> /var/log/disk-usage.log
