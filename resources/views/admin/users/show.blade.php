@@ -75,11 +75,6 @@
                             <span class="d-block ms-4">{{ $user->phone ?? '-' }}</span>
                         </p>
                         <p class="mb-2">
-                            <i class="fas fa-building text-info"></i>
-                            <strong class="ms-2">Department:</strong>
-                            <span class="d-block ms-4">{{ $user->department->name ?? '-' }}</span>
-                        </p>
-                        <p class="mb-2">
                             <i class="fas fa-calendar text-warning"></i>
                             <strong class="ms-2">Joined:</strong>
                             <span class="d-block ms-4">{{ $user->created_at->format('d M Y') }}</span>
