@@ -32,7 +32,7 @@
             <form method="GET" action="{{ route('supervisor.users.index') }}" id="filterForm">
                 <div class="row g-3">
                     <!-- Search -->
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Search</label>
                         <input type="text" name="search" class="form-control"
                                placeholder="Name, email, employee ID..."
@@ -40,7 +40,7 @@
                     </div>
 
                     <!-- Role Filter -->
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Role</label>
                         <select name="role" class="form-select">
                             <option value="">All Roles</option>
@@ -52,21 +52,8 @@
                         </select>
                     </div>
 
-                    <!-- Department Filter -->
-                    <div class="col-md-3">
-                        <label class="form-label">Department</label>
-                        <select name="department" class="form-select">
-                            <option value="">All Departments</option>
-                            @foreach($departments as $department)
-                                <option value="{{ $department->id }}" {{ request('department') == $department->id ? 'selected' : '' }}>
-                                    {{ $department->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
                     <!-- Status Filter -->
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Status</label>
                         <select name="status" class="form-select">
                             <option value="">All Status</option>
@@ -101,7 +88,6 @@
                             <th class="d-none d-md-table-cell">Employee ID</th>
                             <th>Name</th>
                             <th class="d-none d-md-table-cell">Email</th>
-                            <th class="d-none d-lg-table-cell">Department</th>
                             <th>Role</th>
                             <th>Status</th>
                             <th class="d-none d-md-table-cell">Created</th>
@@ -130,13 +116,6 @@
                                 </div>
                             </td>
                             <td class="d-none d-md-table-cell">{{ $user->email }}</td>
-                            <td class="d-none d-lg-table-cell">
-                                @if($user->department)
-                                    <span class="badge bg-secondary">{{ $user->department->name }}</span>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
                             <td>
                                 @foreach($user->roles as $role)
                                     <span class="badge bg-{{ $role->name == 'admin' ? 'warning' : ($role->name == 'supervisor_maintenance' ? 'info' : 'primary') }}">
@@ -212,7 +191,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-4">
+                            <td colspan="7" class="text-center py-4">
                                 <i class="fas fa-users fa-3x text-muted mb-3"></i>
                                 <p class="text-muted mb-0">No users found</p>
                             </td>
