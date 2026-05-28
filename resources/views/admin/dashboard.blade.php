@@ -349,7 +349,7 @@
             <p class="text-muted mb-0" style="font-size:13px;">Welcome back, <strong>{{ auth()->user()->name }}</strong>!</p>
         </div>
         <div class="text-end">
-            <small class="text-muted d-block">{{ Carbon\Carbon::now()->format('l, F d, Y') }}</small>
+            <small class="text-muted d-block">{{ Carbon\Carbon::now()->format('D, m d, Y') }}</small>
             <small class="text-muted">{{ Carbon\Carbon::now()->format('h:i A') }}</small>
         </div>
     </div>
