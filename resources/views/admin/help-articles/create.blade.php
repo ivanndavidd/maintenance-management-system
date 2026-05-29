@@ -73,7 +73,7 @@
                         <!-- Icon -->
                         <div class="mb-3">
                             <label for="icon" class="form-label">Icon (FontAwesome class)</label>
-                            <div class="input-group">
+                            <div class="input-group flex-nowrap">
                                 <span class="input-group-text {{ old('icon') ? '' : 'd-none' }}" id="iconPreviewWrapper">
                                     <i class="fas {{ old('icon', 'fa-circle') }} me-0" id="iconPreview"></i>
                                 </span>
@@ -84,7 +84,7 @@
                                        value="{{ old('icon') }}"
                                        placeholder="e.g., fa-question-circle"
                                        autocomplete="off">
-                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#iconPickerModal">
+                                <button type="button" class="btn btn-outline-secondary text-nowrap" data-bs-toggle="modal" data-bs-target="#iconPickerModal">
                                     <i class="fas fa-icons"></i> Pick
                                 </button>
                             </div>

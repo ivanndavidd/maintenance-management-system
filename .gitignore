@@ -190,6 +190,7 @@ docker-compose.override.yml
 # ============================================
 trivy-report.txt
 ARCHITECTURE.md
+PANDUAN_USER_STAFF_MAINTENANCE.md
 
 # ============================================
 # Docker image exports
